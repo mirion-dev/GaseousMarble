@@ -20,10 +20,10 @@ extern "C" {
     GASEOUSMARBLE_API Real gm_width(StringView text) noexcept;
     GASEOUSMARBLE_API Real gm_height(StringView text) noexcept;
     GASEOUSMARBLE_API Real gm_draw(Real x, Real y, StringView text) noexcept;
-    GASEOUSMARBLE_API Real gm_free(Real font_id) noexcept;
+    GASEOUSMARBLE_API Real gm_free(StringView name) noexcept;
     GASEOUSMARBLE_API Real gm_clear() noexcept;
 
-    GASEOUSMARBLE_API Real gm_set_font(Real font_id) noexcept;
+    GASEOUSMARBLE_API Real gm_set_font(StringView name) noexcept;
     GASEOUSMARBLE_API Real gm_set_color(Real color) noexcept;
     GASEOUSMARBLE_API Real gm_set_color2(Real color_top, Real color_bottom) noexcept;
     GASEOUSMARBLE_API Real gm_set_alpha(Real alpha) noexcept;
@@ -37,7 +37,7 @@ extern "C" {
     GASEOUSMARBLE_API Real gm_set_offset(Real x, Real y) noexcept;
     GASEOUSMARBLE_API Real gm_set_scale(Real x, Real y) noexcept;
 
-    GASEOUSMARBLE_API Real gm_get_font() noexcept;
+    GASEOUSMARBLE_API const char* gm_get_font() noexcept;
     GASEOUSMARBLE_API Real gm_get_color_top() noexcept;
     GASEOUSMARBLE_API Real gm_get_color_bottom() noexcept;
     GASEOUSMARBLE_API Real gm_get_alpha() noexcept;

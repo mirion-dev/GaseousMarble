@@ -1,26 +1,22 @@
 module gm;
 
-std::unordered_map<u32, gm::draw::Font> font_map;
-std::unordered_map<std::string, u32> font_name_map;
+std::unordered_map<std::string, gm::draw::Font> font_map;
 
 gm::draw::Draw draw;
 
 Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noexcept {
-    auto iter{ font_name_map.find(std::string{ name }) };
-    if (iter != font_name_map.end()) {
-        return iter->second;
+    auto iter{ font_map.find(std::string{ name }) };
+    if (iter != font_map.end()) {
+        return true;
     }
 
-    gm::draw::Font font{ sprite_path, glyph_path };
+    gm::draw::Font font{ name, sprite_path, glyph_path };
     if (!font) {
-        return 0;
+        return false;
     }
 
-    u32 font_id{ font.id() };
-    font_map.emplace(font_id, std::move(font));
-    font_name_map.emplace_hint(iter, name, font_id);
-
-    return font_id;
+    font_map.emplace_hint(iter, name, std::move(font));
+    return true;
 }
 
 Real gm_width(StringView text) noexcept {
@@ -35,11 +31,12 @@ Real gm_draw(Real x, Real y, StringView text) noexcept {
     return draw.text(x, y, text);
 }
 
-Real gm_free(Real font_id) noexcept {
-    auto iter{ font_map.find(static_cast<u32>(font_id)) };
+Real gm_free(StringView name) noexcept {
+    auto iter{ font_map.find(std::string{ name }) };
     if (iter == font_map.end() || &iter->second == draw.setting().font) {
         return false;
     }
+
     font_map.erase(iter);
     return true;
 }
@@ -49,11 +46,12 @@ Real gm_clear() noexcept {
     return true;
 }
 
-Real gm_set_font(Real font_id) noexcept {
-    auto iter{ font_map.find(static_cast<u32>(font_id)) };
+Real gm_set_font(StringView name) noexcept {
+    auto iter{ font_map.find(std::string{ name }) };
     if (iter == font_map.end()) {
         return false;
     }
+
     draw.setting().font = &iter->second;
     return true;
 }
@@ -133,8 +131,8 @@ Real gm_set_scale(Real x, Real y) noexcept {
     return true;
 }
 
-Real gm_get_font() noexcept {
-    return draw.setting().font->id();
+const char* gm_get_font() noexcept {
+    return draw.setting().font->name().data();
 }
 
 Real gm_get_color_top() noexcept {

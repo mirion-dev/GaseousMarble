@@ -97,7 +97,7 @@ namespace gm::engine {
     export using String16 = BasicString<char16_t>;
     export using String32 = BasicString<char32_t>;
 
-    // used for external strings as their lifetime cannot be managed
+    // used for external strings since their lifetime cannot be managed
     export
         template<class T>
     class BasicStringView {
@@ -198,7 +198,7 @@ namespace gm::engine {
 
         template<class R, class... Args>
         R call(Args... args) const noexcept {
-            // This assertion fails when exitting the game as GameMaker has already released function resources
+            // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr u32 args_count{ sizeof...(args) };
             assert(_arg_count == -1 || _arg_count == args_count);
 

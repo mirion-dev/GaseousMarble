@@ -7,12 +7,12 @@ applies_to=self
 var dllpath { dllpath = '../Debug/GaseousMarble.dll' }
 global.gm_font = external_define(dllpath, 'gm_font', dll_cdecl, ty_real, 3, ty_string, ty_string, ty_string)
 global.gm_draw = external_define(dllpath, 'gm_draw', dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
-global.gm_set_font = external_define(dllpath, 'gm_set_font', dll_cdecl, ty_real, 1, ty_real)
+global.gm_set_font = external_define(dllpath, 'gm_set_font', dll_cdecl, ty_real, 1, ty_string)
 global.gm_set_max_line_width = external_define(dllpath, 'gm_set_max_line_width', dll_cdecl, ty_real, 1, ty_real)
 global.gm_set_line_height = external_define(dllpath, 'gm_set_line_height', dll_cdecl, ty_real, 1, ty_real)
 
-global.font_default = external_call(global.gm_font, 'default', './plugins/font_default.png', './plugins/font_default.gly')
-external_call(global.gm_set_font, global.font_default)
+external_call(global.gm_font, 'default', './plugins/font_default.png', './plugins/font_default.gly')
+external_call(global.gm_set_font, 'default')
 external_call(global.gm_set_max_line_width, room_width)
 external_call(global.gm_set_line_height, .875)
 draw_set_color(c_white)

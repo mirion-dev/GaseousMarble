@@ -53,19 +53,17 @@ namespace gm::draw {
     };
 
     export class Font {
-        static inline u32 _counter{};
-
-        u32 _id{};
-        u16 _size{};
-        u16 _height{};
+        u16 _size;
+        u16 _height;
+        std::string_view _name;
         std::unique_ptr<SpriteHandle, SpriteDeleter> _sprite;
         std::unordered_map<u32, GlyphData> _glyph;
 
     public:
         Font() noexcept = default;
 
-        Font(std::string_view sprite_path, std::string_view glyph_path) noexcept :
-            _id{ ++_counter } {
+        Font(std::string_view name, std::string_view sprite_path, std::string_view glyph_path) noexcept :
+            _name{ name } {
 
             std::ifstream file{ glyph_path.data(), std::ios::binary };
             if (!file.is_open()) {
@@ -91,34 +89,35 @@ namespace gm::draw {
         }
 
         operator bool() const noexcept {
-            return _id != 0;
+            return _sprite != nullptr;
         }
 
         bool operator==(const Font& other) const noexcept {
-            return _id == other.id();
-        }
-
-        u32 id() const noexcept {
-            return _id;
+            return _sprite == other._sprite;
         }
 
         u16 size() const noexcept {
-            assert(_id != 0);
+            assert(_sprite != nullptr);
             return _size;
         }
 
         u16 height() const noexcept {
-            assert(_id != 0);
+            assert(_sprite != nullptr);
             return _height;
         }
 
+        std::string_view name() const noexcept {
+            assert(_sprite != nullptr);
+            return _name;
+        }
+
         SpriteHandle sprite() const noexcept {
-            assert(_id != 0);
+            assert(_sprite != nullptr);
             return _sprite.get();
         }
 
         const auto& glyph() const noexcept {
-            assert(_id != 0);
+            assert(_sprite != nullptr);
             return _glyph;
         }
     };
