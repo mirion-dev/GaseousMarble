@@ -283,7 +283,7 @@ namespace gm::draw {
             if (_setting.valign < 0) {
                 // do nothing
             }
-            if (_setting.valign == 0) {
+            else if (_setting.valign == 0) {
                 y -= line_height * line.size() / 2;
             }
             else {
