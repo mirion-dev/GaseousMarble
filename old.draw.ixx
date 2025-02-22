@@ -55,7 +55,7 @@ namespace gm::draw {
     export class Font {
         u16 _size;
         u16 _height;
-        std::string_view _name;
+        std::string _name;
         std::unique_ptr<SpriteHandle, SpriteDeleter> _sprite;
         std::unordered_map<u32, GlyphData> _glyph;
 
@@ -106,7 +106,7 @@ namespace gm::draw {
             return _height;
         }
 
-        std::string_view name() const noexcept {
+        const std::string& name() const noexcept {
             assert(_sprite != nullptr);
             return _name;
         }
