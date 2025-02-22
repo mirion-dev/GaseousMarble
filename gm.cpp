@@ -1,13 +1,5 @@
 module gm;
 
-import std;
-import gm.core;
-import gm.engine;
-import gm.old.draw;
-
-using namespace gm::core;
-using namespace gm::engine;
-
 std::unordered_map<u32, gm::draw::Font> font_map;
 
 gm::draw::Draw draw;

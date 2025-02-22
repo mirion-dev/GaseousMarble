@@ -1,8 +1,11 @@
 export module gm;
 
+import std;
 import gm.core;
 import gm.engine;
+import gm.old.draw;
 
+using namespace gm::core;
 using namespace gm::engine;
 
 #ifdef GASEOUSMARBLE_EXPORTS

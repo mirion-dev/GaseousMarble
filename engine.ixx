@@ -22,7 +22,7 @@ namespace gm::engine {
         u32 size;
     };
 
-    export // not that I want to insert a line break. If I don't, VS' formatter will indent the next line.
+    export
         template<class T>
     class BasicString {
         static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
@@ -204,8 +204,7 @@ namespace gm::engine {
             Value* pret{ &returned };
             void* pfn{ _address };
 
-            // This assertion will fail when quitting the game because the
-            // resources have already been released by GameMaker.
+            // This assertion fails when exitting the game as GameMaker has already released function resources.
             assert(_arg_count == -1 || _arg_count == argc);
 
             __asm {
