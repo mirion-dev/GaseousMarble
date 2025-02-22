@@ -37,7 +37,7 @@ extern "C" {
     GASEOUSMARBLE_API Real gm_set_offset(Real x, Real y) noexcept;
     GASEOUSMARBLE_API Real gm_set_scale(Real x, Real y) noexcept;
 
-    GASEOUSMARBLE_API const char* gm_get_font() noexcept;
+    GASEOUSMARBLE_API const char* gm_get_font() noexcept; // the compiler will unhappy if I use String here
     GASEOUSMARBLE_API Real gm_get_color_top() noexcept;
     GASEOUSMARBLE_API Real gm_get_color_bottom() noexcept;
     GASEOUSMARBLE_API Real gm_get_alpha() noexcept;
