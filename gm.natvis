@@ -65,7 +65,7 @@
 
     <Type Name="gm::engine::IFunction">
         <Intrinsic Name="count" Expression="_resource->count"/>
-        <DisplayString Condition="count() == 0">[empty]</DisplayString>
+        <DisplayString Condition="count() == 0">[No function]</DisplayString>
         <DisplayString Condition="count() == 1">[1 function]</DisplayString>
         <DisplayString Condition="count() > 1">[{count()} functions]</DisplayString>
         <Expand>
@@ -86,7 +86,7 @@
 
     <Type Name="gm::engine::ITexture">
         <Intrinsic Name="count" Expression="*_count"/>
-        <DisplayString Condition="count() == 0">[empty]</DisplayString>
+        <DisplayString Condition="count() == 0">[No texture]</DisplayString>
         <DisplayString Condition="count() == 1">[1 texture]</DisplayString>
         <DisplayString Condition="count() > 1">[{count()} textures]</DisplayString>
         <Expand>
@@ -105,7 +105,7 @@
         <Intrinsic Name="origin_" Expression="origin"/>
         <Intrinsic Name="bounding_box_" Expression="bounding_box"/>
         <Intrinsic Name="texture_ids_" Expression="texture_ids"/>
-        <DisplayString Condition="subimage_count == 0">[empty]</DisplayString>
+        <DisplayString Condition="subimage_count == 0">[No subimage]</DisplayString>
         <DisplayString Condition="subimage_count == 1">[1 subimage]</DisplayString>
         <DisplayString Condition="subimage_count > 1">[{subimage_count} subimages]</DisplayString>
         <Expand>
@@ -128,7 +128,7 @@
 
     <Type Name="gm::engine::ISprite">
         <Intrinsic Name="count" Expression="_resource->count"/>
-        <DisplayString Condition="count() == 0">[empty]</DisplayString>
+        <DisplayString Condition="count() == 0">[No sprite]</DisplayString>
         <DisplayString Condition="count() == 1">[1 sprite]</DisplayString>
         <DisplayString Condition="count() > 1">[{count()} sprites]</DisplayString>
         <Expand>
