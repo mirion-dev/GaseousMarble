@@ -16,7 +16,7 @@ using namespace gm::engine;
 
 extern "C" {
 
-    GASEOUSMARBLE_API Real gm_font(StringView sprite_path, StringView glyph_path) noexcept;
+    GASEOUSMARBLE_API Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noexcept;
     GASEOUSMARBLE_API Real gm_width(StringView text) noexcept;
     GASEOUSMARBLE_API Real gm_height(StringView text) noexcept;
     GASEOUSMARBLE_API Real gm_draw(Real x, Real y, StringView text) noexcept;

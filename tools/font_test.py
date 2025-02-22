@@ -24,6 +24,6 @@ string_width_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函�
 string_height_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函数绘制的字 符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距， w 代表行宽。
 '''
 
-generator = font_generator('simsun.ttf', 18, char_list, stroke_width=1)
+generator = font_generator('simsun.ttf', 18, char_list=None, stroke_width=1)
 
 generator.generate('../test.gm82/plugins/font_default.png', '../test.gm82/plugins/font_default.gly')

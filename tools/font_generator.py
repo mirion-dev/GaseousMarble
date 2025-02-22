@@ -23,9 +23,7 @@ class font_generator:
         self.glyph_spacing = glyph_spacing
         self.stroke_width = stroke_width
         self.code_point = {}
-
-        if char_list != None:
-            self.update()
+        self.update()
 
     def update(self):
         cp_dict = {}
