@@ -6,20 +6,20 @@ Draw Unicode texts in GameMaker 8.2.
 
 GaseousMarble provides following functions for drawing texts
 
-| **Function** | **Description** | **Comment** |
+| **Function** | **Description** |
 | -- | -- | -- |
-| `gm_font(sprite_path, glyph_path)` | Adds a font and returns its id. Returns `0` if failed. | The font sprite and glyph data can be generated using `tools/font_generator.py`. |
-| `gm_width(text)` | Returns the width of the text. | |
-| `gm_height(text)` | Returns the height of the text. | |
-| `gm_free(font_id)` | Frees a specified font. Returns `false` if failed. | |
-| `gm_clear()` | Frees all loaded fonts. | Use this function before calling `game_restart` to prevent memory leaks. |
-| `gm_draw(x, y, text)` | Draws a UTF-8 encoded string. Returns `false` if failed. | |
+| `gm_font(name, sprite_path, glyph_path)` | Adds a font. The font sprite and glyph data can be generated using `tools/font_generator.py`. |
+| `gm_width(text)` | Returns the width of the text. |
+| `gm_height(text)` | Returns the height of the text. |
+| `gm_free(name)` | Frees a specified font. |
+| `gm_clear()` | Frees all loaded fonts. |
+| `gm_draw(x, y, text)` | Draws a UTF-8 string. |
 
 as well as setters and getters for configuring the drawing parameters
 
 | **Setter** | **Getter** |
 | -- | -- |
-| `gm_set_font(font_id)` | `gm_get_font()` |
+| `gm_set_font(name)` | `gm_get_font()` |
 | `gm_set_color(color)`<br>`gm_set_color2(color_top, color_bottom)` | `gm_get_color_top()`<br>`gm_get_color_bottom()` |
 | `gm_set_alpha(alpha)` | `gm_get_alpha()` |
 | `gm_set_halign(align)`<br>`gm_set_valign(align)`<br>`gm_set_align(halign, valign)` | `gm_get_halign()`<br>`gm_get_valign()` |
@@ -43,7 +43,7 @@ The current drawing mechanism of GaseousMarble relies on a Python script to gene
 
 This project was inspired by the following open-source projects. Their code wasn't directly copied but was adapted and modified to better suit the needs of this project. Thank you to the developers for their efforts and contributions.
 
-| **Project** | **Referenced Content** |
+| **Project** | **Referenced** |
 | -- | -- |
 | [FoxWriting](https://github.com/Noisyfox/FoxWriting) | Implemention of text drawing |
 | [GMAPI](https://github.com/snakedeveloper/gmapi) | Engine internal data structures |
