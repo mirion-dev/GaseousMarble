@@ -1,11 +1,11 @@
 {
 	"name": "GaseousMarble",
 	"folder": "temp_GaseousMarble",
-	"version": "0.9.0",
+	"version": "0.10.0",
 	"author": "Mirion",
-	"date": "12/18/2024",
+	"date": "2/22/2025",
 	"license": "MIT",
-	"description": "Draw CJK characters in GameMaker 8.2.",
+	"description": "Draw Unicode texts in GameMaker 8.2.",
 	"helpfile": "",
 	"hidden": false,
 	"dependencies": [],
@@ -21,9 +21,10 @@
 					"name": "gm_font",
 					"extname": "gm_font",
 					"calltype": 12,
-					"helpline": "gm_font(sprite_path,glyph_path)",
+					"helpline": "gm_font(name,sprite_path,glyph_path)",
 					"hidden": false,
 					"argtypes": [
+						1,
 						1,
 						1
 					],
@@ -68,10 +69,10 @@
 					"name": "gm_free",
 					"extname": "gm_free",
 					"calltype": 12,
-					"helpline": "gm_free(font_id)",
+					"helpline": "gm_free(name)",
 					"hidden": false,
 					"argtypes": [
-						2
+						1
 					],
 					"returntype": 2
 				},
@@ -88,10 +89,10 @@
 					"name": "gm_set_font",
 					"extname": "gm_set_font",
 					"calltype": 12,
-					"helpline": "gm_set_font(font_id)",
+					"helpline": "gm_set_font(name)",
 					"hidden": false,
 					"argtypes": [
-						2
+						1
 					],
 					"returntype": 2
 				},
@@ -238,7 +239,7 @@
 					"helpline": "gm_get_font()",
 					"hidden": false,
 					"argtypes": [],
-					"returntype": 2
+					"returntype": 1
 				},
 				{
 					"name": "gm_get_color_top",
