@@ -43,6 +43,8 @@ The current drawing mechanism of GaseousMarble relies on a Python script to gene
 
 This project was inspired by the following open-source projects. Their code wasn't directly copied but was adapted and modified to better suit the needs of this project. Thank you to the developers for their efforts and contributions.
 
-- [FoxWriting](https://github.com/Noisyfox/FoxWriting)
-- [GMAPI](https://github.com/snakedeveloper/gmapi)
-- [GMAPI 8.1](https://github.com/gm-archive/gmapi-8.1)
+| **Project** | **Referenced Content** |
+| -- | -- |
+| [FoxWriting](https://github.com/Noisyfox/FoxWriting) | Implemention of text drawing |
+| [GMAPI](https://github.com/snakedeveloper/gmapi) | Engine internal data structures |
+| [GMAPI 8.1](https://github.com/gm-archive/gmapi-8.1) | Magic numbers for engine resources |
