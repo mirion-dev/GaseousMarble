@@ -14,7 +14,7 @@ using namespace gm::core;
 namespace gm::draw {
 
     class SpriteHandle {
-        u32 _id{};
+        u32 _id{ static_cast<u32>(-1) };
 
     public:
         SpriteHandle() noexcept = default;
@@ -25,7 +25,7 @@ namespace gm::draw {
             _id{ id } {}
 
         operator bool() const noexcept {
-            return _id != 0;
+            return _id != -1;
         }
 
         bool operator==(SpriteHandle other) const noexcept {
