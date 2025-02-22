@@ -6,7 +6,7 @@ import struct
 
 class font_generator:
     def __init__(self, font_path: str | list[str], font_size=16, char_list: str | None = None, *,
-                 smoothing=True, outlined=False, glyph_spacing=0, stroke_width=0):
+                 smoothing=True, outlined=False, glyph_spacing=1, stroke_width=0):
         if isinstance(font_path, str):
             font_path = [font_path]
         if isinstance(char_list, str):
@@ -107,7 +107,8 @@ class font_generator:
                     if self.outlined:
                         draw.text(pos, chr(i), '#0000', stroke_width=self.stroke_width, stroke_fill='white')
                     else:
-                        draw.text(pos, chr(i), 'white', stroke_width=self.stroke_width, stroke_fill='black')
+                        draw.text(pos, chr(i), 'white', stroke_width=self.stroke_width * 2, stroke_fill='black')
+                        draw.text(pos, chr(i), 'white')
 
                     x += width
         image.save(sprite_path)
