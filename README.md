@@ -7,7 +7,7 @@ Draw Unicode texts in GameMaker 8.2.
 GaseousMarble provides following functions for drawing texts
 
 | **Function** | **Description** |
-| -- | -- | -- |
+| -- | -- |
 | `gm_font(name, sprite_path, glyph_path)` | Adds a font. The font sprite and glyph data can be generated using `tools/font_generator.py`. |
 | `gm_width(text)` | Returns the width of the text. |
 | `gm_height(text)` | Returns the height of the text. |
