@@ -1,46 +1,12 @@
-#define Create_0
-/*"/*'/**//* YYD ACTION
-lib_id=1
-action_id=603
-applies_to=self
-*/
-var dllpath { dllpath = '../Debug/GaseousMarble.dll' }
-global.gm_font = external_define(dllpath, 'gm_font', dll_cdecl, ty_real, 2, ty_string, ty_string)
-global.gm_draw = external_define(dllpath, 'gm_draw', dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
-global.gm_clear = external_define(dllpath, 'gm_clear', dll_cdecl, ty_real, 0)
-global.gm_set_font = external_define(dllpath, 'gm_set_font', dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_max_line_width = external_define(dllpath, 'gm_set_max_line_width', dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_line_height = external_define(dllpath, 'gm_set_line_height', dll_cdecl, ty_real, 1, ty_real)
+from font_generator import font_generator
 
-global.font_default = external_call(global.gm_font, './plugins/font_default.png', './plugins/font_default.gly')
-external_call(global.gm_set_font, global.font_default)
-external_call(global.gm_set_max_line_width, room_width)
-external_call(global.gm_set_line_height, .875)
-draw_set_color(c_white)
-#define Keyboard_82
-/*"/*'/**//* YYD ACTION
-lib_id=1
-action_id=603
-applies_to=self
-*/
-external_call(global.gm_clear)
-game_restart()
-#define Draw_0
-/*"/*'/**//* YYD ACTION
-lib_id=1
-action_id=603
-applies_to=self
-*/
-draw_text(0, 0, fps)
-
-external_call(global.gm_draw, 0, 0, "
+char_list = '''
 在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源 创建（不管是在GM设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法 绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平 及垂直坐标
 文本的绘制涉及以下函数 :
 
 draw_set_font(font) 设定绘制文本时将要使用的字体。 -1 代表默认字体（Arial 12）。
 
 draw_set_halign(halign) 设定绘制文本的水平坐标参数。选择下面三个中的一个作为值：
-
 fa_left 左
 fa_center 中
 fa_right 右
@@ -55,4 +21,9 @@ draw_text_ext(x,y,string,sep,w) 基本与上面的函数作用相同，但增加
 string_width(string) 当前字体及将要通过 draw_text () 函数绘制的字符串 string 的 宽度。可以用来精确定位图像位置。
 string_height(string) 当前字体及将要通过 draw_text () 函数绘制的字符串 string 的 高度。可以用来精确定位图像位置。
 string_width_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函数绘制的字 符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距， w 代表行宽。
-string_height_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函数绘制的字 符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距， w 代表行宽。")
+string_height_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函数绘制的字 符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距， w 代表行宽。
+'''
+
+generator = font_generator('simsun.ttf', 18, char_list, stroke_width=1)
+
+generator.generate('../test.gm82/plugins/font_default.png', '../test.gm82/plugins/font_default.gly')
