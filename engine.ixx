@@ -229,11 +229,10 @@ namespace gm::engine {
     };
 
     class IFunction {
-        FunctionResource* _resource;
+        FunctionResource* _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
 
     public:
-        IFunction() noexcept :
-            _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) } {};
+        IFunction() noexcept = default;
 
         Function& operator[](FunctionId id) const noexcept {
             return _resource->functions[static_cast<u32>(id)];
@@ -278,13 +277,11 @@ namespace gm::engine {
     };
 
     class ITexture {
-        Texture** _textures;
-        u32* _count;
+        Texture** _textures{ reinterpret_cast<Texture**>(0x0085b3c4) };
+        u32* _count{ reinterpret_cast<u32*>(0x006886f0) };
 
     public:
-        ITexture() noexcept :
-            _textures{ reinterpret_cast<Texture**>(0x0085b3c4) },
-            _count{ reinterpret_cast<u32*>(0x006886f0) } {};
+        ITexture() noexcept = default;
 
         Texture& operator[](u32 id) const noexcept {
             assert(id < *_count);
@@ -377,11 +374,10 @@ namespace gm::engine {
     };
 
     class ISprite {
-        SpriteResource* _resource;
+        SpriteResource* _resource{ reinterpret_cast<SpriteResource*>(0x00686ac8) };
 
     public:
-        ISprite() noexcept :
-            _resource{ reinterpret_cast<SpriteResource*>(0x00686ac8) } {};
+        ISprite() noexcept = default;
 
         Sprite operator[](u32 id) const noexcept {
             assert(id < _resource->count);

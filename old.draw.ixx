@@ -80,7 +80,6 @@ namespace gm::draw {
 
             file.read(reinterpret_cast<char*>(&_size), sizeof(_size));
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
-
             while (file) {
                 u16 ch;
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
@@ -131,10 +130,13 @@ namespace gm::draw {
 
     export struct DrawSetting {
         Font* font;
-        u32 color_top, color_bottom;
+        u32 color_top;
+        u32 color_bottom;
         f64 alpha;
-        i8 halign, valign;
-        f64 word_spacing, letter_spacing;
+        i8 halign;
+        i8 valign;
+        f64 word_spacing;
+        f64 letter_spacing;
         f64 max_line_width;
         f64 line_height;
         f64 offset_x, offset_y;
@@ -142,7 +144,22 @@ namespace gm::draw {
     };
 
     export class Draw {
-        DrawSetting _setting;
+        DrawSetting _setting{
+            .font = nullptr,
+            .color_top = 0xffffff,
+            .color_bottom = 0xffffff,
+            .alpha = 1,
+            .halign = -1,
+            .valign = -1,
+            .word_spacing = 0,
+            .letter_spacing = 0,
+            .max_line_width = 0,
+            .line_height = 1,
+            .offset_x = 0,
+            .offset_y = 0,
+            .scale_x = 1,
+            .scale_y = 1
+        };
 
         std::u32string _filter(std::string_view text) const noexcept {
             std::u32string filtered;
@@ -156,11 +173,12 @@ namespace gm::draw {
                     filtered += ch;
                 }
             }
+
             return filtered;
         }
 
         auto _split(std::u32string_view text) const noexcept {
-            std::vector<std::pair<std::u32string, f64>> line;
+            std::vector<std::pair<std::u32string, f64>> lines;
             auto& glyph_map{ _setting.font->glyph() };
             f64 max_line_width{ _setting.max_line_width * _setting.scale_x };
             f64 word_spacing{ _setting.word_spacing * _setting.scale_x };
@@ -170,7 +188,7 @@ namespace gm::draw {
             f64 line_width{}, last_spacing{};
             while (i != end) {
                 if (*i == '\n') {
-                    line.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
+                    lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
                     line_width = last_spacing = 0;
                     begin = ++i;
                     continue;
@@ -187,15 +205,16 @@ namespace gm::draw {
                     line_width += char_width;
                 }
                 else {
-                    line.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
+                    lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
                     line_width = char_width;
                     begin = i;
                 }
                 last_spacing = spacing;
                 ++i;
             }
-            line.emplace_back(std::u32string{ begin, end }, line_width - last_spacing);
-            return line;
+            lines.emplace_back(std::u32string{ begin, end }, line_width - last_spacing);
+
+            return lines;
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
@@ -236,35 +255,25 @@ namespace gm::draw {
         }
 
     public:
-        Draw() noexcept {
-            _setting.font = nullptr;
-            _setting.color_top = _setting.color_bottom = 0xffffff;
-            _setting.alpha = 1;
-            _setting.halign = _setting.valign = -1;
-            _setting.word_spacing = _setting.letter_spacing = 0;
-            _setting.max_line_width = 0;
-            _setting.line_height = 1;
-            _setting.offset_x = _setting.offset_y = 0;
-            _setting.scale_x = _setting.scale_y = 1;
-        }
+        Draw() noexcept = default;
 
-        DrawSetting& setting() noexcept {
-            return _setting;
+        auto&& setting(this auto&& self) noexcept {
+            return std::forward_like<decltype(self)>(self._setting);
         }
 
         f64 width(std::string_view text) const noexcept {
-            auto line{ _split(_filter(text)) };
+            auto lines{ _split(_filter(text)) };
             f64 max_width{};
-            for (auto& [text, width] : line) {
+            for (auto& [text, width] : lines) {
                 max_width = std::max(max_width, width);
             }
             return max_width;
         }
 
         f64 height(std::string_view text) const noexcept {
-            auto line{ _split(_filter(text)) };
+            auto lines{ _split(_filter(text)) };
             f64 line_height{ _setting.line_height * _setting.scale_y * _setting.font->size() };
-            return line_height * line.size();
+            return line_height * lines.size();
         }
 
         bool text(f64 x, f64 y, std::string_view text) const noexcept {
@@ -273,7 +282,7 @@ namespace gm::draw {
             }
 
             std::u32string filtered{ _filter(text) };
-            auto line{ _split(filtered) };
+            auto lines{ _split(filtered) };
             f64 line_height{ _setting.line_height * _setting.scale_y * _setting.font->size() };
             f64 offset_x{ _setting.offset_x * _setting.scale_x };
             f64 offset_y{ _setting.offset_y * _setting.scale_y };
@@ -284,26 +293,26 @@ namespace gm::draw {
                 // do nothing
             }
             else if (_setting.valign == 0) {
-                y -= line_height * line.size() / 2;
+                y -= line_height * lines.size() / 2;
             }
             else {
-                y -= line_height * line.size();
+                y -= line_height * lines.size();
             }
 
             if (_setting.halign < 0) {
-                for (auto& [text, width] : line) {
+                for (auto& [text, width] : lines) {
                     _line(x, y, text);
                     y += line_height;
                 }
             }
             else if (_setting.halign == 0) {
-                for (auto& [text, width] : line) {
+                for (auto& [text, width] : lines) {
                     _line(x - width / 2, y, text);
                     y += line_height;
                 }
             }
             else {
-                for (auto& [text, width] : line) {
+                for (auto& [text, width] : lines) {
                     _line(x - width, y, text);
                     y += line_height;
                 }
