@@ -198,23 +198,23 @@ namespace gm::engine {
 
         template<class R, class... Args>
         R call(Args... args) const noexcept {
-            Value args_wrapped[]{ args... }, returned;
-            Value* argv{ args_wrapped };
-            constexpr u32 argc{ sizeof...(args) };
-            Value* pret{ &returned };
-            void* pfn{ _address };
+            // This assertion fails when exitting the game as GameMaker has already released function resources
+            static constexpr u32 args_count{ sizeof...(args) };
+            assert(_arg_count == -1 || _arg_count == args_count);
 
-            // This assertion fails when exitting the game as GameMaker has already released function resources.
-            assert(_arg_count == -1 || _arg_count == argc);
+            Value args_wrapped[]{ args... }, ret;
+            Value* args_ptr{ args_wrapped };
+            Value* ret_ptr{ &ret };
+            void* fn_ptr{ _address };
 
             __asm {
-                push argv;
-                push argc;
-                push pret;
-                call pfn;
+                push args_ptr;
+                push args_count;
+                push ret_ptr;
+                call fn_ptr;
             }
 
-            return static_cast<R>(returned);
+            return static_cast<R>(ret);
         }
     };
 
