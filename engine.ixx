@@ -38,6 +38,7 @@ namespace gm::engine {
     public:
         BasicString() noexcept {
             static BasicString empty_str{ "" };
+
             _data = empty_str._data;
             ++_header()->ref_count;
         }
@@ -45,9 +46,12 @@ namespace gm::engine {
         BasicString(std::basic_string_view<T> str) noexcept :
             _data{ new char[_offset + str.size() + 1] + _offset } {
 
-            static constexpr u16 char_size{ sizeof(T) };
-            static constexpr u16 code_page{ char_size == 1 ? 65001 : char_size == 2 ? 1200 : 12000 };
-            new(_header()) StringHeader{ code_page, char_size, 1, str.size() };
+            new(_header()) StringHeader{
+                sizeof(T) == 1 ? 65001 : sizeof(T) == 2 ? 1200 : 12000,
+                sizeof(T),
+                1,
+                str.size()
+            };
             *std::copy(str.begin(), str.end(), _data) = 0;
         }
 
@@ -257,18 +261,22 @@ namespace gm::engine {
         Texture() = delete;
 
         auto&& image_size(this auto& self) noexcept {
+            assert(self._is_valid);
             return std::forward_like<decltype(self)>(self._image_size);
         }
 
         auto&& texture_size(this auto& self) noexcept {
+            assert(self._is_valid);
             return std::forward_like<decltype(self)>(self._texture_size);
         }
 
         IDirect3DTexture8* data() noexcept {
+            assert(_is_valid);
             return _data;
         }
 
         const IDirect3DTexture8* data() const noexcept {
+            assert(_is_valid);
             return _data;
         }
     };
@@ -281,7 +289,7 @@ namespace gm::engine {
         ITexture() noexcept = default;
 
         Texture& operator[](u32 id) const noexcept {
-            assert(id < *_count);
+            assert(id < count());
             return (*_textures)[id];
         }
 
@@ -349,12 +357,12 @@ namespace gm::engine {
         }
 
         auto&& bitmap(this auto&& self, u32 index) noexcept {
-            assert(index < self._data->subimage_count);
+            assert(index < self.subimage_count());
             return std::forward_like<decltype(self)>(*self._data->bitmaps[index]);
         }
 
         auto&& texture(this auto&& self, u32 index) noexcept {
-            assert(index < self._data->subimage_count);
+            assert(index < self.subimage_count());
             return std::forward_like<decltype(self)>(gm::engine::texture[self._data->texture_ids[index]]);
         }
 
@@ -377,7 +385,7 @@ namespace gm::engine {
         ISprite() noexcept = default;
 
         Sprite operator[](u32 id) const noexcept {
-            assert(id < _resource->count);
+            assert(id < count());
             return { _resource->sprites[id], _resource->names[id] };
         }
 
