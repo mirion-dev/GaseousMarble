@@ -8,8 +8,6 @@ export module gm.engine;
 import std;
 import gm.core;
 
-using namespace gm::core;
-
 // fundamental types of GML
 namespace gm::engine {
 
@@ -251,8 +249,8 @@ namespace gm::engine {
 
     export class Texture {
         IDirect3DTexture8* _data;
-        Size _image_size;
-        Size _texture_size;
+        gm::core::Size _image_size;
+        gm::core::Size _texture_size;
         bool _is_valid;
 
     public:
@@ -301,7 +299,7 @@ namespace gm::engine {
 
     export class Bitmap {
         void* _rtti;
-        Size _size;
+        gm::core::Size _size;
         void* _data;
 
     public:
@@ -316,8 +314,8 @@ namespace gm::engine {
         void* rtti;
         u32 subimage_count;
         Bitmap** bitmaps;
-        Point origin;
-        BoundingBox bounding_box;
+        gm::core::Point origin;
+        gm::core::BoundingBox bounding_box;
         void* masks;
         bool seperate_masks;
         u32* texture_ids;

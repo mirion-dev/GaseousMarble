@@ -8,8 +8,6 @@ import std;
 import gm.core;
 import gm.engine;
 
-using namespace gm::core;
-
 // Font
 namespace gm::draw {
 
@@ -164,7 +162,7 @@ namespace gm::draw {
             std::u32string filtered;
             auto& glyph_map{ _setting.font->glyph() };
 
-            for (u32 ch : utf8_decode(text)) {
+            for (u32 ch : gm::core::utf8_decode(text)) {
                 if (ch == ' ' || ch == '\t') {
                     filtered += ' ';
                 }

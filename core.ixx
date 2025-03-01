@@ -3,7 +3,7 @@ export module gm.core;
 import std;
 
 // fundamental types
-export namespace gm::core {
+export {
 
     using i8 = std::int8_t;
     using i16 = std::int16_t;
