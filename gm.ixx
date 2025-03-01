@@ -5,9 +5,6 @@ import gm.core;
 import gm.engine;
 import gm.old.draw;
 
-using namespace gm::core;
-using namespace gm::engine;
-
 #ifdef GASEOUSMARBLE_EXPORTS
 #define GASEOUSMARBLE_API __declspec(dllexport)
 #else

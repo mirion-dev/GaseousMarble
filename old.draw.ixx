@@ -39,8 +39,7 @@ namespace gm::draw {
         using pointer = SpriteHandle;
 
         void operator()(SpriteHandle handle) const noexcept {
-            using namespace gm::engine;
-            function[FunctionId::sprite_delete].call<void, Real>(handle.id());
+            gm::engine::function[gm::engine::FunctionId::sprite_delete].call<void, Real>(handle.id());
         }
     };
 
@@ -82,8 +81,7 @@ namespace gm::draw {
                 file.read(reinterpret_cast<char*>(&_glyph[ch]), sizeof(_glyph[ch]));
             }
             
-            using namespace gm::engine;
-            _sprite.reset(function[FunctionId::sprite_add].call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
+            _sprite.reset(gm::engine::function[gm::engine::FunctionId::sprite_add].call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
         }
 
         operator bool() const noexcept {
@@ -215,8 +213,7 @@ namespace gm::draw {
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
-            using namespace gm::engine;
-            function[FunctionId::draw_sprite_general].call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
+            gm::engine::function[gm::engine::FunctionId::draw_sprite_general].call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
                 _setting.font->sprite().id(),
                 0,
                 glyph.x,

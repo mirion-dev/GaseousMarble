@@ -8,10 +8,8 @@ export module gm.engine;
 import std;
 import gm.core;
 
-// fundamental types of GML
+// Delphi UnicodeString
 namespace gm::engine {
-
-    export using Real = f64;
 
     struct StringHeader {
         u16 code_page;
@@ -95,10 +93,6 @@ namespace gm::engine {
         }
     };
 
-    export using String = BasicString<char>;
-    export using String16 = BasicString<char16_t>;
-    export using String32 = BasicString<char32_t>;
-
     // used for external strings since their lifetime cannot be managed
     export
         template<class T>
@@ -132,9 +126,20 @@ namespace gm::engine {
         }
     };
 
-    export using StringView = BasicStringView<char>;
-    export using String16View = BasicStringView<char16_t>;
-    export using String32View = BasicStringView<char32_t>;
+}
+
+// fundamental types of GML
+export {
+
+    using Real = f64;
+
+    using String = gm::engine::BasicString<char>;
+    using String16 = gm::engine::BasicString<char16_t>;
+    using String32 = gm::engine::BasicString<char32_t>;
+
+    using StringView = gm::engine::BasicStringView<char>;
+    using String16View = gm::engine::BasicStringView<char16_t>;
+    using String32View = gm::engine::BasicStringView<char32_t>;
 
 }
 
