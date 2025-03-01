@@ -15,7 +15,7 @@ namespace gm::draw {
 
     class SpriteHandle {
         u32 _id{ static_cast<u32>(-1) };
-
+        
     public:
         SpriteHandle() noexcept = default;
 
@@ -168,7 +168,7 @@ namespace gm::draw {
                 if (ch == ' ' || ch == '\t') {
                     filtered += ' ';
                 }
-                else if (ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.find(ch) != glyph_map.end()) {
+                else if (ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch)) {
                     filtered += ch;
                 }
             }
