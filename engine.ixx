@@ -436,7 +436,6 @@ namespace gm::engine {
         gm::core::Size size() const noexcept {
             return _resource->size;
         }
-
     };
 
     export IDirect3d direct3d;
