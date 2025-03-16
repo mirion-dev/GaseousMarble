@@ -30,23 +30,24 @@ namespace gm::draw {
             _texture = gm::engine::sprite[_sprite_id][0].data();
             _texture->GetSurfaceLevel(0, &_surface);
 
-            device->CreateRenderTarget(width, height, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, true, &_working_surface);
-
             _gdi_font = CreateFont(12, 0, 0, 0, FW_NORMAL, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Arial"));
             D3DXCreateFont(device, _gdi_font, &_font);
+
+            device->CreateRenderTarget(width, height, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, true, &_working_surface);
         }
 
         ~Draw() noexcept {
             if (_sprite_id != -1) {
                 gm::engine::function[gm::engine::FunctionId::sprite_delete].call<void, Real>(_sprite_id);
-                _working_surface->Release();
                 DeleteObject(_gdi_font);
                 _font->Release();
+                _working_surface->Release();
             }
         }
 
         void test() noexcept {
             IDirect3DDevice8* device{ gm::engine::direct3d.device() };
+
             IDirect3DSurface8* last_surface;
             device->GetRenderTarget(&last_surface);
             device->SetRenderTarget(_working_surface, nullptr);
