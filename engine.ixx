@@ -18,6 +18,43 @@ namespace gm::engine {
         u32 size;
     };
 
+    // used for external strings since their lifetime cannot be managed
+    export
+        template<class T>
+    class BasicStringView {
+        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
+
+        const T* _data;
+
+        auto _header() const noexcept {
+            return reinterpret_cast<const StringHeader*>(_data - _offset);
+        }
+
+    public:
+        BasicStringView(const T* str = {}) noexcept :
+            _data{ str.data() } {}
+
+        operator std::basic_string_view<T>() const noexcept {
+            assert(_data != nullptr);
+            return { _data, _header()->size };
+        }
+
+        u32 size() const noexcept {
+            assert(_data != nullptr);
+            return _header()->size;
+        }
+
+        u32 ref_count() const noexcept {
+            assert(_data != nullptr);
+            return _header()->ref_count;
+        }
+
+        const T* data() const noexcept {
+            return _data;
+        }
+    };
+
+    // used for the implementation of Value
     export
         template<class T>
     class BasicString {
@@ -50,7 +87,7 @@ namespace gm::engine {
                 1,
                 str.size()
             };
-            *std::copy(str.begin(), str.end(), _data) = 0;
+            new(std::uninitialized_copy(str.begin(), str.end(), _data)) T{};
         }
 
         BasicString(const BasicString& other) noexcept :
@@ -66,48 +103,14 @@ namespace gm::engine {
         }
 
         BasicString& operator=(const BasicString& other) noexcept {
-            if (this == &other) {
-                return *this;
-            }
-
             BasicString temp{ other };
             std::swap(_data, temp._data);
-
             return *this;
         }
 
-        operator std::basic_string_view<T>() const noexcept {
-            return { _data, _header()->size };
-        }
-
-        u32 size() const noexcept {
-            return _header()->size;
-        }
-
-        u32 ref_count() const noexcept {
-            return _header()->ref_count;
-        }
-
-        const T* data() const noexcept {
+        operator BasicStringView<T>() const noexcept {
             return _data;
         }
-    };
-
-    // used for external strings since their lifetime cannot be managed
-    export
-        template<class T>
-    class BasicStringView {
-        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
-
-        const T* _data;
-
-        auto _header() const noexcept {
-            return reinterpret_cast<const StringHeader*>(_data - _offset);
-        }
-
-    public:
-        BasicStringView(BasicString<T> str = {}) noexcept :
-            _data{ str.data() } {}
 
         operator std::basic_string_view<T>() const noexcept {
             return { _data, _header()->size };
@@ -372,7 +375,7 @@ namespace gm::engine {
         }
 
         void set_texture(u32 index, u32 id) noexcept {
-            assert(index < _data->subimage_count && id < gm::engine::texture.count());
+            assert(index < subimage_count() && id < gm::engine::texture.count());
             _data->texture_ids[index] = id;
         }
     };
