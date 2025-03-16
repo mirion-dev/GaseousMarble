@@ -3,6 +3,8 @@ module;
 #include <assert.h>
 #include <d3dx8.h>
 
+#undef interface
+
 export module gm.engine;
 
 import std;
@@ -404,5 +406,39 @@ namespace gm::engine {
     };
 
     export ISprite sprite;
+
+}
+
+// interface of GameMaker Direct3D resources
+namespace gm::engine {
+
+    struct Direct3dResource {
+        IDirect3D8* interface;
+        IDirect3DDevice8* device;
+        u64 _;
+        gm::core::Size size;
+    };
+
+    class IDirect3d {
+        Direct3dResource* _resource{ reinterpret_cast<Direct3dResource*>(0x006886a4) };
+
+    public:
+        IDirect3d() noexcept = default;
+
+        IDirect3D8* interface() const noexcept {
+            return _resource->interface;
+        }
+
+        IDirect3DDevice8* device() const noexcept {
+            return _resource->device;
+        }
+
+        gm::core::Size size() const noexcept {
+            return _resource->size;
+        }
+
+    };
+
+    export IDirect3d direct3d;
 
 }

@@ -135,4 +135,12 @@
         </Expand>
     </Type>
 
+    <Type Name="gm::engine::IDirect3d">
+        <Intrinsic Name="size" Expression="_resource->size"/>
+        <DisplayString>{{ interface={_resource->interface, nvo} device={_resource->device, nvo} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]">size()</Item>
+        </Expand>
+    </Type>
+
 </AutoVisualizer>
