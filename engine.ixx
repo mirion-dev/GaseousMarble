@@ -32,7 +32,7 @@ namespace gm::engine {
 
     public:
         BasicStringView(const T* str = {}) noexcept :
-            _data{ str.data() } {}
+            _data{ str } {}
 
         operator std::basic_string_view<T>() const noexcept {
             assert(_data != nullptr);
@@ -79,7 +79,7 @@ namespace gm::engine {
         }
 
         BasicString(std::basic_string_view<T> str) noexcept :
-            _data{ new char[_offset + str.size() + 1] + _offset } {
+            _data{ new T[_offset + str.size() + 1] + _offset } {
 
             new(_header()) StringHeader{
                 sizeof(T) == 1 ? 65001 : sizeof(T) == 2 ? 1200 : 12000,
