@@ -393,18 +393,18 @@ namespace gm::engine {
 // interface of GameMaker Direct3D resources
 namespace gm::engine {
 
-    struct Direct3dResource {
+    struct Direct3DResource {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
         u64 _;
         gm::core::Size size;
     };
 
-    class IDirect3d {
-        Direct3dResource* _resource{ reinterpret_cast<Direct3dResource*>(0x006886a4) };
+    class IDirect3D {
+        Direct3DResource* _resource{ reinterpret_cast<Direct3DResource*>(0x006886a4) };
 
     public:
-        IDirect3d() noexcept = default;
+        IDirect3D() noexcept = default;
 
         IDirect3D8* interface() const noexcept {
             return _resource->interface;
@@ -419,6 +419,6 @@ namespace gm::engine {
         }
     };
 
-    export IDirect3d direct3d;
+    export IDirect3D direct3d;
 
 }
