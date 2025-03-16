@@ -12,7 +12,6 @@ import gm.engine;
 namespace gm::draw {
 
     class Draw {
-        gm::core::Size _texture_size;
         u32 _sprite_id{ static_cast<u32>(-1) };
         IDirect3DTexture8* _texture;
         IDirect3DSurface8* _surface;
@@ -24,16 +23,14 @@ namespace gm::draw {
         Draw() noexcept = default;
 
         void init() noexcept {
-            auto a = gm::engine::direct3d;
+            IDirect3DDevice8* device{ gm::engine::direct3d.device() };
+            auto [width, height] {gm::engine::direct3d.size()};
 
-            _texture_size = { 800, 600 };
-
-            _sprite_id = gm::engine::function[gm::engine::FunctionId::sprite_create_from_screen].call<u32, Real, Real, Real, Real, Real, Real, Real, Real>(0, 0, _texture_size.width, _texture_size.height, false, false, 0, 0);
-            _texture = gm::engine::sprite[_sprite_id].texture(0).data();
+            _sprite_id = gm::engine::function[gm::engine::FunctionId::sprite_create_from_screen].call<u32, Real, Real, Real, Real, Real, Real, Real, Real>(0, 0, width, height, false, false, 0, 0);
+            _texture = gm::engine::sprite[_sprite_id][0].data();
             _texture->GetSurfaceLevel(0, &_surface);
 
-            IDirect3DDevice8* device{ gm::engine::direct3d.device() };
-            device->CreateRenderTarget(_texture_size.width, _texture_size.height, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, true, &_working_surface);
+            device->CreateRenderTarget(width, height, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, true, &_working_surface);
 
             _gdi_font = CreateFont(12, 0, 0, 0, FW_NORMAL, false, false, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Arial"));
             D3DXCreateFont(device, _gdi_font, &_font);

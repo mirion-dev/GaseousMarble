@@ -105,17 +105,15 @@
         <Intrinsic Name="subimage_count" Expression="_subimage_count"/>
         <Intrinsic Name="origin" Expression="_origin"/>
         <Intrinsic Name="bounding_box" Expression="_bounding_box"/>
-        <Intrinsic Name="texture_ids" Expression="_texture_ids"/>
         <DisplayString Condition="subimage_count() == 0">[No subimage]</DisplayString>
         <DisplayString Condition="subimage_count() == 1">[1 subimage]</DisplayString>
         <DisplayString Condition="subimage_count() > 1">[{subimage_count()} subimages]</DisplayString>
         <Expand>
             <Item Name="[origin]">origin()</Item>
             <Item Name="[bounding box]">bounding_box()</Item>
-            <Item Name="[texture ids]">texture_ids(), [subimage_count()] na</Item>
             <ArrayItems>
                 <Size>subimage_count()</Size>
-                <ValuePointer>_bitmaps, na</ValuePointer>
+                <ValuePointer>_texture_ids, na</ValuePointer>
             </ArrayItems>
         </Expand>
     </Type>

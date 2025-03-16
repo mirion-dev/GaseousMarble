@@ -270,23 +270,27 @@ namespace gm::engine {
     public:
         Texture() = delete;
 
-        auto&& image_size(this auto& self) noexcept {
-            assert(self._is_valid);
-            return std::forward_like<decltype(self)>(self._image_size);
+        operator bool() const noexcept {
+            return _is_valid;
         }
 
-        auto&& texture_size(this auto& self) noexcept {
-            assert(self._is_valid);
-            return std::forward_like<decltype(self)>(self._texture_size);
+        gm::core::Size image_size() const noexcept {
+            assert(*this);
+            return _image_size;
+        }
+
+        gm::core::Size texture_size() const noexcept {
+            assert(*this);
+            return _texture_size;
         }
 
         IDirect3DTexture8* data() noexcept {
-            assert(_is_valid);
+            assert(*this);
             return _data;
         }
 
         const IDirect3DTexture8* data() const noexcept {
-            assert(_is_valid);
+            assert(*this);
             return _data;
         }
     };
@@ -315,23 +319,10 @@ namespace gm::engine {
 // interface of GameMaker sprite resources
 namespace gm::engine {
 
-    export class Bitmap {
-        void* _rtti;
-        gm::core::Size _size;
-        void* _data;
-
-    public:
-        Bitmap() = delete;
-
-        auto&& size(this auto&& self) noexcept {
-            return std::forward_like<decltype(self)>(self._size);
-        }
-    };
-
     export class Sprite {
         void* _rtti;
         u32 _subimage_count;
-        Bitmap** _bitmaps;
+        void** _bitmaps;
         gm::core::Point _origin;
         gm::core::BoundingBox _bounding_box;
         void* _masks;
@@ -345,27 +336,17 @@ namespace gm::engine {
             return _subimage_count;
         }
 
-        auto&& origin(this auto&& self) noexcept {
-            return std::forward_like<decltype(self)>(self._origin);
+        gm::core::Point origin() const noexcept {
+            return _origin;
         }
 
-        auto&& bounding_box(this auto&& self) noexcept {
-            return std::forward_like<decltype(self)>(self._bounding_box);
+        const gm::core::BoundingBox& bounding_box() const noexcept {
+            return _bounding_box;
         }
 
-        auto&& bitmap(this auto&& self, u32 index) noexcept {
-            assert(index < self.subimage_count());
-            return std::forward_like<decltype(self)>(*self._bitmaps[index]);
-        }
-
-        auto&& texture(this auto&& self, u32 index) noexcept {
+        auto&& operator[](this auto&& self, u32 index) noexcept {
             assert(index < self.subimage_count());
             return std::forward_like<decltype(self)>(gm::engine::texture[self._texture_ids[index]]);
-        }
-
-        void set_texture(u32 index, u32 id) noexcept {
-            assert(index < subimage_count() && id < gm::engine::texture.count());
-            _texture_ids[index] = id;
         }
     };
 
