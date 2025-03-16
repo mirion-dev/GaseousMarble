@@ -10,11 +10,11 @@
     </Type>
 
     <Type Name="gm::core::BoundingBox">
-        <DisplayString>[({left}, {top}) : ({right}, {bottom})]</DisplayString>
+        <DisplayString>[({left}, {top}) x ({right}, {bottom})]</DisplayString>
     </Type>
 
     <Type Name="gm::engine::BasicString&lt;*&gt;">
-        <Intrinsic Name="header" Expression="(gm::engine::StringHeader*)(_data - sizeof(gm::engine::StringHeader) / sizeof($T1))"/>
+        <Intrinsic Name="header" Expression="(gm::engine::StringHeader*)(_data - _offset)"/>
         <Intrinsic Name="size" Expression="header()->size"/>
         <Intrinsic Name="ref_count" Expression="header()->ref_count"/>
         <DisplayString>{_data, [size()] na}</DisplayString>
@@ -29,7 +29,7 @@
     </Type>
 
     <Type Name="gm::engine::BasicStringView&lt;*&gt;">
-        <Intrinsic Name="header" Expression="(gm::engine::StringHeader*)(_data - sizeof(gm::engine::StringHeader) / sizeof($T1))"/>
+        <Intrinsic Name="header" Expression="(gm::engine::StringHeader*)(_data - _offset)"/>
         <Intrinsic Name="size" Expression="header()->size"/>
         <Intrinsic Name="ref_count" Expression="header()->ref_count"/>
         <DisplayString>{_data, [size()] na}</DisplayString>
@@ -101,37 +101,33 @@
         <DisplayString>{{ size={_size} }}</DisplayString>
     </Type>
 
-    <Type Name="gm::engine::SpriteData">
-        <Intrinsic Name="origin_" Expression="origin"/>
-        <Intrinsic Name="bounding_box_" Expression="bounding_box"/>
-        <Intrinsic Name="texture_ids_" Expression="texture_ids"/>
-        <DisplayString Condition="subimage_count == 0">[No subimage]</DisplayString>
-        <DisplayString Condition="subimage_count == 1">[1 subimage]</DisplayString>
-        <DisplayString Condition="subimage_count > 1">[{subimage_count} subimages]</DisplayString>
+    <Type Name="gm::engine::Sprite">
+        <Intrinsic Name="subimage_count" Expression="_subimage_count"/>
+        <Intrinsic Name="origin" Expression="_origin"/>
+        <Intrinsic Name="bounding_box" Expression="_bounding_box"/>
+        <Intrinsic Name="texture_ids" Expression="_texture_ids"/>
+        <DisplayString Condition="subimage_count() == 0">[No subimage]</DisplayString>
+        <DisplayString Condition="subimage_count() == 1">[1 subimage]</DisplayString>
+        <DisplayString Condition="subimage_count() > 1">[{subimage_count()} subimages]</DisplayString>
         <Expand>
-            <Item Name="[origin]">origin_()</Item>
-            <Item Name="[bounding box]">bounding_box_()</Item>
-            <Item Name="[texture ids]">texture_ids_(), [subimage_count] na</Item>
+            <Item Name="[origin]">origin()</Item>
+            <Item Name="[bounding box]">bounding_box()</Item>
+            <Item Name="[texture ids]">texture_ids(), [subimage_count()] na</Item>
             <ArrayItems>
-                <Size>subimage_count</Size>
-                <ValuePointer>bitmaps, na</ValuePointer>
+                <Size>subimage_count()</Size>
+                <ValuePointer>_bitmaps, na</ValuePointer>
             </ArrayItems>
         </Expand>
     </Type>
 
-    <Type Name="gm::engine::Sprite">
-        <DisplayString>{{ name={_name, na} subimage_count={_data->subimage_count} }}</DisplayString>
-        <Expand>
-            <ExpandedItem>_data</ExpandedItem>
-        </Expand>
-    </Type>
-
     <Type Name="gm::engine::ISprite">
+        <Intrinsic Name="names" Expression="_resource->names"/>
         <Intrinsic Name="count" Expression="_resource->count"/>
         <DisplayString Condition="count() == 0">[No sprite]</DisplayString>
         <DisplayString Condition="count() == 1">[1 sprite]</DisplayString>
         <DisplayString Condition="count() > 1">[{count()} sprites]</DisplayString>
         <Expand>
+            <Item Name="[names]">names(), [count()] na</Item>
             <ArrayItems>
                 <Size>count()</Size>
                 <ValuePointer>_resource->sprites, na</ValuePointer>

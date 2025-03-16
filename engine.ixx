@@ -1,7 +1,7 @@
 module;
 
 #include <assert.h>
-#include <d3dx8tex.h>
+#include <d3dx8.h>
 
 export module gm.engine;
 
@@ -326,62 +326,49 @@ namespace gm::engine {
         }
     };
 
-    struct SpriteData {
-        void* rtti;
-        u32 subimage_count;
-        Bitmap** bitmaps;
-        gm::core::Point origin;
-        gm::core::BoundingBox bounding_box;
-        void* masks;
-        bool seperate_masks;
-        u32* texture_ids;
-    };
-
     export class Sprite {
-        SpriteData* _data;
-        String16View _name;
+        void* _rtti;
+        u32 _subimage_count;
+        Bitmap** _bitmaps;
+        gm::core::Point _origin;
+        gm::core::BoundingBox _bounding_box;
+        void* _masks;
+        bool _seperate_masks;
+        u32* _texture_ids;
 
     public:
         Sprite() = delete;
 
-        Sprite(SpriteData* data, String16View name) noexcept :
-            _data{ data },
-            _name{ name } {}
-
-        std::u16string_view name() const noexcept {
-            return _name;
-        }
-
         u32 subimage_count() const noexcept {
-            return _data->subimage_count;
+            return _subimage_count;
         }
 
         auto&& origin(this auto&& self) noexcept {
-            return std::forward_like<decltype(self)>(self._data->origin);
+            return std::forward_like<decltype(self)>(self._origin);
         }
 
         auto&& bounding_box(this auto&& self) noexcept {
-            return std::forward_like<decltype(self)>(self._data->bounding_box);
+            return std::forward_like<decltype(self)>(self._bounding_box);
         }
 
         auto&& bitmap(this auto&& self, u32 index) noexcept {
             assert(index < self.subimage_count());
-            return std::forward_like<decltype(self)>(*self._data->bitmaps[index]);
+            return std::forward_like<decltype(self)>(*self._bitmaps[index]);
         }
 
         auto&& texture(this auto&& self, u32 index) noexcept {
             assert(index < self.subimage_count());
-            return std::forward_like<decltype(self)>(gm::engine::texture[self._data->texture_ids[index]]);
+            return std::forward_like<decltype(self)>(gm::engine::texture[self._texture_ids[index]]);
         }
 
         void set_texture(u32 index, u32 id) noexcept {
             assert(index < subimage_count() && id < gm::engine::texture.count());
-            _data->texture_ids[index] = id;
+            _texture_ids[index] = id;
         }
     };
 
     struct SpriteResource {
-        SpriteData** sprites;
+        Sprite** sprites;
         String16View* names;
         u32 count;
     };
@@ -392,9 +379,14 @@ namespace gm::engine {
     public:
         ISprite() noexcept = default;
 
-        Sprite operator[](u32 id) const noexcept {
+        Sprite& operator[](u32 id) const noexcept {
             assert(id < count());
-            return { _resource->sprites[id], _resource->names[id] };
+            return *_resource->sprites[id];
+        }
+
+        std::u16string_view name(u32 id) const noexcept {
+            assert(id < count());
+            return _resource->names[id];
         }
 
         u32 count() const noexcept {
