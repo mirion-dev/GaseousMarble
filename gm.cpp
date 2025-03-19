@@ -1,8 +1,8 @@
 module gm;
 
-std::unordered_map<std::string, gm::draw::Font> font_map;
+std::unordered_map<std::string, gm::old::draw::Font> font_map;
 
-gm::draw::Draw draw;
+gm::old::draw::Draw draw;
 
 Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noexcept {
     auto iter{ font_map.find(std::string{ name }) };
@@ -10,7 +10,7 @@ Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noe
         return true;
     }
 
-    gm::draw::Font font{ name, sprite_path, glyph_path };
+    gm::old::draw::Font font{ name, sprite_path, glyph_path };
     if (!font) {
         return false;
     }

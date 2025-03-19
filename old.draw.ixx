@@ -9,7 +9,7 @@ import gm.core;
 import gm.engine;
 
 // Font
-namespace gm::draw {
+namespace gm::old::draw {
 
     class SpriteHandle {
         u32 _id{ static_cast<u32>(-1) };
@@ -121,7 +121,7 @@ namespace gm::draw {
 }
 
 // Draw
-namespace gm::draw {
+namespace gm::old::draw {
 
     export struct DrawSetting {
         Font* font;

@@ -4,6 +4,7 @@ import std;
 import gm.core;
 import gm.engine;
 import gm.old.draw;
+import gm.draw;
 
 #ifdef GASEOUSMARBLE_EXPORTS
 #define GASEOUSMARBLE_API __declspec(dllexport)
