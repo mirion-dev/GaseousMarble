@@ -397,7 +397,7 @@ namespace gm::engine {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
         u64 _;
-        gm::core::Size size;
+        gm::core::Size render_size;
     };
 
     class IDirect3D {
@@ -414,8 +414,8 @@ namespace gm::engine {
             return _resource->device;
         }
 
-        gm::core::Size size() const noexcept {
-            return _resource->size;
+        gm::core::Size render_size() const noexcept {
+            return _resource->render_size;
         }
     };
 
