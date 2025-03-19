@@ -28,9 +28,7 @@ Real gm_height(StringView text) noexcept {
 }
 
 Real gm_draw(Real x, Real y, StringView text) noexcept {
-    //return draw.text(x, y, text);
-    gm::draw::draw.test();
-    return true;
+    return draw.text(x, y, text);
 }
 
 Real gm_free(StringView name) noexcept {

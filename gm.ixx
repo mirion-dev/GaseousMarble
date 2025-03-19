@@ -3,7 +3,6 @@ export module gm;
 import std;
 import gm.core;
 import gm.engine;
-import gm.draw;
 import gm.old.draw;
 
 #ifdef GASEOUSMARBLE_EXPORTS
