@@ -109,8 +109,7 @@ namespace gm::draw {
         }
 
         bool draw(u32 x, u32 y, std::wstring_view text) noexcept {
-            auto [width, height] { gm::engine::direct3d.render_size() };
-            RECT rect{ 0, 0, width, height };
+            RECT rect{ 0, 0, gm::engine::direct3d.render_width(), gm::engine::direct3d.render_height() };
             _font->DrawTextW(text.data(), -1, &rect, _draw_format, _draw_setting.color);
         }
     };

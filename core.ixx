@@ -20,23 +20,6 @@ export {
 
 }
 
-// common structures
-export namespace gm::core {
-
-    struct Size {
-        u32 width, height;
-    };
-
-    struct Point {
-        i32 x, y;
-    };
-
-    struct BoundingBox {
-        i32 left, top, right, bottom;
-    };
-
-}
-
 // utility functions
 export namespace gm::core {
 

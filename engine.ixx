@@ -258,138 +258,6 @@ namespace gm::engine {
 
 }
 
-// interface of GameMaker texture resources
-namespace gm::engine {
-
-    export class Texture {
-        IDirect3DTexture8* _data;
-        gm::core::Size _image_size;
-        gm::core::Size _texture_size;
-        bool _is_valid;
-
-    public:
-        Texture() = delete;
-
-        operator bool() const noexcept {
-            return _is_valid;
-        }
-
-        gm::core::Size image_size() const noexcept {
-            assert(*this);
-            return _image_size;
-        }
-
-        gm::core::Size texture_size() const noexcept {
-            assert(*this);
-            return _texture_size;
-        }
-
-        IDirect3DTexture8* data() noexcept {
-            assert(*this);
-            return _data;
-        }
-
-        const IDirect3DTexture8* data() const noexcept {
-            assert(*this);
-            return _data;
-        }
-    };
-
-    class ITexture {
-        Texture** _textures{ reinterpret_cast<Texture**>(0x0085b3c4) };
-        u32* _count{ reinterpret_cast<u32*>(0x006886f0) };
-
-    public:
-        ITexture() noexcept = default;
-
-        Texture& operator[](u32 id) const noexcept {
-            assert(id < count());
-            return (*_textures)[id];
-        }
-
-        u32 count() const noexcept {
-            return *_count;
-        }
-    };
-
-    export ITexture texture;
-
-}
-
-// interface of GameMaker sprite resources
-namespace gm::engine {
-
-    export class Sprite {
-        void* _rtti;
-        u32 _subimage_count;
-        void** _bitmaps;
-        gm::core::Point _origin;
-        gm::core::BoundingBox _bounding_box;
-        void* _masks;
-        bool _seperate_masks;
-        u32* _texture_ids;
-
-    public:
-        Sprite() = delete;
-
-        u32 subimage_count() const noexcept {
-            return _subimage_count;
-        }
-
-        gm::core::Point origin() const noexcept {
-            return _origin;
-        }
-
-        const gm::core::BoundingBox& bounding_box() const noexcept {
-            return _bounding_box;
-        }
-
-        auto&& operator[](this auto&& self, u32 index) noexcept {
-            assert(index < self.subimage_count());
-            return std::forward_like<decltype(self)>(gm::engine::texture[self._texture_ids[index]]);
-        }
-    };
-
-    struct SpriteResource {
-        Sprite** sprites;
-        String16View* names;
-        u32 count;
-    };
-
-    class ISprite {
-        SpriteResource* _resource{ reinterpret_cast<SpriteResource*>(0x00686ac8) };
-
-    public:
-        ISprite() noexcept = default;
-
-        Sprite& operator[](u32 id) const noexcept {
-            assert(id < count());
-            return *_resource->sprites[id];
-        }
-
-        std::u16string_view name(u32 id) const noexcept {
-            assert(id < count());
-            return _resource->names[id];
-        }
-
-        u32 count() const noexcept {
-            return _resource->count;
-        }
-
-        u32 find(std::u16string_view name) const noexcept {
-            for (u32 id{}; id != _resource->count; ++id) {
-                if (_resource->names[id] == name) {
-                    return id;
-                }
-            }
-            return -1;
-        }
-    };
-
-    export ISprite sprite;
-
-}
-
 // interface of GameMaker Direct3D resources
 namespace gm::engine {
 
@@ -397,7 +265,8 @@ namespace gm::engine {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
         u64 _;
-        gm::core::Size render_size;
+        u32 render_width;
+        u32 render_height;
     };
 
     class IDirect3D {
@@ -414,8 +283,12 @@ namespace gm::engine {
             return _resource->device;
         }
 
-        gm::core::Size render_size() const noexcept {
-            return _resource->render_size;
+        u32 render_width() const noexcept {
+            return _resource->render_width;
+        }
+
+        u32 render_height() const noexcept {
+            return _resource->render_height;
         }
     };
 
