@@ -13,7 +13,7 @@ namespace gm::old::draw {
 
     class SpriteHandle {
         u32 _id{ static_cast<u32>(-1) };
-        
+
     public:
         SpriteHandle() noexcept = default;
 
@@ -80,7 +80,7 @@ namespace gm::old::draw {
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
                 file.read(reinterpret_cast<char*>(&_glyph[ch]), sizeof(_glyph[ch]));
             }
-            
+
             _sprite.reset(gm::engine::function[gm::engine::FunctionId::sprite_add].call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
         }
 
@@ -93,27 +93,27 @@ namespace gm::old::draw {
         }
 
         u16 size() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite);
             return _size;
         }
 
         u16 height() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite);
             return _height;
         }
 
         const std::string& name() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite);
             return _name;
         }
 
         SpriteHandle sprite() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite);
             return _sprite.get();
         }
 
         const auto& glyph() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite);
             return _glyph;
         }
     };
@@ -124,37 +124,24 @@ namespace gm::old::draw {
 namespace gm::old::draw {
 
     export struct DrawSetting {
-        Font* font;
-        u32 color_top;
-        u32 color_bottom;
-        f64 alpha;
-        i8 halign;
-        i8 valign;
-        f64 word_spacing;
-        f64 letter_spacing;
-        f64 max_line_width;
-        f64 line_height;
-        f64 offset_x, offset_y;
-        f64 scale_x, scale_y;
+        Font* font{};
+        u32 color_top{ 0xffffff };
+        u32 color_bottom{ 0xffffff };
+        f64 alpha{ 1 };
+        i8 halign{ -1 };
+        i8 valign{ -1 };
+        f64 word_spacing{};
+        f64 letter_spacing{};
+        f64 max_line_width{};
+        f64 line_height{ 1 };
+        f64 offset_x{};
+        f64 offset_y{};
+        f64 scale_x{ 1 };
+        f64 scale_y{ 1 };
     };
 
     export class Draw {
-        DrawSetting _setting{
-            .font = nullptr,
-            .color_top = 0xffffff,
-            .color_bottom = 0xffffff,
-            .alpha = 1,
-            .halign = -1,
-            .valign = -1,
-            .word_spacing = 0,
-            .letter_spacing = 0,
-            .max_line_width = 0,
-            .line_height = 1,
-            .offset_x = 0,
-            .offset_y = 0,
-            .scale_x = 1,
-            .scale_y = 1
-        };
+        DrawSetting _setting;
 
         std::u32string _filter(std::string_view text) const noexcept {
             std::u32string filtered;

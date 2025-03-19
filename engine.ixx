@@ -26,14 +26,16 @@ namespace gm::engine {
     class BasicStringView {
         static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
 
-        const T* _data;
+        const T* _data{};
 
         auto _header() const noexcept {
             return reinterpret_cast<const StringHeader*>(_data - _offset);
         }
 
     public:
-        BasicStringView(const T* str = {}) noexcept :
+        BasicStringView() noexcept = default;
+
+        BasicStringView(const T* str) noexcept :
             _data{ str } {}
 
         operator std::basic_string_view<T>() const noexcept {
