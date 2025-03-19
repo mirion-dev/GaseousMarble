@@ -89,7 +89,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="draw.ixx" />
     <ClCompile Include="old.draw.ixx" />
     <ClCompile Include="engine.ixx" />
