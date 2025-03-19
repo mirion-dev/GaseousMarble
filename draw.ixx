@@ -12,8 +12,8 @@ import gm.engine;
 
 namespace gm::draw {
 
-    struct FontDeleter {
-        void operator()(ID3DXFont* font) const {
+    struct DXFontDeleter {
+        void operator()(ID3DXFont* font) const noexcept {
             if (font != nullptr) {
                 font->Release();
             }
@@ -21,11 +21,22 @@ namespace gm::draw {
     };
 
     struct DrawSetting {
+        i8 halign{ -1 };
+        i8 valign{ -1 };
         u32 color{ 0xffffffff };
+        f64 alpha{ 1 };
+        f64 word_spacing{};
+        f64 letter_spacing{};
+        f64 max_line_width{};
+        f64 line_height{ 1 };
+        f64 offset_x{};
+        f64 offset_y{};
+        f64 scale_x{ 1 };
+        f64 scale_y{ 1 };
     };
 
     export class Font {
-        std::unique_ptr<ID3DXFont, FontDeleter> _font;
+        std::unique_ptr<ID3DXFont, DXFontDeleter> _font;
         LOGFONTW _attrs{ .lfCharSet{ DEFAULT_CHARSET } };
 
         u32 _draw_format{};
@@ -111,6 +122,7 @@ namespace gm::draw {
         bool draw(u32 x, u32 y, std::wstring_view text) noexcept {
             RECT rect{ 0, 0, gm::engine::direct3d.render_width(), gm::engine::direct3d.render_height() };
             _font->DrawTextW(text.data(), -1, &rect, _draw_format, _draw_setting.color);
+            return true;
         }
     };
 
