@@ -14,17 +14,14 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Header Files\inc">
-      <UniqueIdentifier>{cf292287-2c0f-4381-ab11-c86dea4dfcdf}</UniqueIdentifier>
+      <UniqueIdentifier>{83150f63-45a3-4d36-9ecf-77de26bd6f08}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="core.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="old.draw.ixx">
+    <ClCompile Include="draw.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="engine.ixx">
@@ -33,21 +30,24 @@
     <ClCompile Include="gm.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="draw.ixx">
+    <ClCompile Include="old.draw.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="gm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="inc\FunctionId.inc">
+      <Filter>Header Files\inc</Filter>
+    </None>
+    <None Include="README.md">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="gm.natvis">
       <Filter>Resource Files</Filter>
     </Natvis>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="inc\FunctionId.inc">
-      <Filter>Header Files\inc</Filter>
-    </None>
   </ItemGroup>
 </Project>
