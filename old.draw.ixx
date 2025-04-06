@@ -172,14 +172,14 @@ namespace gm::old::draw {
 
                     if (_setting.max_line_width == 0 || line_width + glyph.left + glyph.width <= max_line_width) {
                         line_width += char_width;
-                        ++i;
                     }
                     else {
                         lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
                         line_width = char_width;
-                        begin = ++i;
+                        begin = i;
                     }
                     last_spacing = spacing;
+                    ++i;
                 }
             }
             lines.emplace_back(std::u32string{ begin, end }, line_width - last_spacing);
