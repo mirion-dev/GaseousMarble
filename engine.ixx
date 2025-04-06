@@ -1,11 +1,9 @@
-﻿module;
+﻿export module gm.engine;
 
-#include <assert.h>
-#include <d3dx8.h>
+import <cassert>;
+import <d3dx8.h>;
 
 #undef interface
-
-export module gm.engine;
 
 import std;
 import gm.core;
@@ -20,22 +18,20 @@ namespace gm::engine {
         u32 size;
     };
 
-    // used for external strings since their lifetime cannot be managed
+    // used for external strings
     export
         template<class T>
     class BasicStringView {
         static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
 
-        const T* _data{};
+        const T* _data;
 
         auto _header() const noexcept {
             return reinterpret_cast<const StringHeader*>(_data - _offset);
         }
 
     public:
-        BasicStringView() noexcept = default;
-
-        BasicStringView(const T* str) noexcept :
+        BasicStringView(const T* str = {}) noexcept :
             _data{ str } {}
 
         operator std::basic_string_view<T>() const noexcept {
@@ -58,7 +54,7 @@ namespace gm::engine {
         }
     };
 
-    // used for the implementation of Value
+    // used for implementing Value
     export
         template<class T>
     class BasicString {
@@ -77,8 +73,8 @@ namespace gm::engine {
     public:
         BasicString() noexcept {
             static BasicString empty_str{ "" };
-
             _data = empty_str._data;
+
             ++_header()->ref_count;
         }
 
@@ -164,7 +160,7 @@ namespace gm::engine {
         String _string;
 
     public:
-        Value(Real real = 0) noexcept :
+        Value(Real real = {}) noexcept :
             _type{ ValueType::real },
             _real{ real } {}
 
@@ -195,7 +191,7 @@ namespace gm::engine {
         bool _require_pro;
 
     public:
-        Function() = delete;
+        Function() noexcept = delete;
 
         std::string_view name() const noexcept {
             return { _name, _name_length };

@@ -1,8 +1,6 @@
-﻿module;
+﻿export module gm.old.draw;
 
-#include <assert.h>
-
-export module gm.old.draw;
+import <cassert>;
 
 import std;
 import gm.core;
@@ -63,7 +61,7 @@ namespace gm::old::draw {
             _name{ name } {
 
             std::ifstream file{ glyph_path.data(), std::ios::binary };
-            if (!file.is_open()) {
+            if (!file) {
                 return;
             }
 
@@ -73,6 +71,8 @@ namespace gm::old::draw {
                 return;
             }
 
+            _sprite.reset(gm::engine::function[gm::engine::FunctionId::sprite_add].call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
+
             file.read(reinterpret_cast<char*>(&_size), sizeof(_size));
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
             while (file) {
@@ -80,8 +80,6 @@ namespace gm::old::draw {
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
                 file.read(reinterpret_cast<char*>(&_glyph[ch]), sizeof(_glyph[ch]));
             }
-
-            _sprite.reset(gm::engine::function[gm::engine::FunctionId::sprite_add].call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
         }
 
         operator bool() const noexcept {
@@ -144,55 +142,45 @@ namespace gm::old::draw {
         DrawSetting _setting;
 
         std::u32string _filter(std::string_view text) const noexcept {
-            std::u32string filtered;
             auto& glyph_map{ _setting.font->glyph() };
-
-            for (u32 ch : gm::core::utf8_decode(text)) {
-                if (ch == ' ' || ch == '\t') {
-                    filtered += ' ';
-                }
-                else if (ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch)) {
-                    filtered += ch;
-                }
-            }
-
-            return filtered;
+            return std::ranges::to<std::u32string>(
+                gm::core::utf8_decode(text)
+                | std::ranges::views::filter([&](u32 ch) { return ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch); })
+            );
         }
 
         auto _split(std::u32string_view text) const noexcept {
             std::vector<std::pair<std::u32string, f64>> lines;
-            auto& glyph_map{ _setting.font->glyph() };
-            f64 max_line_width{ _setting.max_line_width * _setting.scale_x };
-            f64 word_spacing{ _setting.word_spacing * _setting.scale_x };
-            f64 letter_spacing{ _setting.letter_spacing * _setting.scale_x };
 
-            auto begin{ text.begin() }, end{ text.end() }, i{ begin };
+            auto& glyph_map{ _setting.font->glyph() };
+            f64 max_line_width{ _setting.max_line_width / _setting.scale_x };
             f64 line_width{}, last_spacing{};
+            auto begin{ text.begin() }, end{ text.end() }, i{ begin };
             while (i != end) {
                 if (*i == '\n') {
                     lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
                     line_width = last_spacing = 0;
                     begin = ++i;
-                    continue;
-                }
-
-                f64 spacing{ letter_spacing };
-                if (*i == ' ') {
-                    spacing += word_spacing;
-                }
-                auto& glyph{ glyph_map.at(*i) };
-                f64 char_width{ (glyph.left + glyph.width) * _setting.scale_x + spacing };
-
-                if (max_line_width == 0 || line_width + char_width - spacing <= max_line_width) {
-                    line_width += char_width;
                 }
                 else {
-                    lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
-                    line_width = char_width;
-                    begin = i;
+                    auto& glyph{ glyph_map.at(*i) };
+                    f64 spacing{ _setting.letter_spacing };
+                    if (*i == ' ') {
+                        spacing += _setting.word_spacing;
+                    }
+                    f64 char_width{ glyph.left + glyph.width + spacing };
+
+                    if (_setting.max_line_width == 0 || line_width + glyph.left + glyph.width <= max_line_width) {
+                        line_width += char_width;
+                        ++i;
+                    }
+                    else {
+                        lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
+                        line_width = char_width;
+                        begin = ++i;
+                    }
+                    last_spacing = spacing;
                 }
-                last_spacing = spacing;
-                ++i;
             }
             lines.emplace_back(std::u32string{ begin, end }, line_width - last_spacing);
 
@@ -207,8 +195,8 @@ namespace gm::old::draw {
                 glyph.y,
                 glyph.width,
                 _setting.font->height(),
-                x + glyph.left * _setting.scale_x,
-                y,
+                (x + glyph.left) * _setting.scale_x,
+                y * _setting.scale_y,
                 _setting.scale_x,
                 _setting.scale_y,
                 0,
@@ -222,15 +210,13 @@ namespace gm::old::draw {
 
         void _line(f64 x, f64 y, std::u32string_view text) const noexcept {
             auto& glyph_map{ _setting.font->glyph() };
-            f64 word_spacing{ _setting.word_spacing * _setting.scale_x };
-            f64 letter_spacing{ _setting.letter_spacing * _setting.scale_x };
-
             for (u32 ch : text) {
                 auto& glyph{ glyph_map.at(ch) };
                 _glyph(x, y, glyph);
-                x += (glyph.left + glyph.width) * _setting.scale_x + letter_spacing;
+
+                x += glyph.left + glyph.width + _setting.letter_spacing;
                 if (ch == ' ') {
-                    x += word_spacing;
+                    x += _setting.word_spacing;
                 }
             }
         }
@@ -243,18 +229,11 @@ namespace gm::old::draw {
         }
 
         f64 width(std::string_view text) const noexcept {
-            auto lines{ _split(_filter(text)) };
-            f64 max_width{};
-            for (auto& [text, width] : lines) {
-                max_width = std::max(max_width, width);
-            }
-            return max_width;
+            return std::ranges::max(_split(_filter(text)) | std::ranges::views::values) * _setting.scale_x;
         }
 
         f64 height(std::string_view text) const noexcept {
-            auto lines{ _split(_filter(text)) };
-            f64 line_height{ _setting.line_height * _setting.scale_y * _setting.font->size() };
-            return line_height * lines.size();
+            return _setting.line_height * _setting.font->size() * _split(_filter(text)).size() * _setting.scale_y;
         }
 
         bool text(f64 x, f64 y, std::string_view text) const noexcept {
@@ -262,21 +241,16 @@ namespace gm::old::draw {
                 return false;
             }
 
-            std::u32string filtered{ _filter(text) };
-            auto lines{ _split(filtered) };
-            f64 line_height{ _setting.line_height * _setting.scale_y * _setting.font->size() };
-            f64 offset_x{ _setting.offset_x * _setting.scale_x };
-            f64 offset_y{ _setting.offset_y * _setting.scale_y };
+            auto lines{ _split(_filter(text)) };
 
-            x += offset_x;
-            y += offset_y;
-            if (_setting.valign < 0) {
-                // do nothing
-            }
-            else if (_setting.valign == 0) {
+            x += _setting.offset_x;
+            y += _setting.offset_y;
+
+            f64 line_height{ _setting.line_height * _setting.font->size() };
+            if (_setting.valign == 0) {
                 y -= line_height * lines.size() / 2;
             }
-            else {
+            else if (_setting.valign > 0) {
                 y -= line_height * lines.size();
             }
 
@@ -299,7 +273,7 @@ namespace gm::old::draw {
                 }
             }
 
-            return text.size() == filtered.size();
+            return true;
         }
     };
 
