@@ -38,8 +38,8 @@ export namespace gm::core {
                 }
 
                 auto ch{ static_cast<u32>((*i & 0x1f) << 6 | i[1] & 0x3f) };
-                i += 2;
                 co_yield i[1] >> 6 != 0x02 || ch <= 0x7f ? rep_ch : ch;
+                i += 2;
             }
             else if (*i >> 4 == 0x0e) {
                 if (end - i < 2) {
@@ -48,8 +48,8 @@ export namespace gm::core {
                 }
 
                 auto ch{ static_cast<u32>((*i & 0x0f) << 12 | (i[1] & 0x3f) << 6 | i[2] & 0x3f) };
-                i += 3;
                 co_yield i[1] >> 6 != 0x02 || i[2] >> 6 != 0x02 || ch <= 0x7ff || ch >= 0xd800 && ch <= 0xdfff ? rep_ch : ch;
+                i += 3;
             }
             else if (*i >> 3 == 0x1e) {
                 if (end - i < 3) {
@@ -58,12 +58,12 @@ export namespace gm::core {
                 }
 
                 auto ch{ static_cast<u32>((*i & 0x07) << 18 | (i[1] & 0x3f) << 12 | (i[2] & 0x3f) << 6 | i[3] & 0x3f) };
-                i += 4;
                 co_yield i[1] >> 6 != 0x02 || i[2] >> 6 != 0x02 || i[3] >> 6 != 0x02 || ch <= 0xffff || ch >= 0x110000 ? rep_ch : ch;
+                i += 4;
             }
             else {
-                ++i;
                 co_yield rep_ch;
+                ++i;
             }
         }
     }
