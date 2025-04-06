@@ -23,35 +23,48 @@ export {
 // utility functions
 export namespace gm::core {
 
-    // not fully conforming to RFC 3629
     std::generator<u32> utf8_decode(std::string_view str) noexcept {
-        auto i{ reinterpret_cast<const u8*>(str.data()) }, end{ i + str.size() };
-        for (; i != end; ++i) {
-            u32 ch{ 0xfffd };
+        static constexpr u32 rep_ch{ 0xfffd };
 
+        auto i{ reinterpret_cast<const u8*>(str.data()) }, end{ i + str.size() };
+        while (i != end) {
             if (*i >> 7 == 0) {
-                ch = *i;
+                co_yield *i++;
             }
             else if (*i >> 5 == 0x06) {
-                if (i[1] >> 6 == 0x02) {
-                    ch = (*i & 0x1f) << 6 | i[1] & 0x3f;
-                    i += 1;
+                if (end - i < 1) {
+                    co_yield rep_ch;
+                    break;
                 }
+
+                auto ch{ static_cast<u32>((*i & 0x1f) << 6 | i[1] & 0x3f) };
+                i += 2;
+                co_yield i[1] >> 6 != 0x02 || ch <= 0x7f ? rep_ch : ch;
             }
             else if (*i >> 4 == 0x0e) {
-                if (i[1] >> 6 == 0x02 && i[2] >> 6 == 0x02) {
-                    ch = (*i & 0x0f) << 12 | (i[1] & 0x3f) << 6 | i[2] & 0x3f;
-                    i += 2;
+                if (end - i < 2) {
+                    co_yield rep_ch;
+                    break;
                 }
+
+                auto ch{ static_cast<u32>((*i & 0x0f) << 12 | (i[1] & 0x3f) << 6 | i[2] & 0x3f) };
+                i += 3;
+                co_yield i[1] >> 6 != 0x02 || i[2] >> 6 != 0x02 || ch <= 0x7ff || ch >= 0xd800 && ch <= 0xdfff ? rep_ch : ch;
             }
             else if (*i >> 3 == 0x1e) {
-                if (i[1] >> 6 == 0x02 && i[2] >> 6 == 0x02 && i[3] >> 6 == 0x02) {
-                    ch = (*i & 0x07) << 18 | (i[1] & 0x3f) << 12 | (i[2] & 0x3f) << 6 | i[3] & 0x3f;
-                    i += 3;
+                if (end - i < 3) {
+                    co_yield rep_ch;
+                    break;
                 }
-            }
 
-            co_yield ch;
+                auto ch{ static_cast<u32>((*i & 0x07) << 18 | (i[1] & 0x3f) << 12 | (i[2] & 0x3f) << 6 | i[3] & 0x3f) };
+                i += 4;
+                co_yield i[1] >> 6 != 0x02 || i[2] >> 6 != 0x02 || i[3] >> 6 != 0x02 || ch <= 0xffff || ch >= 0x110000 ? rep_ch : ch;
+            }
+            else {
+                ++i;
+                co_yield rep_ch;
+            }
         }
     }
 
