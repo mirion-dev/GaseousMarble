@@ -2,8 +2,11 @@
 
 std::unordered_map<std::string, gm::old::draw::Font> font_map;
 gm::old::draw::Draw draw;
+gm::draw::Draw new_draw;
 
 Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noexcept {
+    new_draw.init();
+
     auto iter{ font_map.find(std::string{ name }) };
     if (iter != font_map.end()) {
         return true;
@@ -27,7 +30,8 @@ Real gm_height(StringView text) noexcept {
 }
 
 Real gm_draw(Real x, Real y, StringView text) noexcept {
-    return draw.text(x, y, text);
+    //return draw.text(x, y, text);
+    return new_draw.text(x, y, text);
 }
 
 Real gm_free(StringView name) noexcept {
