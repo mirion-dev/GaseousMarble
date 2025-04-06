@@ -1,4 +1,4 @@
-display_get_width,
+﻿display_get_width,
 display_get_height,
 display_get_colordepth,
 display_get_frequency,

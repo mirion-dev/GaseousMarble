@@ -1,4 +1,4 @@
-# GaseousMarble
+﻿# GaseousMarble
 
 Draw Unicode texts in GameMaker 8.2.
 

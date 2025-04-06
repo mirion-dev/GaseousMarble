@@ -1,4 +1,4 @@
-module gm;
+﻿module gm;
 
 std::unordered_map<std::string, gm::old::draw::Font> font_map;
 gm::old::draw::Draw draw;

@@ -1,4 +1,4 @@
-export module gm.core;
+﻿export module gm.core;
 
 import std;
 

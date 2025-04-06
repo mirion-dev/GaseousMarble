@@ -1,4 +1,4 @@
-module;
+﻿module;
 
 #include <assert.h>
 #include <d3dx8.h>
