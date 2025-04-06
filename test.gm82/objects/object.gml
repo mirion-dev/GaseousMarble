@@ -4,7 +4,14 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-var dllpath { dllpath = '../Debug/GaseousMarble.dll' }
+var dllpath
+if (parameter_string(1) == '-debug') {
+   dllpath = '../Debug/GaseousMarble.dll'
+}
+else {
+   dllpath = '../Release/GaseousMarble.dll'
+}
+
 global.gm_font = external_define(dllpath, 'gm_font', dll_cdecl, ty_real, 3, ty_string, ty_string, ty_string)
 global.gm_draw = external_define(dllpath, 'gm_draw', dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm_set_font = external_define(dllpath, 'gm_set_font', dll_cdecl, ty_real, 1, ty_string)
