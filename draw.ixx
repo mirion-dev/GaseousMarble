@@ -1,6 +1,10 @@
-﻿export module gm.draw;
+﻿module;
 
-import <d3dx8.h>;
+#include <d2d1.h>
+#include <d3dx8.h>
+#include <dwrite.h>
+
+export module gm.draw;
 
 import gm.core;
 import gm.engine;

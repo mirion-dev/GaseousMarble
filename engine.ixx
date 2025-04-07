@@ -1,9 +1,11 @@
-﻿export module gm.engine;
+﻿module;
 
-import <cassert>;
-import <d3dx8.h>;
+#include <cassert>
+#include <d3dx8.h>
 
 #undef interface
+
+export module gm.engine;
 
 import std;
 import gm.core;

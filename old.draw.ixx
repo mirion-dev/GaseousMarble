@@ -1,6 +1,8 @@
-﻿export module gm.old.draw;
+﻿module;
 
-import <cassert>;
+#include <cassert>
+
+export module gm.old.draw;
 
 import std;
 import gm.core;

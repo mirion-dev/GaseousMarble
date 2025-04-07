@@ -1,4 +1,4 @@
-﻿import <Windows.h>;
+﻿#include <Windows.h>
 
 import gm.draw;
 
