@@ -7,7 +7,7 @@ import gm.engine;
 
 namespace gm::draw {
 
-    export class Draw {
+    class Draw {
         u8* _bitmap{};
         IDirect3DTexture8* _texture;
         ID3DXSprite* _sprite;
@@ -58,5 +58,7 @@ namespace gm::draw {
             return true;
         }
     };
+
+    export Draw draw;
 
 }

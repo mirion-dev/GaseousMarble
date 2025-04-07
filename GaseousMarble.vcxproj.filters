@@ -36,6 +36,9 @@
     <ClCompile Include="gm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="main.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="inc\FunctionId.inc">
