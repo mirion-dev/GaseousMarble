@@ -140,7 +140,7 @@ namespace gm::old::draw {
         f64 scale_y{ 1 };
     };
 
-    export class Draw {
+    class Draw {
         DrawSetting _setting;
 
         std::u32string _filter(std::string_view text) const noexcept {
@@ -278,5 +278,7 @@ namespace gm::old::draw {
             return true;
         }
     };
+
+    export Draw draw;
 
 }
