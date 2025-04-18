@@ -1,9 +1,9 @@
-﻿export module gm.core;
+﻿export module gm:core;
 
 import std;
 
 // fundamental types
-export {
+export namespace gm {
 
     using i8 = std::int8_t;
     using i16 = std::int16_t;
@@ -21,9 +21,9 @@ export {
 }
 
 // utility functions
-export namespace gm::core {
+namespace gm {
 
-    std::generator<u32> utf8_decode(std::string_view str) noexcept {
+    export std::generator<u32> utf8_decode(std::string_view str) noexcept {
         static constexpr u32 rep_ch{ 0xfffd };
 
         auto i{ reinterpret_cast<const u8*>(str.data()) }, end{ i + str.size() };

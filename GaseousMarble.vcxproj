@@ -16,11 +16,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core.ixx" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="gm.ixx" />
     <ClCompile Include="draw.ixx" />
     <ClCompile Include="engine.ixx" />
-    <ClCompile Include="gm.ixx" />
-    <ClCompile Include="old.draw.ixx" />
+    <ClCompile Include="api.ixx" />
+    <ClCompile Include="old.ixx" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="gm.natvis" />

@@ -4,26 +4,29 @@
 #include <d3dx8.h>
 #include <dwrite.h>
 
-export module gm.draw;
+export module gm:draw;
 
-import gm.core;
-import gm.engine;
+import std;
+import :core;
+import :engine;
 
-namespace gm::draw {
+namespace gm {
 
-    class Draw {
-        u8* _bitmap{};
+    export class Draw {
+        u8* _bitmap;
         IDirect3DTexture8* _texture;
         ID3DXSprite* _sprite;
 
     public:
-        void init() noexcept {
+        bool init() noexcept {
             u32 width{ 256 }, height{ 256 };
             _bitmap = new u8[width * height * 4];
 
-            IDirect3DDevice8* device{ gm::engine::IDirect3DResource::device() };
+            IDirect3DDevice8* device{ IDirect3DResource::device() };
             D3DXCreateTexture(device, width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &_texture);
             D3DXCreateSprite(device, &_sprite);
+
+            return true;
         }
 
         ~Draw() noexcept {
@@ -34,7 +37,7 @@ namespace gm::draw {
             }
         }
 
-        bool text(f64 x, f64 y, std::string_view text) noexcept {
+        bool text(f64 x, f64 y, std::string_view text) const noexcept {
             if (_bitmap == nullptr) {
                 return false;
             }
@@ -60,7 +63,5 @@ namespace gm::draw {
             return true;
         }
     };
-
-    export Draw draw;
 
 }

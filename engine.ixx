@@ -5,13 +5,13 @@
 
 #undef interface
 
-export module gm.engine;
+export module gm:engine;
 
 import std;
-import gm.core;
+import :core;
 
 // Delphi UnicodeString
-namespace gm::engine {
+namespace gm {
 
     struct StringHeader {
         u16 code_page;
@@ -134,22 +134,22 @@ namespace gm::engine {
 }
 
 // fundamental types of GML
-export {
+export namespace gm {
 
     using Real = f64;
 
-    using String = gm::engine::BasicString<char>;
-    using String16 = gm::engine::BasicString<char16_t>;
-    using String32 = gm::engine::BasicString<char32_t>;
+    using String = BasicString<char>;
+    using String16 = BasicString<char16_t>;
+    using String32 = BasicString<char32_t>;
 
-    using StringView = gm::engine::BasicStringView<char>;
-    using String16View = gm::engine::BasicStringView<char16_t>;
-    using String32View = gm::engine::BasicStringView<char32_t>;
+    using StringView = BasicStringView<char>;
+    using String16View = BasicStringView<char16_t>;
+    using String32View = BasicStringView<char32_t>;
 
 }
 
 // interface of GameMaker function resources
-namespace gm::engine {
+namespace gm {
 
     enum class ValueType {
         real,
@@ -260,7 +260,7 @@ namespace gm::engine {
 }
 
 // interface of GameMaker Direct3D resources
-namespace gm::engine {
+namespace gm {
 
     struct Direct3DResource {
         IDirect3D8* interface;

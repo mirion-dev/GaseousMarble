@@ -27,14 +27,14 @@
     <ClCompile Include="engine.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="api.ixx">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="old.ixx">
+      <Filter>Header Files</Filter>
+    </ClCompile>
     <ClCompile Include="gm.ixx">
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="old.draw.ixx">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
