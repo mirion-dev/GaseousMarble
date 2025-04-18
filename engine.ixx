@@ -185,39 +185,44 @@ namespace gm::engine {
         }
     };
 
-    export class Function {
-        u8 _name_length;
-        char _name[67];
-        void* _address;
-        i32 _arg_count;
-        bool _require_pro;
+    struct FunctionData {
+        u8 name_length;
+        char name[67];
+        void* address;
+        i32 arg_count;
+        bool require_pro;
+    };
+
+    class IFunction {
+        const FunctionData* _data;
 
     public:
-        Function() noexcept = delete;
+        IFunction(FunctionData* data) noexcept :
+            _data{ data } {};
 
         std::string_view name() const noexcept {
-            return { _name, _name_length };
+            return { _data->name, _data->name_length };
         }
 
         // -1 indicates variable arguments
         i32 arg_count() const noexcept {
-            return _arg_count;
+            return _data->arg_count;
         }
 
         void* address() const noexcept {
-            return _address;
+            return _data->address;
         }
 
         template<class R, class... Args>
         R call(Args... args) const noexcept {
             // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr u32 args_count{ sizeof...(args) };
-            assert(_arg_count == -1 || _arg_count == args_count);
+            assert(_data->arg_count == -1 || _data->arg_count == args_count);
 
             Value args_wrapped[]{ args... }, ret;
             Value* args_ptr{ args_wrapped };
             Value* ret_ptr{ &ret };
-            void* fn_ptr{ _address };
+            void* fn_ptr{ _data->address };
 
             __asm {
                 push args_ptr;
@@ -231,7 +236,7 @@ namespace gm::engine {
     };
 
     struct FunctionResource {
-        Function* functions;
+        FunctionData* data;
         u32 count;
     };
 
@@ -239,22 +244,18 @@ namespace gm::engine {
 #include "inc/FunctionId.inc"
     };
 
-    class IFunction {
-        FunctionResource* _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
+    export class IFunctionResource {
+        static constexpr FunctionResource* _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
 
     public:
-        IFunction() noexcept = default;
-
-        Function& operator[](FunctionId id) const noexcept {
-            return _resource->functions[static_cast<u32>(id)];
+        static IFunction at(FunctionId id) noexcept {
+            return _resource->data + static_cast<i32>(id);
         }
 
-        u32 count() const noexcept {
+        static u32 count() noexcept {
             return _resource->count;
         }
     };
-
-    export IFunction function;
 
 }
 
@@ -269,29 +270,25 @@ namespace gm::engine {
         u32 render_height;
     };
 
-    class IDirect3D {
-        Direct3DResource* _resource{ reinterpret_cast<Direct3DResource*>(0x006886a4) };
+    export class IDirect3DResource {
+        static constexpr Direct3DResource* _resource{ reinterpret_cast<Direct3DResource*>(0x006886a4) };
 
     public:
-        IDirect3D() noexcept = default;
-
-        IDirect3D8* interface() const noexcept {
+        static IDirect3D8* interface() noexcept {
             return _resource->interface;
         }
 
-        IDirect3DDevice8* device() const noexcept {
+        static IDirect3DDevice8* device() noexcept {
             return _resource->device;
         }
 
-        u32 render_width() const noexcept {
+        static u32 render_width() noexcept {
             return _resource->render_width;
         }
 
-        u32 render_height() const noexcept {
+        static u32 render_height() noexcept {
             return _resource->render_height;
         }
     };
-
-    export IDirect3D direct3d;
 
 }

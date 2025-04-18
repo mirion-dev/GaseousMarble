@@ -39,7 +39,8 @@ namespace gm::old::draw {
         using pointer = SpriteHandle;
 
         void operator()(SpriteHandle handle) const noexcept {
-            gm::engine::function[gm::engine::FunctionId::sprite_delete].call<void, Real>(handle.id());
+            gm::engine::IFunctionResource::at(gm::engine::FunctionId::sprite_delete)
+                .call<void, Real>(handle.id());
         }
     };
 
@@ -73,7 +74,8 @@ namespace gm::old::draw {
                 return;
             }
 
-            _sprite.reset(gm::engine::function[gm::engine::FunctionId::sprite_add].call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
+            _sprite.reset(gm::engine::IFunctionResource::at(gm::engine::FunctionId::sprite_add)
+                .call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
 
             file.read(reinterpret_cast<char*>(&_size), sizeof(_size));
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
@@ -190,24 +192,25 @@ namespace gm::old::draw {
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
-            gm::engine::function[gm::engine::FunctionId::draw_sprite_general].call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
-                _setting.font->sprite().id(),
-                0,
-                glyph.x,
-                glyph.y,
-                glyph.width,
-                _setting.font->height(),
-                (x + glyph.left) * _setting.scale_x,
-                y * _setting.scale_y,
-                _setting.scale_x,
-                _setting.scale_y,
-                0,
-                _setting.color_top,
-                _setting.color_top,
-                _setting.color_bottom,
-                _setting.color_bottom,
-                _setting.alpha
-            );
+            gm::engine::IFunctionResource::at(gm::engine::FunctionId::draw_sprite_general)
+                .call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
+                    _setting.font->sprite().id(),
+                    0,
+                    glyph.x,
+                    glyph.y,
+                    glyph.width,
+                    _setting.font->height(),
+                    (x + glyph.left) * _setting.scale_x,
+                    y * _setting.scale_y,
+                    _setting.scale_x,
+                    _setting.scale_y,
+                    0,
+                    _setting.color_top,
+                    _setting.color_top,
+                    _setting.color_bottom,
+                    _setting.color_bottom,
+                    _setting.alpha
+                );
         }
 
         void _line(f64 x, f64 y, std::u32string_view text) const noexcept {

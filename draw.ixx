@@ -17,13 +17,11 @@ namespace gm::draw {
         ID3DXSprite* _sprite;
 
     public:
-        Draw() noexcept = default;
-
         void init() noexcept {
             u32 width{ 256 }, height{ 256 };
             _bitmap = new u8[width * height * 4];
 
-            IDirect3DDevice8* device{ gm::engine::direct3d.device() };
+            IDirect3DDevice8* device{ gm::engine::IDirect3DResource::device() };
             D3DXCreateTexture(device, width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &_texture);
             D3DXCreateSprite(device, &_sprite);
         }

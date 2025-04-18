@@ -32,8 +32,8 @@ API Real gm_height(StringView text) noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    //return gm::old::draw::draw.text(x, y, text);
-    return gm::draw::draw.text(x, y, text);
+    return gm::old::draw::draw.text(x, y, text);
+    //return gm::draw::draw.text(x, y, text);
 }
 
 API Real gm_free(StringView name) noexcept {
