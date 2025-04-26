@@ -45,6 +45,6 @@ This project was inspired by the following open-source projects. Their code wasn
 
 | **Project** | **Referenced** |
 | -- | -- |
-| [FoxWriting](https://github.com/Noisyfox/FoxWriting) | Implemention of text drawing |
+| [FoxWriting](https://github.com/Noisyfox/FoxWriting) | Implementation of text drawing |
 | [GMAPI](https://github.com/snakedeveloper/gmapi) | Engine internal data structures |
 | [GMAPI 8.1](https://github.com/gm-archive/gmapi-8.1) | Magic numbers for engine resources |
