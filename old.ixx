@@ -1,13 +1,15 @@
-﻿export module gm.old.draw;
+﻿module;
 
-import <cassert>;
+#include <cassert>
+
+export module gm:old;
 
 import std;
-import gm.core;
-import gm.engine;
+import :core;
+import :engine;
 
 // Font
-namespace gm::old::draw {
+namespace gm::old {
 
     class SpriteHandle {
         u32 _id{ static_cast<u32>(-1) };
@@ -37,7 +39,8 @@ namespace gm::old::draw {
         using pointer = SpriteHandle;
 
         void operator()(SpriteHandle handle) const noexcept {
-            gm::engine::function[gm::engine::FunctionId::sprite_delete].call<void, Real>(handle.id());
+            IFunctionResource::at(FunctionId::sprite_delete)
+                .call<void, Real>(handle.id());
         }
     };
 
@@ -71,7 +74,8 @@ namespace gm::old::draw {
                 return;
             }
 
-            _sprite.reset(gm::engine::function[gm::engine::FunctionId::sprite_add].call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
+            _sprite.reset(IFunctionResource::at(FunctionId::sprite_add)
+                .call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
 
             file.read(reinterpret_cast<char*>(&_size), sizeof(_size));
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
@@ -119,7 +123,7 @@ namespace gm::old::draw {
 }
 
 // Draw
-namespace gm::old::draw {
+namespace gm::old {
 
     export struct DrawSetting {
         Font* font{};
@@ -144,7 +148,7 @@ namespace gm::old::draw {
         std::u32string _filter(std::string_view text) const noexcept {
             auto& glyph_map{ _setting.font->glyph() };
             return std::ranges::to<std::u32string>(
-                gm::core::utf8_decode(text)
+                utf8_decode(text)
                 | std::ranges::views::filter([&](u32 ch) { return ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch); })
             );
         }
@@ -188,24 +192,25 @@ namespace gm::old::draw {
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
-            gm::engine::function[gm::engine::FunctionId::draw_sprite_general].call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
-                _setting.font->sprite().id(),
-                0,
-                glyph.x,
-                glyph.y,
-                glyph.width,
-                _setting.font->height(),
-                (x + glyph.left) * _setting.scale_x,
-                y * _setting.scale_y,
-                _setting.scale_x,
-                _setting.scale_y,
-                0,
-                _setting.color_top,
-                _setting.color_top,
-                _setting.color_bottom,
-                _setting.color_bottom,
-                _setting.alpha
-            );
+            IFunctionResource::at(FunctionId::draw_sprite_general)
+                .call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
+                    _setting.font->sprite().id(),
+                    0,
+                    glyph.x,
+                    glyph.y,
+                    glyph.width,
+                    _setting.font->height(),
+                    (x + glyph.left) * _setting.scale_x,
+                    y * _setting.scale_y,
+                    _setting.scale_x,
+                    _setting.scale_y,
+                    0,
+                    _setting.color_top,
+                    _setting.color_top,
+                    _setting.color_bottom,
+                    _setting.color_bottom,
+                    _setting.alpha
+                );
         }
 
         void _line(f64 x, f64 y, std::u32string_view text) const noexcept {
@@ -222,8 +227,6 @@ namespace gm::old::draw {
         }
 
     public:
-        Draw() noexcept = default;
-
         auto&& setting(this auto&& self) noexcept {
             return std::forward_like<decltype(self)>(self._setting);
         }
