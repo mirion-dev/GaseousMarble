@@ -1,4 +1,5 @@
 ﻿#define API extern "C" __declspec(dllexport)
+#define OLD_DRAW_ONLY
 
 import std;
 import gm;
@@ -7,10 +8,16 @@ using namespace gm;
 
 std::unordered_map<std::string, old::Font> font_map;
 old::Draw old_draw;
+#ifndef OLD_DRAW_ONLY
 Draw draw;
+#endif
 
 API Real gm_init() noexcept {
+#ifdef OLD_DRAW_ONLY
+    return true;
+#else
     return draw.init();
+#endif
 }
 
 API Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noexcept {
@@ -37,8 +44,11 @@ API Real gm_height(StringView text) noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
+#ifdef OLD_DRAW_ONLY
     return old_draw.text(x, y, text);
-    //return draw.text(x, y, text);
+#else
+    return draw.text(x, y, text);
+#endif
 }
 
 API Real gm_free(StringView name) noexcept {
