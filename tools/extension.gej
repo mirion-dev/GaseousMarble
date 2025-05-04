@@ -1,9 +1,9 @@
 {
 	"name": "GaseousMarble",
-	"folder": "temp_GaseousMarble",
-	"version": "0.10.0",
+	"folder": "GaseousMarble",
+	"version": "0.10.1",
 	"author": "Mirion",
-	"date": "2/22/2025",
+	"date": "5/4/2025",
 	"license": "MIT",
 	"description": "Draw Unicode texts in GameMaker 8.2.",
 	"helpfile": "",
@@ -14,9 +14,18 @@
 			"filename": "GaseousMarble.dll",
 			"origname": "../Release/GaseousMarble.dll",
 			"kind": 1,
-			"init": "",
+			"init": "gm_init",
 			"final": "gm_clear",
 			"functions": [
+				{
+					"name": "gm_init",
+					"extname": "gm_init",
+					"calltype": 12,
+					"helpline": "gm_init()",
+					"hidden": true,
+					"argtypes": [],
+					"returntype": 2
+				},
 				{
 					"name": "gm_font",
 					"extname": "gm_font",
