@@ -13,7 +13,7 @@ import :engine;
 namespace gm {
 
     export class Draw {
-        u8* _bitmap;
+        u8* _bitmap{};
         IDirect3DTexture8* _texture;
         ID3DXSprite* _sprite;
 
@@ -46,12 +46,12 @@ namespace gm {
             std::mt19937 gen{ std::random_device{}() };
             std::uniform_int_distribution<u32> dist(0, 0xffffff);
             for (u32 i{}; i != width * height; ++i) {
-                new (_bitmap + i * 4) u32{ dist(gen) | 0xff000000 };
+                new(_bitmap + i * 4) u32{ dist(gen) | 0xff000000 };
             }
 
             D3DLOCKED_RECT locked;
             _texture->LockRect(0, &locked, nullptr, 0);
-            auto data{ reinterpret_cast<u8*>(locked.pBits) };
+            auto data{ static_cast<u8*>(locked.pBits) };
             for (u32 y{}; y < height; ++y) {
                 memcpy(data + y * locked.Pitch, _bitmap + y * width * 4, width * 4);
             }

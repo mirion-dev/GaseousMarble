@@ -21,8 +21,7 @@ namespace gm {
     };
 
     // used for external strings
-    export
-        template<class T>
+    export template <class T>
     class BasicStringView {
         static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
 
@@ -57,8 +56,7 @@ namespace gm {
     };
 
     // used for implementing Value
-    export
-        template<class T>
+    export template <class T>
     class BasicString {
         static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
 
@@ -166,7 +164,7 @@ namespace gm {
             _type{ ValueType::real },
             _real{ real } {}
 
-        Value(String string) noexcept :
+        Value(const String& string) noexcept :
             _type{ ValueType::string },
             _string{ string } {}
 
@@ -197,7 +195,7 @@ namespace gm {
         const FunctionData* _data;
 
     public:
-        IFunction(FunctionData* data) noexcept :
+        IFunction(const FunctionData* data) noexcept :
             _data{ data } {};
 
         std::string_view name() const noexcept {
@@ -213,7 +211,7 @@ namespace gm {
             return _data->address;
         }
 
-        template<class R, class... Args>
+        template <class R, class... Args>
         R call(Args... args) const noexcept {
             // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr u32 args_count{ sizeof...(args) };
@@ -229,7 +227,7 @@ namespace gm {
                 push args_count;
                 push ret_ptr;
                 call fn_ptr;
-            }
+                }
 
             return static_cast<R>(ret);
         }
@@ -245,7 +243,7 @@ namespace gm {
     };
 
     export class IFunctionResource {
-        static constexpr FunctionResource* _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
+        static constexpr auto _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
 
     public:
         static IFunction at(FunctionId id) noexcept {
@@ -271,7 +269,7 @@ namespace gm {
     };
 
     export class IDirect3DResource {
-        static constexpr Direct3DResource* _resource{ reinterpret_cast<Direct3DResource*>(0x006886a4) };
+        static constexpr auto _resource{ reinterpret_cast<Direct3DResource*>(0x006886a4) };
 
     public:
         static IDirect3D8* interface() noexcept {

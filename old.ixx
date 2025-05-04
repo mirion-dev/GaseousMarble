@@ -39,8 +39,7 @@ namespace gm::old {
         using pointer = SpriteHandle;
 
         void operator()(SpriteHandle handle) const noexcept {
-            IFunctionResource::at(FunctionId::sprite_delete)
-                .call<void, Real>(handle.id());
+            IFunctionResource::at(FunctionId::sprite_delete).call<void, Real>(handle.id());
         }
     };
 
@@ -74,8 +73,17 @@ namespace gm::old {
                 return;
             }
 
-            _sprite.reset(IFunctionResource::at(FunctionId::sprite_add)
-                .call<u32, String, Real, Real, Real, Real, Real>(sprite_path, 1, false, false, 0, 0));
+            _sprite.reset(
+                IFunctionResource::at(FunctionId::sprite_add)
+                .call<u32, String, Real, Real, Real, Real, Real>(
+                    sprite_path,
+                    1,
+                    false,
+                    false,
+                    0,
+                    0
+                )
+            );
 
             file.read(reinterpret_cast<char*>(&_size), sizeof(_size));
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
@@ -149,7 +157,11 @@ namespace gm::old {
             auto& glyph_map{ _setting.font->glyph() };
             return std::ranges::to<std::u32string>(
                 utf8_decode(text)
-                | std::ranges::views::filter([&](u32 ch) { return ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch); })
+                | std::views::filter(
+                    [&](u32 ch) {
+                        return ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch);
+                    }
+                )
             );
         }
 
@@ -232,7 +244,7 @@ namespace gm::old {
         }
 
         f64 width(std::string_view text) const noexcept {
-            return std::ranges::max(_split(_filter(text)) | std::ranges::views::values) * _setting.scale_x;
+            return std::ranges::max(_split(_filter(text)) | std::views::values) * _setting.scale_x;
         }
 
         f64 height(std::string_view text) const noexcept {
@@ -258,7 +270,7 @@ namespace gm::old {
             }
 
             if (_setting.halign < 0) {
-                for (auto& [text, width] : lines) {
+                for (auto& text : std::views::keys(lines)) {
                     _line(x, y, text);
                     y += line_height;
                 }
