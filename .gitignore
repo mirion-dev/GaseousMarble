@@ -364,7 +364,7 @@ FodyWeavers.xsd
 
 # User Ignored
 /*.gm82/cache/
-/*.gm82/plugins/
+/*.gm82/resources/
 /dx81/
 **.exe
 **.gex

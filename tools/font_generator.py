@@ -1,5 +1,6 @@
 from fontTools.ttLib import TTFont
 from PIL import Image, ImageFont, ImageDraw
+import os
 import math
 import struct
 
@@ -12,7 +13,7 @@ class font_generator:
         if isinstance(char_list, str):
             char_list = set(filter(lambda x: x >= 32, map(ord, char_list)))
 
-        if outlined and stroke_width == 0:
+        if outlined and stroke_width <= 0:
             raise Exception('The stroke width of outlined fonts must be greater than 0.')
 
         self.font_path = font_path
@@ -88,6 +89,7 @@ class font_generator:
         if not self.smoothing:
             draw.fontmode = '1'
 
+        os.makedirs(os.path.dirname(glyph_path), exist_ok=True)
         with open(glyph_path, "wb") as file:
             file.write(b'GLY\0' + struct.pack("2H", self.font_size + self.stroke_width * 2, line_height))
 

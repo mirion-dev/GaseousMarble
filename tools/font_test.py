@@ -1,5 +1,5 @@
-import shutil
 from font_generator import font_generator
+import shutil
 
 char_list = '''
 在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源 创建（不管是在GM设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法 绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平 及垂直坐标
@@ -25,5 +25,5 @@ string_width_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函�
 string_height_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函数绘制的字 符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距， w 代表行宽。
 '''
 
-font_generator('simsun.ttf', 18, char_list=None, stroke_width=1).generate('../test.gm82/plugins/font_default.png', '../test.gm82/plugins/font_default.gly')
-shutil.copytree('../test.gm82/plugins', '../example.gm82/plugins')
+font_generator('simsun.ttf', 18, char_list=None, stroke_width=1).generate('../test.gm82/resources/font_default.png', '../test.gm82/resources/font_default.gly')
+shutil.copytree('../test.gm82/resources', '../example.gm82/resources')

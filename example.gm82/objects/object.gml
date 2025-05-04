@@ -4,7 +4,7 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-gm_font('default', './plugins/font_default.png', './plugins/font_default.gly')
+gm_font('default', './resources/font_default.png', './resources/font_default.gly')
 gm_set_font('default')
 gm_set_max_line_width(room_width)
 gm_set_line_height(.875)
