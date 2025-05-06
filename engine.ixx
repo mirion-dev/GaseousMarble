@@ -1,9 +1,6 @@
 ﻿module;
 
 #include <cassert>
-#include <d3dx8.h>
-
-#undef interface
 
 export module gm:engine;
 
@@ -252,40 +249,6 @@ namespace gm {
 
         static u32 count() noexcept {
             return _resource->count;
-        }
-    };
-
-}
-
-// interface of GameMaker Direct3D resources
-namespace gm {
-
-    struct Direct3DResource {
-        IDirect3D8* interface;
-        IDirect3DDevice8* device;
-        u64 _;
-        u32 render_width;
-        u32 render_height;
-    };
-
-    export class IDirect3DResource {
-        static constexpr auto _resource{ reinterpret_cast<Direct3DResource*>(0x006886a4) };
-
-    public:
-        static IDirect3D8* interface() noexcept {
-            return _resource->interface;
-        }
-
-        static IDirect3DDevice8* device() noexcept {
-            return _resource->device;
-        }
-
-        static u32 render_width() noexcept {
-            return _resource->render_width;
-        }
-
-        static u32 render_height() noexcept {
-            return _resource->render_height;
         }
     };
 
