@@ -12,7 +12,9 @@ import :engine;
 namespace gm {
 
     class SpriteHandle {
-        u32 _id{ static_cast<u32>(-1) };
+        static constexpr auto _null_id{ static_cast<u32>(-1) };
+
+        u32 _id{ _null_id };
 
     public:
         SpriteHandle() noexcept = default;
@@ -23,7 +25,7 @@ namespace gm {
             _id{ id } {}
 
         operator bool() const noexcept {
-            return _id != -1;
+            return _id != _null_id;
         }
 
         bool operator==(SpriteHandle other) const noexcept {
@@ -38,7 +40,7 @@ namespace gm {
     struct SpriteDeleter {
         using pointer = SpriteHandle;
 
-        void operator()(SpriteHandle handle) const noexcept {
+        void operator()(pointer handle) const noexcept {
             IFunctionResource::at(FunctionId::sprite_delete).call<void, Real>(handle.id());
         }
     };

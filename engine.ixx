@@ -17,47 +17,46 @@ namespace gm {
         u32 size;
     };
 
-    // used for external strings
-    export template <class T>
+    export template <class Ch>
     class BasicStringView {
-        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
+        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(Ch) };
 
-        const T* _data;
+        const Ch* _data;
 
         auto _header() const noexcept {
             return reinterpret_cast<const StringHeader*>(_data - _offset);
         }
 
     public:
-        BasicStringView(const T* str = {}) noexcept :
-            _data{ str } {}
+        // `str` must point to a Delphi UnicodeString structure or accessing its header is undefined
+        BasicStringView(std::basic_string_view<Ch> str = {}) noexcept :
+            _data{ str.data() } {}
 
-        operator std::basic_string_view<T>() const noexcept {
-            assert(_data != nullptr);
+        operator std::basic_string_view<Ch>() const noexcept {
             return { _data, _header()->size };
         }
 
         u32 size() const noexcept {
-            assert(_data != nullptr);
             return _header()->size;
         }
 
         u32 ref_count() const noexcept {
-            assert(_data != nullptr);
             return _header()->ref_count;
         }
 
-        const T* data() const noexcept {
+        const Ch* data() const noexcept {
             return _data;
         }
     };
 
-    // used for implementing Value
-    export template <class T>
+    export template <class Ch>
     class BasicString {
-        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(T) };
+        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(Ch) };
+        static constexpr u16 _cp_utf8{ 65001 };
+        static constexpr u16 _cp_utf16{ 1200 };
+        static constexpr u16 _cp_utf32{ 12000 };
 
-        T* _data;
+        Ch* _data;
 
         auto _header() noexcept {
             return reinterpret_cast<StringHeader*>(_data - _offset);
@@ -75,16 +74,16 @@ namespace gm {
             ++_header()->ref_count;
         }
 
-        BasicString(std::basic_string_view<T> str) noexcept :
-            _data{ new T[_offset + str.size() + 1] + _offset } {
+        BasicString(std::basic_string_view<Ch> str) noexcept :
+            _data{ new Ch[_offset + str.size() + 1] + _offset } {
 
             new(_header()) StringHeader{
-                sizeof(T) == 1 ? 65001 : sizeof(T) == 2 ? 1200 : 12000,
-                sizeof(T),
+                sizeof(Ch) == 1 ? _cp_utf8 : sizeof(Ch) == 2 ? _cp_utf16 : _cp_utf32,
+                sizeof(Ch),
                 1,
                 str.size()
             };
-            new(std::uninitialized_copy(str.begin(), str.end(), _data)) T{};
+            new(std::uninitialized_copy(str.begin(), str.end(), _data)) Ch{};
         }
 
         BasicString(const BasicString& other) noexcept :
@@ -105,11 +104,11 @@ namespace gm {
             return *this;
         }
 
-        operator BasicStringView<T>() const noexcept {
+        operator BasicStringView<Ch>() const noexcept {
             return _data;
         }
 
-        operator std::basic_string_view<T>() const noexcept {
+        operator std::basic_string_view<Ch>() const noexcept {
             return { _data, _header()->size };
         }
 
@@ -121,7 +120,7 @@ namespace gm {
             return _header()->ref_count;
         }
 
-        const T* data() const noexcept {
+        const Ch* data() const noexcept {
             return _data;
         }
     };
@@ -163,6 +162,7 @@ namespace gm {
 
         Value(const String& string) noexcept :
             _type{ ValueType::string },
+            _real{},
             _string{ string } {}
 
         operator Real() const noexcept {
@@ -188,7 +188,7 @@ namespace gm {
         bool require_pro;
     };
 
-    class IFunction {
+    export class IFunction {
         const FunctionData* _data;
 
     public:
