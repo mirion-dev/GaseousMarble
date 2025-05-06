@@ -236,7 +236,7 @@ namespace gm {
     };
 
     export enum class FunctionId {
-#include "inc/FunctionId.inc"
+#include "FunctionId.inc"
     };
 
     export class IFunctionResource {

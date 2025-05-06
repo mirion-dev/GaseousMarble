@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="inc\FunctionId.inc" />
+    <None Include="FunctionId.inc" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
