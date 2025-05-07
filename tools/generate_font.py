@@ -6,7 +6,7 @@ import struct
 
 
 def generate_font(
-    font_path_list: str | list[str], sprite_path: str, glyph_path: str, *,
+    font_path_list: str | list[str], sprite_path: str, *,
     font_size=16, char_list: str | None = None, dense=False, smoothing=True, fill='white', stroke_width=0, stroke_fill='black'
 ):
     if font_size <= 0:
@@ -19,7 +19,7 @@ def generate_font(
 
     font_path_list = list(map(os.path.abspath, font_path_list))
     sprite_path = os.path.abspath(sprite_path)
-    glyph_path = os.path.abspath(glyph_path)
+    glyph_path = os.path.splitext(sprite_path)[0] + '.gly'
 
     '''
     counts used code points
@@ -94,8 +94,8 @@ def generate_font(
     generates the font sprite and glyph data
     '''
     os.makedirs(os.path.dirname(glyph_path), exist_ok=True)
-    with open(glyph_path, 'wb') as file:
-        file.write(b'GLY\0' + struct.pack('hH', min_top, line_height))
+    with open(glyph_path, 'wb+') as file:
+        file.write(b'GLY\0' + struct.pack('Hh', line_height, min_top))
 
         x = 0
         y = -min_top

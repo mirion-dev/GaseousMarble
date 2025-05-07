@@ -26,8 +26,8 @@ string_height_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函
 '''
 
 generate_font(
-    'simsun.ttf', '../test.gm82/resources/font_default.png', '../test.gm82/resources/font_default.gly',
+    'simsun.ttf', '../test.gm82/resources/font_default.png',
     font_size=18, char_list=char_list, stroke_width=1
 )
 
-shutil.copytree('../test.gm82/resources', '../example.gm82/resources')
+shutil.copytree('../test.gm82/resources', '../example.gm82/resources', dirs_exist_ok=True)
