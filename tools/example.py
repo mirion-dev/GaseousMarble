@@ -1,4 +1,4 @@
-from font_generator import font_generator
+from generate_font import *
 import shutil
 
 char_list = '''
@@ -25,5 +25,9 @@ string_width_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函�
 string_height_ext(string,sep,w) 当前字体及将要通过 draw_text_ext () 函数绘制的字 符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距， w 代表行宽。
 '''
 
-font_generator('simsun.ttf', 18, char_list=None, stroke_width=1).generate('../test.gm82/resources/font_default.png', '../test.gm82/resources/font_default.gly')
+generate_font(
+    'simsun.ttf', '../test.gm82/resources/font_default.png', '../test.gm82/resources/font_default.gly',
+    font_size=18, char_list=char_list, stroke_width=1
+)
+
 shutil.copytree('../test.gm82/resources', '../example.gm82/resources')

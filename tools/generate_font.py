@@ -7,12 +7,12 @@ import struct
 
 def generate_font(
     font_path_list: str | list[str], sprite_path: str, glyph_path: str, *,
-    font_size=16, char_list: str | None = None, dense=False, smoothing=True, outline=False, stroke_width=0
+    font_size=16, char_list: str | None = None, dense=False, smoothing=True, fill='white', stroke_width=0, stroke_fill='black'
 ):
     if font_size <= 0:
-        raise Exception('The font size must > 0.')
-    if outline and stroke_width <= 0:
-        raise Exception('The stroke width of an outlined font must > 0.')
+        raise Exception('The font size should be positive.')
+    if stroke_width < 0:
+        raise Exception('The stroke width should be non-negative.')
 
     if isinstance(font_path_list, str):
         font_path_list = [font_path_list]
@@ -110,12 +110,9 @@ def generate_font(
                 file.write(struct.pack('IHHHh', i, x, y, w, l))
 
                 pos = (x - l, y)
-                if outline:
-                    draw.text(pos, chr(i), '#0000', stroke_width=stroke_width, stroke_fill='white')
-                else:
-                    draw.rectangle(((x - 1, y + t - 1), (x + w, y + b)), outline='red')
-                    draw.text(pos, chr(i), 'white', stroke_width=stroke_width, stroke_fill='blue')
-                    draw.text(pos, chr(i), 'white')
+                # draw.rectangle(((x - 1, y + t - 1), (x + w, y + b)), outline='red')
+                draw.text(pos, chr(i), fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
+                draw.text(pos, chr(i), fill)
 
                 x += w + glyph_spacing
 
