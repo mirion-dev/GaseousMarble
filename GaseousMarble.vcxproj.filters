@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\inc">
-      <UniqueIdentifier>{83150f63-45a3-4d36-9ecf-77de26bd6f08}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core.ixx">
@@ -30,18 +27,15 @@
     <ClCompile Include="api.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="old.ixx">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="gm.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="inc\FunctionId.inc">
-      <Filter>Header Files\inc</Filter>
-    </None>
     <None Include="README.md">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="FunctionId.inc">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
