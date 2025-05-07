@@ -8,17 +8,18 @@ using namespace gm;
 std::unordered_map<std::string, Font> font_map;
 Draw draw;
 
+// reserve for new Draw
 API Real gm_init() noexcept {
     return true;
 }
 
-API Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noexcept {
+API Real gm_font(StringView name, StringView sprite_path) noexcept {
     auto iter{ font_map.find(std::string{ name }) };
     if (iter != font_map.end()) {
         return true;
     }
 
-    Font font{ name, sprite_path, glyph_path };
+    Font font{ name, sprite_path };
     if (!font) {
         return false;
     }
@@ -99,15 +100,6 @@ API Real gm_set_align(Real halign, Real valign) noexcept {
     return true;
 }
 
-API Real gm_set_max_line_width(Real max_width) noexcept {
-    if (max_width < 0) {
-        return false;
-    }
-
-    draw.setting().max_line_width = std::abs(max_width);
-    return true;
-}
-
 API Real gm_set_letter_spacing(Real spacing) noexcept {
     draw.setting().letter_spacing = spacing;
     return true;
@@ -124,6 +116,15 @@ API Real gm_set_line_height(Real height) noexcept {
     }
 
     draw.setting().line_height = height;
+    return true;
+}
+
+API Real gm_set_max_line_length(Real length) noexcept {
+    if (length < 0) {
+        return false;
+    }
+
+    draw.setting().max_line_length = std::abs(length);
     return true;
 }
 
@@ -168,10 +169,6 @@ API Real gm_get_valign() noexcept {
     return draw.setting().valign;
 }
 
-API Real gm_get_max_line_width() noexcept {
-    return draw.setting().max_line_width;
-}
-
 API Real gm_get_letter_spacing() noexcept {
     return draw.setting().letter_spacing;
 }
@@ -182,6 +179,10 @@ API Real gm_get_word_spacing() noexcept {
 
 API Real gm_get_line_height() noexcept {
     return draw.setting().line_height;
+}
+
+API Real gm_get_max_line_length() noexcept {
+    return draw.setting().max_line_length;
 }
 
 API Real gm_get_offset_x() noexcept {

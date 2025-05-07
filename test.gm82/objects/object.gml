@@ -4,25 +4,25 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-var dllpath
+var dll_path
 if (parameter_string(1) == '-debug') {
-   dllpath = '../Debug/GaseousMarble.dll'
+   dll_path = '../Debug/GaseousMarble.dll'
 }
 else {
-   dllpath = '../Release/GaseousMarble.dll'
+   dll_path = '../Release/GaseousMarble.dll'
 }
 
-global.gm_init = external_define(dllpath, 'gm_init', dll_cdecl, ty_real, 0)
-global.gm_font = external_define(dllpath, 'gm_font', dll_cdecl, ty_real, 3, ty_string, ty_string, ty_string)
-global.gm_draw = external_define(dllpath, 'gm_draw', dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
-global.gm_set_font = external_define(dllpath, 'gm_set_font', dll_cdecl, ty_real, 1, ty_string)
-global.gm_set_max_line_width = external_define(dllpath, 'gm_set_max_line_width', dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_line_height = external_define(dllpath, 'gm_set_line_height', dll_cdecl, ty_real, 1, ty_real)
+global.gm_init = external_define(dll_path, 'gm_init', dll_cdecl, ty_real, 0)
+global.gm_font = external_define(dll_path, 'gm_font', dll_cdecl, ty_real, 2, ty_string, ty_string)
+global.gm_draw = external_define(dll_path, 'gm_draw', dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
+global.gm_set_font = external_define(dll_path, 'gm_set_font', dll_cdecl, ty_real, 1, ty_string)
+global.gm_set_line_height = external_define(dll_path, 'gm_set_line_height', dll_cdecl, ty_real, 1, ty_real)
+global.gm_set_max_line_length = external_define(dll_path, 'gm_set_max_line_length', dll_cdecl, ty_real, 1, ty_real)
 
 external_call(global.gm_init)
-external_call(global.gm_font, 'default', './resources/font_default.png', './resources/font_default.gly')
+external_call(global.gm_font, 'default', './resources/font_default.png')
 external_call(global.gm_set_font, 'default')
-external_call(global.gm_set_max_line_width, room_width)
+external_call(global.gm_set_max_line_length, room_width)
 external_call(global.gm_set_line_height, .875)
 draw_set_color(c_white)
 #define Keyboard_82

@@ -48,23 +48,24 @@ namespace gm {
     export struct GlyphData {
         u16 x, y;
         u16 width;
-        i16 left;
+        i16 offset_x;
     };
 
     export class Font {
-        u16 _size;
         u16 _height;
+        i16 _offset_y;
         std::string _name;
         std::unique_ptr<SpriteHandle, SpriteDeleter> _sprite;
-        std::unordered_map<u32, GlyphData> _glyph;
+        std::unordered_map<u32, GlyphData> _glyph_map;
 
     public:
         Font() noexcept = default;
 
-        Font(std::string_view name, std::string_view sprite_path, std::string_view glyph_path) noexcept :
+        Font(std::string_view name, std::string_view sprite_path) noexcept :
             _name{ name } {
 
-            std::ifstream file{ glyph_path.data(), std::ios::binary };
+            auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
+            std::ifstream file{ glyph_path, std::ios::binary };
             if (!file) {
                 return;
             }
@@ -87,12 +88,12 @@ namespace gm {
                 )
             );
 
-            file.read(reinterpret_cast<char*>(&_size), sizeof(_size));
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
+            file.read(reinterpret_cast<char*>(&_offset_y), sizeof(_offset_y));
             while (file) {
-                u16 ch;
+                u32 ch;
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
-                file.read(reinterpret_cast<char*>(&_glyph[ch]), sizeof(_glyph[ch]));
+                file.read(reinterpret_cast<char*>(&_glyph_map[ch]), sizeof(_glyph_map[ch]));
             }
         }
 
@@ -104,29 +105,29 @@ namespace gm {
             return _sprite == other._sprite;
         }
 
-        u16 size() const noexcept {
-            assert(_sprite);
-            return _size;
-        }
-
         u16 height() const noexcept {
-            assert(_sprite);
+            assert(_sprite != nullptr);
             return _height;
         }
 
+        i16 offset_y() const noexcept {
+            assert(_sprite != nullptr);
+            return _offset_y;
+        }
+
         const std::string& name() const noexcept {
-            assert(_sprite);
+            assert(_sprite != nullptr);
             return _name;
         }
 
         SpriteHandle sprite() const noexcept {
-            assert(_sprite);
+            assert(_sprite != nullptr);
             return _sprite.get();
         }
 
-        const auto& glyph() const noexcept {
-            assert(_sprite);
-            return _glyph;
+        const auto& glyph_map() const noexcept {
+            assert(_sprite != nullptr);
+            return _glyph_map;
         }
     };
 
@@ -142,10 +143,10 @@ namespace gm {
         f64 alpha{ 1 };
         i8 halign{ -1 };
         i8 valign{ -1 };
-        f64 word_spacing{};
         f64 letter_spacing{};
-        f64 max_line_width{};
+        f64 word_spacing{};
         f64 line_height{ 1 };
+        f64 max_line_length{};
         f64 offset_x{};
         f64 offset_y{};
         f64 scale_x{ 1 };
@@ -156,51 +157,48 @@ namespace gm {
         DrawSetting _setting;
 
         std::u32string _filter(std::string_view text) const noexcept {
-            auto& glyph_map{ _setting.font->glyph() };
+            auto& glyph_map{ _setting.font->glyph_map() };
             return std::ranges::to<std::u32string>(
                 utf8_decode(text)
-                | std::views::filter(
-                    [&](u32 ch) {
-                        return ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch);
-                    }
-                )
+                | std::views::filter([&](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
             );
         }
 
         auto _split(std::u32string_view text) const noexcept {
             std::vector<std::pair<std::u32string, f64>> lines;
 
-            auto& glyph_map{ _setting.font->glyph() };
-            f64 max_line_width{ _setting.max_line_width / _setting.scale_x };
-            f64 line_width{}, last_spacing{};
+            auto& glyph_map{ _setting.font->glyph_map() };
+            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
+
+            f64 line_length{}, last_spacing{};
             auto begin{ text.begin() }, end{ text.end() }, i{ begin };
             while (i != end) {
                 if (*i == '\n') {
-                    lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
-                    line_width = last_spacing = 0;
+                    lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
+                    line_length = last_spacing = 0;
                     begin = ++i;
                 }
                 else {
                     auto& glyph{ glyph_map.at(*i) };
+                    f64 char_width{ static_cast<f64>(glyph.offset_x + glyph.width) };
                     f64 spacing{ _setting.letter_spacing };
                     if (*i == ' ') {
                         spacing += _setting.word_spacing;
                     }
-                    f64 char_width{ glyph.left + glyph.width + spacing };
 
-                    if (_setting.max_line_width == 0 || line_width + glyph.left + glyph.width <= max_line_width) {
-                        line_width += char_width;
+                    if (_setting.max_line_length == 0 || line_length + char_width <= max_line_length) {
+                        line_length += char_width + spacing;
                     }
                     else {
-                        lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
-                        line_width = char_width;
+                        lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
+                        line_length = char_width + spacing;
                         begin = i;
                     }
                     last_spacing = spacing;
                     ++i;
                 }
             }
-            lines.emplace_back(std::u32string{ begin, end }, line_width - last_spacing);
+            lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing);
 
             return lines;
         }
@@ -214,7 +212,7 @@ namespace gm {
                     glyph.y,
                     glyph.width,
                     _setting.font->height(),
-                    (x + glyph.left) * _setting.scale_x,
+                    (x + glyph.offset_x) * _setting.scale_x,
                     y * _setting.scale_y,
                     _setting.scale_x,
                     _setting.scale_y,
@@ -228,12 +226,12 @@ namespace gm {
         }
 
         void _line(f64 x, f64 y, std::u32string_view text) const noexcept {
-            auto& glyph_map{ _setting.font->glyph() };
+            auto& glyph_map{ _setting.font->glyph_map() };
             for (u32 ch : text) {
                 auto& glyph{ glyph_map.at(ch) };
                 _glyph(x, y, glyph);
 
-                x += glyph.left + glyph.width + _setting.letter_spacing;
+                x += glyph.offset_x + glyph.width + _setting.letter_spacing;
                 if (ch == ' ') {
                     x += _setting.word_spacing;
                 }
@@ -250,7 +248,7 @@ namespace gm {
         }
 
         f64 height(std::string_view text) const noexcept {
-            return _setting.line_height * _setting.font->size() * _split(_filter(text)).size() * _setting.scale_y;
+            return _setting.line_height * _setting.font->height() * _split(_filter(text)).size() * _setting.scale_y;
         }
 
         bool text(f64 x, f64 y, std::string_view text) const noexcept {
@@ -261,9 +259,9 @@ namespace gm {
             auto lines{ _split(_filter(text)) };
 
             x += _setting.offset_x;
-            y += _setting.offset_y;
+            y += _setting.offset_y + _setting.font->offset_y();
 
-            f64 line_height{ _setting.line_height * _setting.font->size() };
+            f64 line_height{ _setting.line_height * _setting.font->height() };
             if (_setting.valign == 0) {
                 y -= line_height * lines.size() / 2;
             }
