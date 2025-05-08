@@ -7,7 +7,7 @@ export module gm:engine;
 import std;
 import :core;
 
-// Delphi UnicodeString
+// fundamental types of GML
 namespace gm {
 
     struct StringHeader {
@@ -125,20 +125,17 @@ namespace gm {
         }
     };
 
-}
+    export {
+        using Real = f64;
 
-// fundamental types of GML
-export namespace gm {
+        using String = BasicString<char>;
+        using String16 = BasicString<char16_t>;
+        using String32 = BasicString<char32_t>;
 
-    using Real = f64;
-
-    using String = BasicString<char>;
-    using String16 = BasicString<char16_t>;
-    using String32 = BasicString<char32_t>;
-
-    using StringView = BasicStringView<char>;
-    using String16View = BasicStringView<char16_t>;
-    using String32View = BasicStringView<char32_t>;
+        using StringView = BasicStringView<char>;
+        using String16View = BasicStringView<char16_t>;
+        using String32View = BasicStringView<char32_t>;
+    }
 
 }
 
@@ -188,6 +185,15 @@ namespace gm {
         bool require_pro;
     };
 
+    struct FunctionResource {
+        FunctionData* data;
+        u32 count;
+    };
+
+    export enum class FunctionId {
+#include "FunctionId.inc"
+    };
+
     export class IFunction {
         const FunctionData* _data;
 
@@ -228,15 +234,6 @@ namespace gm {
 
             return static_cast<R>(ret);
         }
-    };
-
-    struct FunctionResource {
-        FunctionData* data;
-        u32 count;
-    };
-
-    export enum class FunctionId {
-#include "FunctionId.inc"
     };
 
     export class IFunctionResource {

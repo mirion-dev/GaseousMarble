@@ -8,7 +8,7 @@ using namespace gm;
 std::unordered_map<std::string, Font> font_map;
 Draw draw;
 
-// reserve for new Draw
+// reserve for the new Draw
 API Real gm_init() noexcept {
     return true;
 }

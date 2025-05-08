@@ -40,37 +40,30 @@
         </Expand>
     </Type>
 
-    <Type Name="gm::Function">
-        <Intrinsic Name="address" Expression="_address"/>
-        <DisplayString Condition="_arg_count == -1">{_name, sb}(...)</DisplayString>
-        <DisplayString Condition="_arg_count == 0">{_name, sb}()</DisplayString>
-        <DisplayString Condition="_arg_count == 1">{_name, sb}(&lt;1 arg&gt;)</DisplayString>
-        <DisplayString Condition="_arg_count >= 2">{_name, sb}(&lt;{_arg_count} args&gt;)</DisplayString>
+    <Type Name="gm::IFunction">
+        <Intrinsic Name="name" Expression="_data->name"/>
+        <Intrinsic Name="address" Expression="_data->address"/>
+        <Intrinsic Name="arg_count" Expression="_data->arg_count"/>
+        <DisplayString Condition="arg_count() == -1">{name(), sb}(...)</DisplayString>
+        <DisplayString Condition="arg_count() == 0">{name(), sb}()</DisplayString>
+        <DisplayString Condition="arg_count() == 1">{name(), sb}(&lt;1 arg&gt;)</DisplayString>
+        <DisplayString Condition="arg_count() >= 2">{name(), sb}(&lt;{arg_count()} args&gt;)</DisplayString>
         <Expand>
             <Item Name="[address]">address(), nvo</Item>
         </Expand>
     </Type>
 
-    <Type Name="gm::IFunction">
-        <Intrinsic Name="count" Expression="_resource->count"/>
+    <Type Name="gm::IFunctionResource">
+        <Intrinsic Name="resource" Expression="(gm::FunctionResource*)0x00686b1c"/>
+        <Intrinsic Name="count" Expression="resource()->count"/>
         <DisplayString Condition="count() == 0">[No function]</DisplayString>
         <DisplayString Condition="count() == 1">[1 function]</DisplayString>
         <DisplayString Condition="count() > 1">[{count()} functions]</DisplayString>
         <Expand>
             <ArrayItems>
                 <Size>count()</Size>
-                <ValuePointer>_resource->functions</ValuePointer>
+                <ValuePointer>resource()->data</ValuePointer>
             </ArrayItems>
-        </Expand>
-    </Type>
-
-    <Type Name="gm::IDirect3D">
-        <Intrinsic Name="render_width" Expression="_resource->render_width"/>
-        <Intrinsic Name="render_height" Expression="_resource->render_height"/>
-        <DisplayString>{{ interface={_resource->interface, nvo} device={_resource->device, nvo} }}</DisplayString>
-        <Expand>
-            <Item Name="[render width]">render_width()</Item>
-            <Item Name="[render height]">render_height()</Item>
         </Expand>
     </Type>
 
