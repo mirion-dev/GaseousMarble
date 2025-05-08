@@ -13,35 +13,23 @@ API Real gm_init() noexcept {
     return true;
 }
 
-API Real gm_font(StringView name, StringView sprite_path) noexcept {
-    auto iter{ font_map.find(std::string{ name }) };
+API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
+    auto iter{ font_map.find(std::string{ font_name }) };
     if (iter != font_map.end()) {
         return true;
     }
 
-    Font font{ name, sprite_path };
+    Font font{ font_name, sprite_path };
     if (!font) {
         return false;
     }
 
-    font_map.emplace_hint(iter, name, std::move(font));
+    font_map.emplace_hint(iter, font_name, std::move(font));
     return true;
 }
 
-API Real gm_width(StringView text) noexcept {
-    return draw.width(text);
-}
-
-API Real gm_height(StringView text) noexcept {
-    return draw.height(text);
-}
-
-API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    return draw.text(x, y, text);
-}
-
-API Real gm_free(StringView name) noexcept {
-    auto iter{ font_map.find(std::string{ name }) };
+API Real gm_free(StringView font_name) noexcept {
+    auto iter{ font_map.find(std::string{ font_name }) };
     if (iter == font_map.end() || &iter->second == draw.setting().font) {
         return false;
     }
@@ -55,8 +43,20 @@ API Real gm_clear() noexcept {
     return true;
 }
 
-API Real gm_set_font(StringView name) noexcept {
-    auto iter{ font_map.find(std::string{ name }) };
+API Real gm_draw(Real x, Real y, StringView text) noexcept {
+    return draw.text(x, y, text);
+}
+
+API Real gm_width(StringView text) noexcept {
+    return draw.width(text);
+}
+
+API Real gm_height(StringView text) noexcept {
+    return draw.height(text);
+}
+
+API Real gm_set_font(StringView font_name) noexcept {
+    auto iter{ font_map.find(std::string{ font_name }) };
     if (iter == font_map.end()) {
         return false;
     }

@@ -61,8 +61,8 @@ namespace gm {
     public:
         Font() noexcept = default;
 
-        Font(std::string_view name, std::string_view sprite_path) noexcept :
-            _name{ name } {
+        Font(std::string_view font_name, std::string_view sprite_path) noexcept :
+            _name{ font_name } {
 
             auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
             std::ifstream file{ glyph_path, std::ios::binary };

@@ -8,18 +8,18 @@ GaseousMarble provides following functions for drawing texts
 
 | **Function** | **Description** |
 | -- | -- |
-| `gm_font(name, sprite_path)` | Adds a font. The font sprite and glyph data can be generated using `tools/generate_font.py`. |
+| `gm_font(font_name, sprite_path)` | Adds a font. The font sprite and glyph data can be generated using `tools/generate_font.py`. |
+| `gm_free(font_name)` | Frees a font. |
+| `gm_clear()` | Frees all fonts. |
+| `gm_draw(x, y, text)` | Draws a UTF-8 string. |
 | `gm_width(text)` | Returns the width of the text. |
 | `gm_height(text)` | Returns the height of the text. |
-| `gm_free(name)` | Frees a specified font. |
-| `gm_clear()` | Frees all loaded fonts. |
-| `gm_draw(x, y, text)` | Draws a UTF-8 string. |
 
 as well as setters and getters for configuring the drawing parameters
 
 | **Setter** | **Getter** |
 | -- | -- |
-| `gm_set_font(name)` | `gm_get_font()` |
+| `gm_set_font(font_name)` | `gm_get_font()` |
 | `gm_set_color(color)`<br>`gm_set_color2(color_top, color_bottom)` | `gm_get_color_top()`<br>`gm_get_color_bottom()` |
 | `gm_set_alpha(alpha)` | `gm_get_alpha()` |
 | `gm_set_halign(align)`<br>`gm_set_valign(align)`<br>`gm_set_justified(justified)`<br>`gm_set_align(halign, valign)`<br>`gm_set_align3(halign, valign, justified)` | `gm_get_halign()`<br>`gm_get_valign()`<br>`gm_get_justified()` |
