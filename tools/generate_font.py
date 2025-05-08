@@ -101,7 +101,7 @@ def generate_font(
 
     os.makedirs(os.path.dirname(glyph_path), exist_ok=True)
     with open(glyph_path, 'wb+') as file:
-        file.write(b'GLY\0' + struct.pack('Hh', line_height, min_top))
+        file.write(b'GLY\0' + struct.pack('Hh', line_height - glyph_spacing, min_top))
 
         x = 0
         y = -min_top

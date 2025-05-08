@@ -23,7 +23,7 @@ external_call(global.gm_init)
 external_call(global.gm_font, 'default', './resources/font_default.png')
 external_call(global.gm_set_font, 'default')
 external_call(global.gm_set_max_line_length, room_width)
-external_call(global.gm_set_line_height, .875)
+external_call(global.gm_set_line_height, .86)
 draw_set_color(c_white)
 #define Keyboard_82
 /*"/*'/**//* YYD ACTION
