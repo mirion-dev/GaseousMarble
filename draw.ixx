@@ -168,17 +168,12 @@ namespace gm {
             std::vector<std::pair<std::u32string, f64>> lines;
 
             auto& glyph_map{ _setting.font->glyph_map() };
-            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
+            f64 max_line_length{ _setting.max_line_length == 0 ? std::numeric_limits<f64>::max() : _setting.max_line_length / _setting.scale_x };
 
             f64 line_length{}, last_spacing{};
             auto begin{ text.begin() }, end{ text.end() }, i{ begin };
             while (i != end) {
-                if (*i == '\n') {
-                    lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
-                    line_length = last_spacing = 0;
-                    begin = ++i;
-                }
-                else {
+                if (*i != '\n') {
                     auto& glyph{ glyph_map.at(*i) };
                     f64 char_width{ static_cast<f64>(glyph.offset_x + glyph.width) };
                     f64 spacing{ _setting.letter_spacing };
@@ -186,19 +181,25 @@ namespace gm {
                         spacing += _setting.word_spacing;
                     }
 
-                    if (_setting.max_line_length == 0 || line_length + char_width <= max_line_length) {
-                        line_length += char_width + spacing;
-                    }
-                    else {
+                    if (line_length + char_width > max_line_length) {
                         lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
-                        line_length = char_width + spacing;
                         begin = i;
+                        line_length = 0;
                     }
+
+                    line_length += char_width + spacing;
                     last_spacing = spacing;
                     ++i;
                 }
+                else {
+                    lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
+                    begin = ++i;
+                    line_length = last_spacing = 0;
+                }
             }
-            lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing);
+            if (begin != end) {
+                lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing);
+            }
 
             return lines;
         }
@@ -256,11 +257,10 @@ namespace gm {
                 return false;
             }
 
-            auto lines{ _split(_filter(text)) };
-
             x += _setting.offset_x;
             y += _setting.offset_y + _setting.font->offset_y();
 
+            auto lines{ _split(_filter(text)) };
             f64 line_height{ _setting.line_height * _setting.font->height() };
             if (_setting.valign == 0) {
                 y -= line_height * lines.size() / 2;
@@ -270,7 +270,7 @@ namespace gm {
             }
 
             if (_setting.halign < 0) {
-                for (auto& text : std::views::keys(lines)) {
+                for (auto& text : lines | std::views::keys) {
                     _line(x, y, text);
                     y += line_height;
                 }
