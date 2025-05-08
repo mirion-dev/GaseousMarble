@@ -11,15 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="inc\FunctionId.inc" />
+    <None Include="FunctionId.inc" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core.ixx" />
     <ClCompile Include="gm.ixx" />
-    <ClCompile Include="draw.ixx" />
     <ClCompile Include="engine.ixx" />
     <ClCompile Include="api.ixx" />
+    <ClCompile Include="draw.ixx" />
     <ClCompile Include="old.ixx" />
   </ItemGroup>
   <ItemGroup>

@@ -13,13 +13,13 @@ API Real gm_init() noexcept {
     return draw.init();
 }
 
-API Real gm_font(StringView name, StringView sprite_path, StringView glyph_path) noexcept {
+API Real gm_font(StringView name, StringView sprite_path) noexcept {
     auto iter{ font_map.find(std::string{ name }) };
     if (iter != font_map.end()) {
         return true;
     }
 
-    old::Font font{ name, sprite_path, glyph_path };
+    old::Font font{ name, sprite_path };
     if (!font) {
         return false;
     }
@@ -100,15 +100,6 @@ API Real gm_set_align(Real halign, Real valign) noexcept {
     return true;
 }
 
-API Real gm_set_max_line_width(Real max_width) noexcept {
-    if (max_width < 0) {
-        return false;
-    }
-
-    old_draw.setting().max_line_width = std::abs(max_width);
-    return true;
-}
-
 API Real gm_set_letter_spacing(Real spacing) noexcept {
     old_draw.setting().letter_spacing = spacing;
     return true;
@@ -125,6 +116,15 @@ API Real gm_set_line_height(Real height) noexcept {
     }
 
     old_draw.setting().line_height = height;
+    return true;
+}
+
+API Real gm_set_max_line_length(Real length) noexcept {
+    if (length < 0) {
+        return false;
+    }
+
+    old_draw.setting().max_line_length = std::abs(length);
     return true;
 }
 
@@ -169,10 +169,6 @@ API Real gm_get_valign() noexcept {
     return old_draw.setting().valign;
 }
 
-API Real gm_get_max_line_width() noexcept {
-    return old_draw.setting().max_line_width;
-}
-
 API Real gm_get_letter_spacing() noexcept {
     return old_draw.setting().letter_spacing;
 }
@@ -183,6 +179,10 @@ API Real gm_get_word_spacing() noexcept {
 
 API Real gm_get_line_height() noexcept {
     return old_draw.setting().line_height;
+}
+
+API Real gm_get_max_line_length() noexcept {
+    return old_draw.setting().max_line_length;
 }
 
 API Real gm_get_offset_x() noexcept {

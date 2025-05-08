@@ -8,11 +8,125 @@ import std;
 import :core;
 import :engine;
 
+// interface of GameMaker function resources
+namespace gm::old {
+
+    enum class ValueType {
+        real,
+        string
+    };
+
+    class Value {
+        ValueType _type;
+        Real _real;
+        String _string;
+
+    public:
+        Value(Real real = {}) noexcept :
+            _type{ ValueType::real },
+            _real{ real } {}
+
+        Value(const String& string) noexcept :
+            _type{ ValueType::string },
+            _real{},
+            _string{ string } {}
+
+        operator Real() const noexcept {
+            assert(_type == ValueType::real);
+            return _real;
+        }
+
+        operator String() const noexcept {
+            assert(_type == ValueType::string);
+            return _string;
+        }
+
+        ValueType type() const noexcept {
+            return _type;
+        }
+    };
+
+    struct FunctionData {
+        u8 name_length;
+        char name[67];
+        void* address;
+        i32 arg_count;
+        bool require_pro;
+    };
+
+    struct FunctionResource {
+        FunctionData* data;
+        u32 count;
+    };
+
+    export enum class FunctionId {
+#include "FunctionId.inc"
+    };
+
+    export class IFunction {
+        const FunctionData* _data;
+
+    public:
+        IFunction(const FunctionData* data) noexcept :
+            _data{ data } {};
+
+        std::string_view name() const noexcept {
+            return { _data->name, _data->name_length };
+        }
+
+        // -1 indicates variable arguments
+        i32 arg_count() const noexcept {
+            return _data->arg_count;
+        }
+
+        void* address() const noexcept {
+            return _data->address;
+        }
+
+        template <class R, class... Args>
+        R call(Args... args) const noexcept {
+            // this assertion may fail on game exit since GameMaker has already released function resources
+            static constexpr u32 args_count{ sizeof...(args) };
+            assert(_data->arg_count == -1 || _data->arg_count == args_count);
+
+            Value args_wrapped[]{ args... }, ret;
+            Value* args_ptr{ args_wrapped };
+            Value* ret_ptr{ &ret };
+            void* fn_ptr{ _data->address };
+
+            __asm {
+                push args_ptr;
+                push args_count;
+                push ret_ptr;
+                call fn_ptr;
+                }
+
+            return static_cast<R>(ret);
+        }
+    };
+
+    export class IFunctionResource {
+        static constexpr auto _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
+
+    public:
+        static IFunction at(FunctionId id) noexcept {
+            return _resource->data + static_cast<i32>(id);
+        }
+
+        static u32 count() noexcept {
+            return _resource->count;
+        }
+    };
+
+}
+
 // Font
 namespace gm::old {
 
     class SpriteHandle {
-        u32 _id{ static_cast<u32>(-1) };
+        static constexpr auto _null_id{ static_cast<u32>(-1) };
+
+        u32 _id{ _null_id };
 
     public:
         SpriteHandle() noexcept = default;
@@ -23,7 +137,7 @@ namespace gm::old {
             _id{ id } {}
 
         operator bool() const noexcept {
-            return _id != -1;
+            return _id != _null_id;
         }
 
         bool operator==(SpriteHandle other) const noexcept {
@@ -38,7 +152,7 @@ namespace gm::old {
     struct SpriteDeleter {
         using pointer = SpriteHandle;
 
-        void operator()(SpriteHandle handle) const noexcept {
+        void operator()(pointer handle) const noexcept {
             IFunctionResource::at(FunctionId::sprite_delete).call<void, Real>(handle.id());
         }
     };
@@ -46,23 +160,24 @@ namespace gm::old {
     export struct GlyphData {
         u16 x, y;
         u16 width;
-        i16 left;
+        i16 offset_x;
     };
 
     export class Font {
-        u16 _size;
         u16 _height;
+        i16 _offset_y;
         std::string _name;
         std::unique_ptr<SpriteHandle, SpriteDeleter> _sprite;
-        std::unordered_map<u32, GlyphData> _glyph;
+        std::unordered_map<u32, GlyphData> _glyph_map;
 
     public:
         Font() noexcept = default;
 
-        Font(std::string_view name, std::string_view sprite_path, std::string_view glyph_path) noexcept :
+        Font(std::string_view name, std::string_view sprite_path) noexcept :
             _name{ name } {
 
-            std::ifstream file{ glyph_path.data(), std::ios::binary };
+            auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
+            std::ifstream file{ glyph_path, std::ios::binary };
             if (!file) {
                 return;
             }
@@ -85,12 +200,12 @@ namespace gm::old {
                 )
             );
 
-            file.read(reinterpret_cast<char*>(&_size), sizeof(_size));
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
+            file.read(reinterpret_cast<char*>(&_offset_y), sizeof(_offset_y));
             while (file) {
-                u16 ch;
+                u32 ch;
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
-                file.read(reinterpret_cast<char*>(&_glyph[ch]), sizeof(_glyph[ch]));
+                file.read(reinterpret_cast<char*>(&_glyph_map[ch]), sizeof(_glyph_map[ch]));
             }
         }
 
@@ -102,29 +217,29 @@ namespace gm::old {
             return _sprite == other._sprite;
         }
 
-        u16 size() const noexcept {
-            assert(_sprite);
-            return _size;
-        }
-
         u16 height() const noexcept {
-            assert(_sprite);
+            assert(_sprite != nullptr);
             return _height;
         }
 
+        i16 offset_y() const noexcept {
+            assert(_sprite != nullptr);
+            return _offset_y;
+        }
+
         const std::string& name() const noexcept {
-            assert(_sprite);
+            assert(_sprite != nullptr);
             return _name;
         }
 
         SpriteHandle sprite() const noexcept {
-            assert(_sprite);
+            assert(_sprite != nullptr);
             return _sprite.get();
         }
 
-        const auto& glyph() const noexcept {
-            assert(_sprite);
-            return _glyph;
+        const auto& glyph_map() const noexcept {
+            assert(_sprite != nullptr);
+            return _glyph_map;
         }
     };
 
@@ -140,10 +255,10 @@ namespace gm::old {
         f64 alpha{ 1 };
         i8 halign{ -1 };
         i8 valign{ -1 };
-        f64 word_spacing{};
         f64 letter_spacing{};
-        f64 max_line_width{};
+        f64 word_spacing{};
         f64 line_height{ 1 };
+        f64 max_line_length{};
         f64 offset_x{};
         f64 offset_y{};
         f64 scale_x{ 1 };
@@ -154,51 +269,47 @@ namespace gm::old {
         DrawSetting _setting;
 
         std::u32string _filter(std::string_view text) const noexcept {
-            auto& glyph_map{ _setting.font->glyph() };
+            auto& glyph_map{ _setting.font->glyph_map() };
             return std::ranges::to<std::u32string>(
                 utf8_decode(text)
-                | std::views::filter(
-                    [&](u32 ch) {
-                        return ch == '\n' || ch >= ' ' && ch != '\x7f' && glyph_map.contains(ch);
-                    }
-                )
+                | std::views::filter([&](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
             );
         }
 
         auto _split(std::u32string_view text) const noexcept {
             std::vector<std::pair<std::u32string, f64>> lines;
 
-            auto& glyph_map{ _setting.font->glyph() };
-            f64 max_line_width{ _setting.max_line_width / _setting.scale_x };
-            f64 line_width{}, last_spacing{};
+            auto& glyph_map{ _setting.font->glyph_map() };
+            f64 max_line_length{ _setting.max_line_length == 0 ? std::numeric_limits<f64>::max() : _setting.max_line_length / _setting.scale_x };
+
+            f64 line_length{}, last_spacing{};
             auto begin{ text.begin() }, end{ text.end() }, i{ begin };
             while (i != end) {
-                if (*i == '\n') {
-                    lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
-                    line_width = last_spacing = 0;
-                    begin = ++i;
-                }
-                else {
+                if (*i != '\n') {
                     auto& glyph{ glyph_map.at(*i) };
+                    f64 char_width{ static_cast<f64>(glyph.offset_x + glyph.width) };
                     f64 spacing{ _setting.letter_spacing };
                     if (*i == ' ') {
                         spacing += _setting.word_spacing;
                     }
-                    f64 char_width{ glyph.left + glyph.width + spacing };
 
-                    if (_setting.max_line_width == 0 || line_width + glyph.left + glyph.width <= max_line_width) {
-                        line_width += char_width;
-                    }
-                    else {
-                        lines.emplace_back(std::u32string{ begin, i }, line_width - last_spacing);
-                        line_width = char_width;
+                    if (line_length + char_width > max_line_length) {
+                        lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
                         begin = i;
+                        line_length = 0;
                     }
+
+                    line_length += char_width + spacing;
                     last_spacing = spacing;
                     ++i;
                 }
+                else {
+                    lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
+                    begin = ++i;
+                    line_length = last_spacing = 0;
+                }
             }
-            lines.emplace_back(std::u32string{ begin, end }, line_width - last_spacing);
+            lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing);
 
             return lines;
         }
@@ -212,7 +323,7 @@ namespace gm::old {
                     glyph.y,
                     glyph.width,
                     _setting.font->height(),
-                    (x + glyph.left) * _setting.scale_x,
+                    (x + glyph.offset_x) * _setting.scale_x,
                     y * _setting.scale_y,
                     _setting.scale_x,
                     _setting.scale_y,
@@ -226,12 +337,12 @@ namespace gm::old {
         }
 
         void _line(f64 x, f64 y, std::u32string_view text) const noexcept {
-            auto& glyph_map{ _setting.font->glyph() };
+            auto& glyph_map{ _setting.font->glyph_map() };
             for (u32 ch : text) {
                 auto& glyph{ glyph_map.at(ch) };
                 _glyph(x, y, glyph);
 
-                x += glyph.left + glyph.width + _setting.letter_spacing;
+                x += glyph.offset_x + glyph.width + _setting.letter_spacing;
                 if (ch == ' ') {
                     x += _setting.word_spacing;
                 }
@@ -248,7 +359,7 @@ namespace gm::old {
         }
 
         f64 height(std::string_view text) const noexcept {
-            return _setting.line_height * _setting.font->size() * _split(_filter(text)).size() * _setting.scale_y;
+            return _setting.line_height * _setting.font->height() * _split(_filter(text)).size() * _setting.scale_y;
         }
 
         bool text(f64 x, f64 y, std::string_view text) const noexcept {
@@ -256,12 +367,11 @@ namespace gm::old {
                 return false;
             }
 
-            auto lines{ _split(_filter(text)) };
-
             x += _setting.offset_x;
-            y += _setting.offset_y;
+            y += _setting.offset_y + _setting.font->offset_y();
 
-            f64 line_height{ _setting.line_height * _setting.font->size() };
+            auto lines{ _split(_filter(text)) };
+            f64 line_height{ _setting.line_height * _setting.font->height() };
             if (_setting.valign == 0) {
                 y -= line_height * lines.size() / 2;
             }
@@ -270,7 +380,7 @@ namespace gm::old {
             }
 
             if (_setting.halign < 0) {
-                for (auto& text : std::views::keys(lines)) {
+                for (auto& text : lines | std::views::keys) {
                     _line(x, y, text);
                     y += line_height;
                 }
