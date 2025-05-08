@@ -14,8 +14,8 @@ namespace gm {
 
     export class Draw {
         u8* _bitmap{};
-        IDirect3DTexture8* _texture;
-        ID3DXSprite* _sprite;
+        IDirect3DTexture8* _texture{};
+        ID3DXSprite* _sprite{};
 
     public:
         bool init() noexcept {
