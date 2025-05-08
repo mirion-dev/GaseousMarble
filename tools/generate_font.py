@@ -51,13 +51,19 @@ def generate_font(
     '''
     calculates the line height and min top
     '''
+    image0 = Image.new('RGBA', (1, 1))
+    draw0 = ImageDraw.Draw(image0)
+    if not smoothing:
+        draw0.fontmode = '1'
+
     line_length = 0
     glyph_spacing = 0 if dense else 1
     min_top = 0
     max_bottom = 0
     for (font, cp) in zip(font_list, code_points.values()):
+        draw0.font = font
         for i in cp:
-            (l, t, r, b) = font.getbbox(chr(i), stroke_width=stroke_width)
+            (l, t, r, b) = draw0.textbbox((0, 0), chr(i), stroke_width=stroke_width)
             w = r - l
             line_length += w + glyph_spacing
             min_top = min(min_top, t)
@@ -76,23 +82,23 @@ def generate_font(
         max_line_length = math.ceil((line_height + math.sqrt(line_height * (line_height + 4 * line_length))) / 2)
         line_length = 0
         for (font, cp) in zip(font_list, code_points.values()):
+            draw0.font = font
             for i in cp:
-                (l, t, r, b) = font.getbbox(chr(i), stroke_width=stroke_width)
+                (l, t, r, b) = draw0.textbbox((0, 0), chr(i), stroke_width=stroke_width)
                 w = r - l
                 if line_length + w > max_line_length:
                     line_length = 0
                     line_count += 1
                 line_length += w + glyph_spacing
 
+    '''
+    generates the font sprite and glyph data
+    '''
     image = Image.new('RGBA', (max_line_length, line_height * line_count - glyph_spacing))
-
     draw = ImageDraw.Draw(image)
     if not smoothing:
         draw.fontmode = '1'
 
-    '''
-    generates the font sprite and glyph data
-    '''
     os.makedirs(os.path.dirname(glyph_path), exist_ok=True)
     with open(glyph_path, 'wb+') as file:
         file.write(b'GLY\0' + struct.pack('Hh', line_height, min_top))
@@ -102,7 +108,7 @@ def generate_font(
         for (font, cp) in zip(font_list, code_points.values()):
             draw.font = font
             for i in cp:
-                (l, t, r, b) = font.getbbox(chr(i), stroke_width=stroke_width)
+                (l, t, r, b) = draw.textbbox((0, 0), chr(i), stroke_width=stroke_width)
                 w = r - l
                 if x + w > max_line_length:
                     x = 0
