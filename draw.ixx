@@ -170,7 +170,7 @@ namespace gm {
             std::vector<std::pair<std::u32string, f64>> lines;
 
             auto& glyph_map{ _setting.font->glyph_map() };
-            f64 max_line_length{ _setting.max_line_length == 0 ? std::numeric_limits<f64>::max() : _setting.max_line_length / _setting.scale_x };
+            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
 
             f64 line_length{}, last_spacing{};
             auto begin{ text.begin() }, end{ text.end() }, i{ begin };
@@ -183,7 +183,7 @@ namespace gm {
                         spacing += _setting.word_spacing;
                     }
 
-                    if (line_length + char_width > max_line_length) {
+                    if (_setting.max_line_length != 0 && line_length + char_width > max_line_length) {
                         lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
                         begin = i;
                         line_length = 0;
