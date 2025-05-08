@@ -72,7 +72,8 @@ API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
 }
 
 API Real gm_set_color(Real color) noexcept {
-    return gm_set_color2(color, color);
+    gm_set_color2(color, color);
+    return true;
 }
 
 API Real gm_set_alpha(Real alpha) noexcept {
@@ -124,7 +125,7 @@ API Real gm_set_max_line_length(Real length) noexcept {
         return false;
     }
 
-    draw.setting().max_line_length = std::abs(length);
+    draw.setting().max_line_length = length;
     return true;
 }
 
