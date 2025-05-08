@@ -197,9 +197,7 @@ namespace gm {
                     line_length = last_spacing = 0;
                 }
             }
-            if (begin != end) {
-                lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing);
-            }
+            lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing);
 
             return lines;
         }
