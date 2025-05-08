@@ -162,14 +162,34 @@ namespace gm {
             auto& glyph_map{ _setting.font->glyph_map() };
             return std::ranges::to<std::u32string>(
                 utf8_decode(text)
-                | std::views::filter([&](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
+                | std::views::filter([&glyph_map](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
             );
         }
 
-        auto _split(std::u32string_view text) const noexcept {
-            std::vector<std::tuple<std::u32string, f64, bool>> lines;
+        struct SplitResult {
+            struct Line {
+                std::u32string text;
+                f64 width;
+                f64 height;
+                bool is_full;
+            };
+
+            std::vector<Line> lines;
+            f64 total_width{};
+            f64 total_height{};
+
+            void add_line(std::u32string_view text, f64 width, f64 height, bool is_full) {
+                lines.emplace_back(std::u32string{ text }, width, height, is_full);
+                total_width = std::max(total_width, width);
+                total_height += height;
+            }
+        };
+
+        SplitResult _split(std::u32string_view text) const noexcept {
+            SplitResult result;
 
             auto& glyph_map{ _setting.font->glyph_map() };
+            f64 line_height{ _setting.font->height() * _setting.line_height };
             f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
 
             f64 line_length{}, last_spacing{};
@@ -177,31 +197,31 @@ namespace gm {
             while (i != end) {
                 if (*i != '\n') {
                     auto& glyph{ glyph_map.at(*i) };
-                    f64 char_width{ static_cast<f64>(glyph.offset_x + glyph.width) };
+                    f64 right{ static_cast<f64>(glyph.offset_x + glyph.width) };
                     f64 spacing{ _setting.letter_spacing };
                     if (*i == ' ') {
                         spacing += _setting.word_spacing;
                     }
 
-                    if (max_line_length != 0 && line_length + char_width > max_line_length) {
-                        lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing, true);
+                    if (max_line_length != 0 && line_length + right > max_line_length) {
+                        result.add_line({ begin, i }, line_length - last_spacing, line_height, true);
                         begin = i;
                         line_length = 0;
                     }
 
-                    line_length += char_width + spacing;
+                    line_length += right + spacing;
                     last_spacing = spacing;
                     ++i;
                 }
                 else {
-                    lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing, false);
+                    result.add_line({ begin, i }, line_length - last_spacing, line_height + _setting.paragraph_spacing, false);
                     begin = ++i;
                     line_length = last_spacing = 0;
                 }
             }
-            lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing, false);
+            result.add_line({ begin, i }, line_length - last_spacing, line_height, false);
 
-            return lines;
+            return result;
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
@@ -245,11 +265,11 @@ namespace gm {
         }
 
         f64 width(std::string_view text) const noexcept {
-            return std::ranges::max(_split(_filter(text)) | std::views::elements<1>) * _setting.scale_x;
+            return _split(_filter(text)).total_width * _setting.scale_x;
         }
 
         f64 height(std::string_view text) const noexcept {
-            return _setting.line_height * _setting.font->height() * _split(_filter(text)).size() * _setting.scale_y;
+            return _split(_filter(text)).total_height * _setting.scale_y;
         }
 
         bool text(f64 x, f64 y, std::string_view text) const noexcept {
@@ -257,39 +277,39 @@ namespace gm {
                 return false;
             }
 
+            SplitResult result{ _split(_filter(text)) };
+
             x += _setting.offset_x;
             y += _setting.offset_y + _setting.font->offset_y();
 
-            auto lines{ _split(_filter(text)) };
-            f64 line_height{ _setting.line_height * _setting.font->height() };
             if (_setting.valign == 0) {
-                y -= line_height * lines.size() / 2;
+                y -= result.total_height / 2;
             }
             else if (_setting.valign > 0) {
-                y -= line_height * lines.size();
+                y -= result.total_height;
             }
 
             f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
-            for (auto& [text, width, full] : lines) {
+            for (auto& [text, width, height, is_full] : result.lines) {
                 f64 extra_spacing{};
-                if (_setting.justified && max_line_length != 0 && full) {
+                if (_setting.justified && max_line_length != 0 && is_full) {
                     if (text.size() > 1) {
                         extra_spacing = (max_line_length - width) / (text.size() - 1);
                     }
                     width = max_line_length;
                 }
 
-                f64 x1{ x };
+                f64 t{ x };
                 if (_setting.halign == 0) {
-                    x1 -= width / 2;
+                    t -= width / 2;
                 }
                 else if (_setting.halign > 0) {
-                    x1 -= width;
+                    t -= width;
                 }
 
-                _line(x1, y, text, extra_spacing);
+                _line(t, y, text, extra_spacing);
 
-                y += line_height;
+                y += height;
             }
 
             return true;
