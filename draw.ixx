@@ -167,7 +167,7 @@ namespace gm {
         }
 
         auto _split(std::u32string_view text) const noexcept {
-            std::vector<std::pair<std::u32string, f64>> lines;
+            std::vector<std::tuple<std::u32string, f64, bool>> lines;
 
             auto& glyph_map{ _setting.font->glyph_map() };
             f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
@@ -183,8 +183,8 @@ namespace gm {
                         spacing += _setting.word_spacing;
                     }
 
-                    if (_setting.max_line_length != 0 && line_length + char_width > max_line_length) {
-                        lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
+                    if (max_line_length != 0 && line_length + char_width > max_line_length) {
+                        lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing, true);
                         begin = i;
                         line_length = 0;
                     }
@@ -194,12 +194,12 @@ namespace gm {
                     ++i;
                 }
                 else {
-                    lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing);
+                    lines.emplace_back(std::u32string{ begin, i }, line_length - last_spacing, false);
                     begin = ++i;
                     line_length = last_spacing = 0;
                 }
             }
-            lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing);
+            lines.emplace_back(std::u32string{ begin, end }, line_length - last_spacing, false);
 
             return lines;
         }
@@ -226,13 +226,13 @@ namespace gm {
                 );
         }
 
-        void _line(f64 x, f64 y, std::u32string_view text) const noexcept {
+        void _line(f64 x, f64 y, std::u32string_view text, f64 extra_spacing = {}) const noexcept {
             auto& glyph_map{ _setting.font->glyph_map() };
             for (u32 ch : text) {
                 auto& glyph{ glyph_map.at(ch) };
                 _glyph(x, y, glyph);
 
-                x += glyph.offset_x + glyph.width + _setting.letter_spacing;
+                x += glyph.offset_x + glyph.width + _setting.letter_spacing + extra_spacing;
                 if (ch == ' ') {
                     x += _setting.word_spacing;
                 }
@@ -245,7 +245,7 @@ namespace gm {
         }
 
         f64 width(std::string_view text) const noexcept {
-            return std::ranges::max(_split(_filter(text)) | std::views::values) * _setting.scale_x;
+            return std::ranges::max(_split(_filter(text)) | std::views::elements<1>) * _setting.scale_x;
         }
 
         f64 height(std::string_view text) const noexcept {
@@ -269,23 +269,27 @@ namespace gm {
                 y -= line_height * lines.size();
             }
 
-            if (_setting.halign < 0) {
-                for (auto& text : lines | std::views::keys) {
-                    _line(x, y, text);
-                    y += line_height;
+            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
+            for (auto& [text, width, full] : lines) {
+                f64 extra_spacing{};
+                if (_setting.justified && max_line_length != 0 && full) {
+                    if (text.size() > 1) {
+                        extra_spacing = (max_line_length - width) / (text.size() - 1);
+                    }
+                    width = max_line_length;
                 }
-            }
-            else if (_setting.halign == 0) {
-                for (auto& [text, width] : lines) {
-                    _line(x - width / 2, y, text);
-                    y += line_height;
+
+                f64 x1{ x };
+                if (_setting.halign == 0) {
+                    x1 -= width / 2;
                 }
-            }
-            else {
-                for (auto& [text, width] : lines) {
-                    _line(x - width, y, text);
-                    y += line_height;
+                else if (_setting.halign > 0) {
+                    x1 -= width;
                 }
+
+                _line(x1, y, text, extra_spacing);
+
+                y += line_height;
             }
 
             return true;
