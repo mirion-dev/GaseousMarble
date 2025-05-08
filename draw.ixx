@@ -279,8 +279,8 @@ namespace gm {
 
             SplitResult result{ _split(_filter(text)) };
 
-            x += _setting.offset_x;
-            y += _setting.offset_y + _setting.font->offset_y();
+            x += _setting.offset_x / _setting.scale_x;
+            y += (_setting.offset_y + _setting.font->offset_y()) / _setting.scale_y;
 
             if (_setting.valign == 0) {
                 y -= result.total_height / 2;
