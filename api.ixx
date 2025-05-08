@@ -95,9 +95,20 @@ API Real gm_set_valign(Real align) noexcept {
     return true;
 }
 
+API Real gm_set_justified(Real justified) noexcept {
+    draw.setting().justified = justified;
+    return true;
+}
+
 API Real gm_set_align(Real halign, Real valign) noexcept {
     gm_set_halign(halign);
     gm_set_valign(valign);
+    return true;
+}
+
+API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
+    gm_set_align(halign, valign);
+    gm_set_justified(justified);
     return true;
 }
 
@@ -108,6 +119,11 @@ API Real gm_set_letter_spacing(Real spacing) noexcept {
 
 API Real gm_set_word_spacing(Real spacing) noexcept {
     draw.setting().word_spacing = spacing;
+    return true;
+}
+
+API Real gm_set_paragraph_spacing(Real spacing) noexcept {
+    draw.setting().paragraph_spacing = spacing;
     return true;
 }
 
@@ -170,12 +186,20 @@ API Real gm_get_valign() noexcept {
     return draw.setting().valign;
 }
 
+API Real gm_is_justified() noexcept {
+    return draw.setting().justified;
+}
+
 API Real gm_get_letter_spacing() noexcept {
     return draw.setting().letter_spacing;
 }
 
 API Real gm_get_word_spacing() noexcept {
     return draw.setting().word_spacing;
+}
+
+API Real gm_get_paragraph_spacing() noexcept {
+    return draw.setting().paragraph_spacing;
 }
 
 API Real gm_get_line_height() noexcept {

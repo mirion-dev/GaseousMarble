@@ -143,8 +143,10 @@ namespace gm {
         f64 alpha{ 1 };
         i8 halign{ -1 };
         i8 valign{ -1 };
+        bool justified{};
         f64 letter_spacing{};
         f64 word_spacing{};
+        f64 paragraph_spacing{};
         f64 line_height{ 1 };
         f64 max_line_length{};
         f64 offset_x{};

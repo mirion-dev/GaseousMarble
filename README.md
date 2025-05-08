@@ -22,9 +22,10 @@ as well as setters and getters for configuring the drawing parameters
 | `gm_set_font(name)` | `gm_get_font()` |
 | `gm_set_color(color)`<br>`gm_set_color2(color_top, color_bottom)` | `gm_get_color_top()`<br>`gm_get_color_bottom()` |
 | `gm_set_alpha(alpha)` | `gm_get_alpha()` |
-| `gm_set_halign(align)`<br>`gm_set_valign(align)`<br>`gm_set_align(halign, valign)` | `gm_get_halign()`<br>`gm_get_valign()` |
+| `gm_set_halign(align)`<br>`gm_set_valign(align)`<br>`gm_set_justified(justified)`<br>`gm_set_align(halign, valign)`<br>`gm_set_align3(halign, valign, justified)` | `gm_get_halign()`<br>`gm_get_valign()`<br>`gm_get_justified()` |
 | `gm_set_letter_spacing(spacing)` | `gm_get_letter_spacing()` |
 | `gm_set_word_spacing(spacing)` | `gm_get_word_spacing()` |
+| `gm_set_paragraph_spacing(spacing)` | `gm_get_paragraph_spacing()` |
 | `gm_set_line_height(height)` | `gm_get_line_height()` |
 | `gm_set_max_line_length(length)` | `gm_get_max_line_length()` |
 | `gm_set_offset(x, y)`| `gm_get_offset_x()`<br>`gm_get_offset_y()` |
