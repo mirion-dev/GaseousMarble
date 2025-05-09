@@ -158,15 +158,7 @@ namespace gm {
     export class Draw {
         DrawSetting _setting;
 
-        std::u32string _filter(std::string_view text) const noexcept {
-            auto& glyph_map{ _setting.font->glyph_map() };
-            return std::ranges::to<std::u32string>(
-                utf8_decode(text)
-                | std::views::filter([&glyph_map](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
-            );
-        }
-
-        struct SplitResult {
+        struct MeasureResult {
             struct Line {
                 std::u32string text;
                 f64 width;
@@ -185,8 +177,16 @@ namespace gm {
             }
         };
 
-        SplitResult _split(std::u32string_view text) const noexcept {
-            SplitResult result;
+        std::u32string _filter(std::string_view text) const noexcept {
+            auto& glyph_map{ _setting.font->glyph_map() };
+            return std::ranges::to<std::u32string>(
+                utf8_decode(text)
+                | std::views::filter([&glyph_map](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
+            );
+        }
+
+        MeasureResult _split(std::u32string_view text) const noexcept {
+            MeasureResult result;
 
             auto& glyph_map{ _setting.font->glyph_map() };
             f64 line_height{ _setting.font->height() * _setting.line_height };
@@ -222,6 +222,17 @@ namespace gm {
             result.add_line({ begin, i }, line_length - last_spacing, line_height, false);
 
             return result;
+        }
+
+        MeasureResult _measure(std::string_view text) const noexcept {
+            static std::string cache_text;
+            static MeasureResult cache_result;
+
+            if (cache_text != text) {
+                cache_text = text;
+                cache_result = _split(_filter(text));
+            }
+            return cache_result;
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
@@ -265,11 +276,11 @@ namespace gm {
         }
 
         f64 width(std::string_view text) const noexcept {
-            return _split(_filter(text)).total_width * _setting.scale_x;
+            return _measure(text).total_width * _setting.scale_x;
         }
 
         f64 height(std::string_view text) const noexcept {
-            return _split(_filter(text)).total_height * _setting.scale_y;
+            return _measure(text).total_height * _setting.scale_y;
         }
 
         bool text(f64 x, f64 y, std::string_view text) const noexcept {
@@ -277,7 +288,7 @@ namespace gm {
                 return false;
             }
 
-            SplitResult result{ _split(_filter(text)) };
+            MeasureResult result{ _measure(text) };
 
             x += _setting.offset_x / _setting.scale_x;
             y += (_setting.offset_y + _setting.font->offset_y()) / _setting.scale_y;
