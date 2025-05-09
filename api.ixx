@@ -14,8 +14,7 @@ API Real gm_init() noexcept {
 }
 
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
-    auto iter{ font_map.find(std::string{ font_name }) };
-    if (iter != font_map.end()) {
+    if (font_map.contains(std::string{ font_name })) {
         return true;
     }
 
@@ -24,7 +23,7 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         return false;
     }
 
-    font_map.emplace_hint(iter, font_name, std::move(font));
+    font_map.emplace(font_name, std::move(font));
     return true;
 }
 
