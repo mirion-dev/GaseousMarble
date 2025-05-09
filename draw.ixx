@@ -224,15 +224,20 @@ namespace gm {
             return result;
         }
 
-        MeasureResult _measure(std::string_view text) const noexcept {
-            static std::string cache_text;
-            static MeasureResult cache_result;
+        const MeasureResult& _measure(std::string_view text) const noexcept {
+            static constexpr u32 max_cache_size{ 16 };
+            static std::unordered_map<std::string, MeasureResult> cache;
 
-            if (cache_text != text) {
-                cache_text = text;
-                cache_result = _split(_filter(text));
+            auto iter{ cache.find(std::string{ text }) };
+            if (iter != cache.end()) {
+                return iter->second;
             }
-            return cache_result;
+
+            if (cache.size() > max_cache_size) {
+                cache.clear();
+            }
+
+            return cache.emplace(text, _split(_filter(text))).first->second;
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
@@ -288,7 +293,7 @@ namespace gm {
                 return false;
             }
 
-            MeasureResult result{ _measure(text) };
+            const MeasureResult& result{ _measure(text) };
 
             x += _setting.offset_x / _setting.scale_x;
             y += (_setting.offset_y + _setting.font->offset_y()) / _setting.scale_y;
@@ -302,23 +307,24 @@ namespace gm {
 
             f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
             for (auto& [text, width, height, is_full] : result.lines) {
+                f64 real_width{ width };
                 f64 extra_spacing{};
                 if (_setting.justified && max_line_length != 0 && is_full) {
+                    real_width = max_line_length;
                     if (text.size() > 1) {
                         extra_spacing = (max_line_length - width) / (text.size() - 1);
                     }
-                    width = max_line_length;
                 }
 
-                f64 t{ x };
+                f64 real_x{ x };
                 if (_setting.halign == 0) {
-                    t -= width / 2;
+                    real_x -= real_width / 2;
                 }
                 else if (_setting.halign > 0) {
-                    t -= width;
+                    real_x -= real_width;
                 }
 
-                _line(t, y, text, extra_spacing);
+                _line(real_x, y, text, extra_spacing);
 
                 y += height;
             }
