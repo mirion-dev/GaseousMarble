@@ -169,60 +169,7 @@ namespace gm {
             std::vector<Line> lines;
             f64 total_width{};
             f64 total_height{};
-
-            void add_line(std::u32string_view text, f64 width, f64 height, bool is_full) {
-                lines.emplace_back(std::u32string{ text }, width, height, is_full);
-                total_width = std::max(total_width, width);
-                total_height += height;
-            }
         };
-
-        std::u32string _filter(std::string_view text) const noexcept {
-            auto& glyph_map{ _setting.font->glyph_map() };
-            return std::ranges::to<std::u32string>(
-                utf8_decode(text)
-                | std::views::filter([&glyph_map](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
-            );
-        }
-
-        MeasureResult _split(std::u32string_view text) const noexcept {
-            MeasureResult result;
-
-            auto& glyph_map{ _setting.font->glyph_map() };
-            f64 line_height{ _setting.font->height() * _setting.line_height };
-            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
-
-            f64 line_length{}, last_spacing{};
-            auto begin{ text.begin() }, end{ text.end() }, i{ begin };
-            while (i != end) {
-                if (*i != '\n') {
-                    auto& glyph{ glyph_map.at(*i) };
-                    f64 right{ static_cast<f64>(glyph.offset_x + glyph.width) };
-                    f64 spacing{ _setting.letter_spacing };
-                    if (*i == ' ') {
-                        spacing += _setting.word_spacing;
-                    }
-
-                    if (max_line_length != 0 && line_length + right > max_line_length) {
-                        result.add_line({ begin, i }, line_length - last_spacing, line_height, true);
-                        begin = i;
-                        line_length = 0;
-                    }
-
-                    line_length += right + spacing;
-                    last_spacing = spacing;
-                    ++i;
-                }
-                else {
-                    result.add_line({ begin, i }, line_length - last_spacing, line_height + _setting.paragraph_spacing, false);
-                    begin = ++i;
-                    line_length = last_spacing = 0;
-                }
-            }
-            result.add_line({ begin, i }, line_length - last_spacing, line_height, false);
-
-            return result;
-        }
 
         const MeasureResult& _measure(std::string_view text) const noexcept {
             static constexpr u32 max_cache_size{ 16 };
@@ -237,7 +184,57 @@ namespace gm {
                 cache.clear();
             }
 
-            return cache.emplace(text, _split(_filter(text))).first->second;
+            MeasureResult result;
+
+            auto add_line{
+                [&result](std::u32string_view text, f64 width, f64 height, bool is_full) {
+                    result.lines.emplace_back(std::u32string{ text }, width, height, is_full);
+                    result.total_width = std::max(result.total_width, width);
+                    result.total_height += height;
+                }
+            };
+
+            auto& glyph_map{ _setting.font->glyph_map() };
+            f64 line_spacing{ _setting.font->height() * _setting.line_height };
+            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
+
+            auto filtered_text{
+                std::ranges::to<std::u32string>(
+                    utf8_decode(text)
+                    | std::views::filter([&glyph_map](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
+                )
+            };
+
+            f64 line_length{}, last_spacing{};
+            auto begin{ filtered_text.begin() }, end{ filtered_text.end() }, i{ begin };
+            while (i != end) {
+                if (*i != '\n') {
+                    auto& glyph{ glyph_map.at(*i) };
+                    f64 right{ static_cast<f64>(glyph.offset_x + glyph.width) };
+                    f64 spacing{ _setting.letter_spacing };
+                    if (*i == ' ') {
+                        spacing += _setting.word_spacing;
+                    }
+
+                    if (max_line_length != 0 && line_length + right > max_line_length) {
+                        add_line({ begin, i }, line_length - last_spacing, line_spacing, true);
+                        begin = i;
+                        line_length = 0;
+                    }
+
+                    line_length += right + spacing;
+                    last_spacing = spacing;
+                    ++i;
+                }
+                else {
+                    add_line({ begin, i }, line_length - last_spacing, line_spacing + _setting.paragraph_spacing, false);
+                    begin = ++i;
+                    line_length = last_spacing = 0;
+                }
+            }
+            add_line({ begin, i }, line_length - last_spacing, line_spacing, false);
+
+            return cache.emplace(text, std::move(result)).first->second;
         }
 
         void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
