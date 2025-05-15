@@ -209,8 +209,9 @@ namespace gm {
             auto begin{ filtered_text.begin() }, end{ filtered_text.end() }, i{ begin };
             while (i != end) {
                 if (*i != '\n') {
-                    auto& glyph{ glyph_map.at(*i) };
-                    f64 right{ static_cast<f64>(glyph.offset_x + glyph.width) };
+                    auto& [glyph_x, glyph_y, width, offset_x]{ glyph_map.at(*i) };
+
+                    f64 right{ static_cast<f64>(offset_x + width) };
                     f64 spacing{ _setting.letter_spacing };
                     if (*i == ' ') {
                         spacing += _setting.word_spacing;
@@ -237,35 +238,35 @@ namespace gm {
             return cache.emplace(text, std::move(result)).first->second;
         }
 
-        void _glyph(f64 x, f64 y, const GlyphData& glyph) const noexcept {
-            IFunctionResource::at(FunctionId::draw_sprite_general)
-                .call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
-                    _setting.font->sprite().id(),
-                    0,
-                    glyph.x,
-                    glyph.y,
-                    glyph.width,
-                    _setting.font->height(),
-                    (x + glyph.offset_x) * _setting.scale_x,
-                    y * _setting.scale_y,
-                    _setting.scale_x,
-                    _setting.scale_y,
-                    0,
-                    _setting.color_top,
-                    _setting.color_top,
-                    _setting.color_bottom,
-                    _setting.color_bottom,
-                    _setting.alpha
-                );
-        }
-
         void _line(f64 x, f64 y, std::u32string_view text, f64 extra_spacing = {}) const noexcept {
             auto& glyph_map{ _setting.font->glyph_map() };
-            for (u32 ch : text) {
-                auto& glyph{ glyph_map.at(ch) };
-                _glyph(x, y, glyph);
+            u32 font_id{ _setting.font->sprite().id() };
+            u16 height{ _setting.font->height() };
 
-                x += glyph.offset_x + glyph.width + _setting.letter_spacing + extra_spacing;
+            for (u32 ch : text) {
+                auto& [glyph_x, glyph_y, width, offset_x]{ glyph_map.at(ch) };
+
+                IFunctionResource::at(FunctionId::draw_sprite_general)
+                    .call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
+                        font_id,
+                        0,
+                        glyph_x,
+                        glyph_y,
+                        width,
+                        height,
+                        (x + offset_x) * _setting.scale_x,
+                        y * _setting.scale_y,
+                        _setting.scale_x,
+                        _setting.scale_y,
+                        0,
+                        _setting.color_top,
+                        _setting.color_top,
+                        _setting.color_bottom,
+                        _setting.color_bottom,
+                        _setting.alpha
+                    );
+
+                x += offset_x + width + _setting.letter_spacing + extra_spacing;
                 if (ch == ' ') {
                     x += _setting.word_spacing;
                 }
