@@ -163,7 +163,7 @@ namespace gm {
                 std::u32string text;
                 f64 width;
                 f64 height;
-                bool is_full;
+                f64 letter_spacing;
             };
 
             std::vector<Line> lines;
@@ -184,20 +184,7 @@ namespace gm {
                 cache.clear();
             }
 
-            MeasureResult result;
-
-            auto add_line{
-                [&result](std::u32string_view text, f64 width, f64 height, bool is_full) {
-                    result.lines.emplace_back(std::u32string{ text }, width, height, is_full);
-                    result.total_width = std::max(result.total_width, width);
-                    result.total_height += height;
-                }
-            };
-
             auto& glyph_map{ _setting.font->glyph_map() };
-            f64 line_spacing{ _setting.font->height() * _setting.line_height };
-            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
-
             auto filtered_text{
                 std::ranges::to<std::u32string>(
                     utf8_decode(text)
@@ -205,20 +192,43 @@ namespace gm {
                 )
             };
 
+            MeasureResult result;
+
+            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
+            auto add_line{
+                [this, max_line_length, &result](std::u32string_view text, f64 line_length, f64 is_full, f64 is_paragraph_end) {
+                    f64 width{ line_length };
+                    f64 letter_spacing{ _setting.letter_spacing };
+                    if (_setting.justified && max_line_length != 0 && is_full && text.size() != 1) {
+                        width = max_line_length;
+                        letter_spacing += (max_line_length - line_length) / (text.size() - 1);
+                    }
+
+                    f64 height{ _setting.font->height() * _setting.line_height };
+                    if (is_paragraph_end) {
+                        height += _setting.paragraph_spacing;
+                    }
+
+                    result.lines.emplace_back(std::u32string{ text }, width, height, letter_spacing);
+                    result.total_width = std::max(result.total_width, width);
+                    result.total_height += height;
+                }
+            };
+
             f64 line_length{}, last_spacing{};
             auto begin{ filtered_text.begin() }, end{ filtered_text.end() }, i{ begin };
             while (i != end) {
                 if (*i != '\n') {
-                    auto& [glyph_x, glyph_y, width, offset_x]{ glyph_map.at(*i) };
+                    auto& [glyph_x, glyph_y, glyph_width, offset_x]{ glyph_map.at(*i) };
 
-                    f64 right{ static_cast<f64>(offset_x + width) };
+                    f64 right{ static_cast<f64>(offset_x + glyph_width) };
                     f64 spacing{ _setting.letter_spacing };
                     if (*i == ' ') {
                         spacing += _setting.word_spacing;
                     }
 
                     if (max_line_length != 0 && line_length + right > max_line_length) {
-                        add_line({ begin, i }, line_length - last_spacing, line_spacing, true);
+                        add_line({ begin, i }, line_length - last_spacing, true, false);
                         begin = i;
                         line_length = 0;
                     }
@@ -228,23 +238,23 @@ namespace gm {
                     ++i;
                 }
                 else {
-                    add_line({ begin, i }, line_length - last_spacing, line_spacing + _setting.paragraph_spacing, false);
+                    add_line({ begin, i }, line_length - last_spacing, false, true);
                     begin = ++i;
                     line_length = last_spacing = 0;
                 }
             }
-            add_line({ begin, i }, line_length - last_spacing, line_spacing, false);
+            add_line({ begin, i }, line_length - last_spacing, false, false);
 
             return cache.emplace(text, std::move(result)).first->second;
         }
 
-        void _line(f64 x, f64 y, std::u32string_view text, f64 extra_spacing = {}) const noexcept {
+        void _line(f64 x, f64 y, std::u32string_view text, f64 letter_spacing) const noexcept {
             auto& glyph_map{ _setting.font->glyph_map() };
+            u16 glyph_height{ _setting.font->height() };
             u32 font_id{ _setting.font->sprite().id() };
-            u16 height{ _setting.font->height() };
 
             for (u32 ch : text) {
-                auto& [glyph_x, glyph_y, width, offset_x]{ glyph_map.at(ch) };
+                auto& [glyph_x, glyph_y, glyph_width, offset_x]{ glyph_map.at(ch) };
 
                 IFunctionResource::at(FunctionId::draw_sprite_general)
                     .call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
@@ -252,8 +262,8 @@ namespace gm {
                         0,
                         glyph_x,
                         glyph_y,
-                        width,
-                        height,
+                        glyph_width,
+                        glyph_height,
                         (x + offset_x) * _setting.scale_x,
                         y * _setting.scale_y,
                         _setting.scale_x,
@@ -266,7 +276,7 @@ namespace gm {
                         _setting.alpha
                     );
 
-                x += offset_x + width + _setting.letter_spacing + extra_spacing;
+                x += offset_x + glyph_width + letter_spacing;
                 if (ch == ' ') {
                     x += _setting.word_spacing;
                 }
@@ -303,26 +313,16 @@ namespace gm {
                 y -= result.total_height;
             }
 
-            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
-            for (auto& [text, width, height, is_full] : result.lines) {
-                f64 real_width{ width };
-                f64 extra_spacing{};
-                if (_setting.justified && max_line_length != 0 && is_full) {
-                    real_width = max_line_length;
-                    if (text.size() > 1) {
-                        extra_spacing = (max_line_length - width) / (text.size() - 1);
-                    }
-                }
-
+            for (auto& [text, width, height, letter_spacing] : result.lines) {
                 f64 real_x{ x };
                 if (_setting.halign == 0) {
-                    real_x -= real_width / 2;
+                    real_x -= width / 2;
                 }
                 else if (_setting.halign > 0) {
-                    real_x -= real_width;
+                    real_x -= width;
                 }
 
-                _line(real_x, y, text, extra_spacing);
+                _line(real_x, y, text, letter_spacing);
 
                 y += height;
             }
