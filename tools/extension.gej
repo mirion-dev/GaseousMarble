@@ -1,9 +1,9 @@
 {
 	"name": "GaseousMarble",
 	"folder": "GaseousMarble",
-	"version": "0.10.1",
+	"version": "0.11.0",
 	"author": "Mirion",
-	"date": "5/4/2025",
+	"date": "5/8/2025",
 	"license": "MIT",
 	"description": "Draw Unicode texts in GameMaker 8.2.",
 	"helpfile": "",
@@ -30,11 +30,43 @@
 					"name": "gm_font",
 					"extname": "gm_font",
 					"calltype": 12,
-					"helpline": "gm_font(name,sprite_path,glyph_path)",
+					"helpline": "gm_font(font_name,sprite_path)",
 					"hidden": false,
 					"argtypes": [
 						1,
-						1,
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm_free",
+					"extname": "gm_free",
+					"calltype": 12,
+					"helpline": "gm_free(font_name)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm_clear",
+					"extname": "gm_clear",
+					"calltype": 12,
+					"helpline": "gm_clear()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm_draw",
+					"extname": "gm_draw",
+					"calltype": 12,
+					"helpline": "gm_draw(x,y,text)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2,
 						1
 					],
 					"returntype": 2
@@ -62,43 +94,10 @@
 					"returntype": 2
 				},
 				{
-					"name": "gm_draw",
-					"extname": "gm_draw",
-					"calltype": 12,
-					"helpline": "gm_draw(x,y,text)",
-					"hidden": false,
-					"argtypes": [
-						2,
-						2,
-						1
-					],
-					"returntype": 2
-				},
-				{
-					"name": "gm_free",
-					"extname": "gm_free",
-					"calltype": 12,
-					"helpline": "gm_free(name)",
-					"hidden": false,
-					"argtypes": [
-						1
-					],
-					"returntype": 2
-				},
-				{
-					"name": "gm_clear",
-					"extname": "gm_clear",
-					"calltype": 12,
-					"helpline": "gm_clear()",
-					"hidden": false,
-					"argtypes": [],
-					"returntype": 2
-				},
-				{
 					"name": "gm_set_font",
 					"extname": "gm_set_font",
 					"calltype": 12,
-					"helpline": "gm_set_font(name)",
+					"helpline": "gm_set_font(font_name)",
 					"hidden": false,
 					"argtypes": [
 						1
@@ -162,6 +161,17 @@
 					"returntype": 2
 				},
 				{
+					"name": "gm_set_justified",
+					"extname": "gm_set_justified",
+					"calltype": 12,
+					"helpline": "gm_set_justified(justified)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
 					"name": "gm_set_align",
 					"extname": "gm_set_align",
 					"calltype": 12,
@@ -174,12 +184,14 @@
 					"returntype": 2
 				},
 				{
-					"name": "gm_set_max_line_width",
-					"extname": "gm_set_max_line_width",
+					"name": "gm_set_align3",
+					"extname": "gm_set_align3",
 					"calltype": 12,
-					"helpline": "gm_set_max_line_width(max_width)",
+					"helpline": "gm_set_align3(halign,valign,justified)",
 					"hidden": false,
 					"argtypes": [
+						2,
+						2,
 						2
 					],
 					"returntype": 2
@@ -207,10 +219,32 @@
 					"returntype": 2
 				},
 				{
+					"name": "gm_set_paragraph_spacing",
+					"extname": "gm_set_paragraph_spacing",
+					"calltype": 12,
+					"helpline": "gm_set_paragraph_spacing(spacing)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
 					"name": "gm_set_line_height",
 					"extname": "gm_set_line_height",
 					"calltype": 12,
 					"helpline": "gm_set_line_height(height)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm_set_max_line_length",
+					"extname": "gm_set_max_line_length",
+					"calltype": 12,
+					"helpline": "gm_set_max_line_length(length)",
 					"hidden": false,
 					"argtypes": [
 						2
@@ -296,10 +330,10 @@
 					"returntype": 2
 				},
 				{
-					"name": "gm_get_max_line_width",
-					"extname": "gm_get_max_line_width",
+					"name": "gm_is_justified",
+					"extname": "gm_is_justified",
 					"calltype": 12,
-					"helpline": "gm_get_max_line_width()",
+					"helpline": "gm_is_justified()",
 					"hidden": false,
 					"argtypes": [],
 					"returntype": 2
@@ -323,10 +357,28 @@
 					"returntype": 2
 				},
 				{
+					"name": "gm_get_paragraph_spacing",
+					"extname": "gm_get_paragraph_spacing",
+					"calltype": 12,
+					"helpline": "gm_get_paragraph_spacing()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
 					"name": "gm_get_line_height",
 					"extname": "gm_get_line_height",
 					"calltype": 12,
 					"helpline": "gm_get_line_height()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm_get_max_line_length",
+					"extname": "gm_get_max_line_length",
+					"calltype": 12,
+					"helpline": "gm_get_max_line_length()",
 					"hidden": false,
 					"argtypes": [],
 					"returntype": 2

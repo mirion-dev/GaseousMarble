@@ -13,35 +13,22 @@ API Real gm_init() noexcept {
     return draw.init();
 }
 
-API Real gm_font(StringView name, StringView sprite_path) noexcept {
-    auto iter{ font_map.find(std::string{ name }) };
-    if (iter != font_map.end()) {
+API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
+    if (font_map.contains(std::string{ font_name })) {
         return true;
     }
 
-    old::Font font{ name, sprite_path };
+    old::Font font{ font_name, sprite_path };
     if (!font) {
         return false;
     }
 
-    font_map.emplace_hint(iter, name, std::move(font));
+    font_map.emplace(font_name, std::move(font));
     return true;
 }
 
-API Real gm_width(StringView text) noexcept {
-    return old_draw.width(text);
-}
-
-API Real gm_height(StringView text) noexcept {
-    return old_draw.height(text);
-}
-
-API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    return draw.text(x, y, text);
-}
-
-API Real gm_free(StringView name) noexcept {
-    auto iter{ font_map.find(std::string{ name }) };
+API Real gm_free(StringView font_name) noexcept {
+    auto iter{ font_map.find(std::string{ font_name }) };
     if (iter == font_map.end() || &iter->second == old_draw.setting().font) {
         return false;
     }
@@ -55,8 +42,20 @@ API Real gm_clear() noexcept {
     return true;
 }
 
-API Real gm_set_font(StringView name) noexcept {
-    auto iter{ font_map.find(std::string{ name }) };
+API Real gm_draw(Real x, Real y, StringView text) noexcept {
+    return draw.text(x, y, text);
+}
+
+API Real gm_width(StringView text) noexcept {
+    return old_draw.width(text);
+}
+
+API Real gm_height(StringView text) noexcept {
+    return old_draw.height(text);
+}
+
+API Real gm_set_font(StringView font_name) noexcept {
+    auto iter{ font_map.find(std::string{ font_name }) };
     if (iter == font_map.end()) {
         return false;
     }
@@ -72,7 +71,8 @@ API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
 }
 
 API Real gm_set_color(Real color) noexcept {
-    return gm_set_color2(color, color);
+    gm_set_color2(color, color);
+    return true;
 }
 
 API Real gm_set_alpha(Real alpha) noexcept {
@@ -94,9 +94,20 @@ API Real gm_set_valign(Real align) noexcept {
     return true;
 }
 
+API Real gm_set_justified(Real justified) noexcept {
+    old_draw.setting().justified = justified;
+    return true;
+}
+
 API Real gm_set_align(Real halign, Real valign) noexcept {
     gm_set_halign(halign);
     gm_set_valign(valign);
+    return true;
+}
+
+API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
+    gm_set_align(halign, valign);
+    gm_set_justified(justified);
     return true;
 }
 
@@ -107,6 +118,11 @@ API Real gm_set_letter_spacing(Real spacing) noexcept {
 
 API Real gm_set_word_spacing(Real spacing) noexcept {
     old_draw.setting().word_spacing = spacing;
+    return true;
+}
+
+API Real gm_set_paragraph_spacing(Real spacing) noexcept {
+    old_draw.setting().paragraph_spacing = spacing;
     return true;
 }
 
@@ -124,7 +140,7 @@ API Real gm_set_max_line_length(Real length) noexcept {
         return false;
     }
 
-    old_draw.setting().max_line_length = std::abs(length);
+    old_draw.setting().max_line_length = length;
     return true;
 }
 
@@ -169,12 +185,20 @@ API Real gm_get_valign() noexcept {
     return old_draw.setting().valign;
 }
 
+API Real gm_is_justified() noexcept {
+    return old_draw.setting().justified;
+}
+
 API Real gm_get_letter_spacing() noexcept {
     return old_draw.setting().letter_spacing;
 }
 
 API Real gm_get_word_spacing() noexcept {
     return old_draw.setting().word_spacing;
+}
+
+API Real gm_get_paragraph_spacing() noexcept {
+    return old_draw.setting().paragraph_spacing;
 }
 
 API Real gm_get_line_height() noexcept {
