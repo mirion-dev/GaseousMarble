@@ -11,7 +11,7 @@ import :engine;
 // Font
 namespace gm {
 
-    class SpriteHandle {
+    export class SpriteHandle {
         static constexpr auto _null_id{ static_cast<u32>(-1) };
 
         u32 _id{ _null_id };
@@ -37,7 +37,7 @@ namespace gm {
         }
     };
 
-    struct SpriteDeleter {
+    export struct SpriteDeleter {
         using pointer = SpriteHandle;
 
         void operator()(pointer handle) const noexcept {
