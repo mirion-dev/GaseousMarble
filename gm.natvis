@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
-    <Type Name="gm::BasicString&lt;*&gt;">
-        <Intrinsic Name="header" Expression="(gm::StringHeader*)(_data - _offset)"/>
+    <Type Name="gm::old::BasicString&lt;*&gt;">
+        <Intrinsic Name="header" Expression="(gm::old::StringHeader*)(_data - _offset)"/>
         <Intrinsic Name="size" Expression="header()->size"/>
         <Intrinsic Name="ref_count" Expression="header()->ref_count"/>
         <DisplayString>{_data, [size()] na}</DisplayString>
@@ -16,8 +16,8 @@
         </Expand>
     </Type>
 
-    <Type Name="gm::BasicStringView&lt;*&gt;">
-        <Intrinsic Name="header" Expression="(gm::StringHeader*)(_data - _offset)"/>
+    <Type Name="gm::old::BasicStringView&lt;*&gt;">
+        <Intrinsic Name="header" Expression="(gm::old::StringHeader*)(_data - _offset)"/>
         <Intrinsic Name="size" Expression="header()->size"/>
         <Intrinsic Name="ref_count" Expression="header()->ref_count"/>
         <DisplayString>{_data, [size()] na}</DisplayString>
@@ -31,16 +31,16 @@
         </Expand>
     </Type>
 
-    <Type Name="gm::Value">
-        <DisplayString Condition="_type == gm::ValueType::real">{_real}</DisplayString>
-        <DisplayString Condition="_type == gm::ValueType::string">{_string}</DisplayString>
+    <Type Name="gm::old::Value">
+        <DisplayString Condition="_type == gm::old::ValueType::real">{_real}</DisplayString>
+        <DisplayString Condition="_type == gm::old::ValueType::string">{_string}</DisplayString>
         <Expand>
-            <ExpandedItem Condition="_type == gm::ValueType::real">_real</ExpandedItem>
-            <ExpandedItem Condition="_type == gm::ValueType::string">_string</ExpandedItem>
+            <ExpandedItem Condition="_type == gm::old::ValueType::real">_real</ExpandedItem>
+            <ExpandedItem Condition="_type == gm::old::ValueType::string">_string</ExpandedItem>
         </Expand>
     </Type>
 
-    <Type Name="gm::IFunction">
+    <Type Name="gm::old::IFunction">
         <Intrinsic Name="name" Expression="_data->name"/>
         <Intrinsic Name="address" Expression="_data->address"/>
         <Intrinsic Name="arg_count" Expression="_data->arg_count"/>
@@ -53,8 +53,8 @@
         </Expand>
     </Type>
 
-    <Type Name="gm::IFunctionResource">
-        <Intrinsic Name="resource" Expression="(gm::FunctionResource*)0x00686b1c"/>
+    <Type Name="gm::old::IFunctionResource">
+        <Intrinsic Name="resource" Expression="(gm::old::FunctionResource*)0x00686b1c"/>
         <Intrinsic Name="count" Expression="resource()->count"/>
         <DisplayString Condition="count() == 0">[No function]</DisplayString>
         <DisplayString Condition="count() == 1">[1 function]</DisplayString>
