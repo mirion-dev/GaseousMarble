@@ -28,16 +28,7 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
 }
 
 API Real gm_free(StringView font_name) noexcept {
-    auto iter{ font_map.find(std::string{ font_name }) };
-    if (iter == font_map.end()) {
-        return 1; // font not found
-    }
-    if (&iter->second == draw.setting().font) {
-        return -1; // font currently in use
-    }
-
-    font_map.erase(iter);
-    return 0;
+    return font_map.erase(std::string{ font_name }) ? 0 : 1; // font not found
 }
 
 API Real gm_clear() noexcept {

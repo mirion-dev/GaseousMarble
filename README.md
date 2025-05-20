@@ -9,7 +9,7 @@ GaseousMarble provides following functions for drawing texts
 | **Function** | **Description** | **Error Code** |
 | -- | -- | -- |
 | `gm_font(font_name, sprite_path)` | Adds a font. The font sprite and glyph data can be generated using `tools/generate_font.py`. | `1` - Font already exists<br>`-1` - File not found or corrupt |
-| `gm_free(font_name)` | Frees a font. | `1` - Font not found<br>`-1` - Font currently in use |
+| `gm_free(font_name)` | Frees a font. | `1` - Font not found |
 | `gm_clear()` | Frees all fonts. | |
 | `gm_draw(x, y, text)` | Draws a UTF-8 string. | `-1` - Font not found |
 | `gm_width(text)` | Returns the width of the text. | |
