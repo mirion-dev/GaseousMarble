@@ -21,26 +21,33 @@ namespace gm {
     class BasicStringView {
         static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(Ch) };
 
-        const Ch* _data;
+        const Ch* _data{};
 
         auto _header() const noexcept {
             return reinterpret_cast<const StringHeader*>(_data - _offset);
         }
 
     public:
+        BasicStringView() noexcept = default;
+
+        BasicStringView(std::nullptr_t) noexcept = delete;
+
         // `str` must point to a Delphi UnicodeString structure or accessing its header is undefined
-        BasicStringView(std::basic_string_view<Ch> str = {}) noexcept :
-            _data{ str.data() } {}
+        BasicStringView(const std::convertible_to<std::basic_string_view<Ch>> auto& str) noexcept :
+            _data{ static_cast<std::basic_string_view<Ch>>(str).data() } {}
 
         operator std::basic_string_view<Ch>() const noexcept {
+            assert(_data != nullptr);
             return { _data, _header()->size };
         }
 
         u32 size() const noexcept {
+            assert(_data != nullptr);
             return _header()->size;
         }
 
         u32 ref_count() const noexcept {
+            assert(_data != nullptr);
             return _header()->ref_count;
         }
 
@@ -74,16 +81,26 @@ namespace gm {
             ++_header()->ref_count;
         }
 
-        BasicString(std::basic_string_view<Ch> str) noexcept :
-            _data{ new Ch[_offset + str.size() + 1] + _offset } {
+        BasicString(std::nullptr_t) noexcept = delete;
+
+        BasicString(const std::convertible_to<std::basic_string_view<Ch>> auto& str) noexcept {
+            auto view{ static_cast<std::basic_string_view<Ch>>(str) };
+
+            _data = new Ch[_offset + view.size() + 1] + _offset;
 
             new(_header()) StringHeader{
                 sizeof(Ch) == 1 ? _cp_utf8 : sizeof(Ch) == 2 ? _cp_utf16 : _cp_utf32,
                 sizeof(Ch),
                 1,
-                str.size()
+                view.size()
             };
-            new(std::uninitialized_copy(str.begin(), str.end(), _data)) Ch{};
+            new(std::uninitialized_copy(view.begin(), view.end(), _data)) Ch{};
+        }
+
+        BasicString(BasicStringView<Ch> str) noexcept :
+            _data{ new Ch[_offset + str.size() + 1] + _offset } {
+
+            std::uninitialized_copy(str.data() - _offset, str.data() + str.size() + 1, _data - _offset);
         }
 
         BasicString(const BasicString& other) noexcept :
@@ -104,12 +121,12 @@ namespace gm {
             return *this;
         }
 
-        operator BasicStringView<Ch>() const noexcept {
-            return _data;
-        }
-
         operator std::basic_string_view<Ch>() const noexcept {
             return { _data, _header()->size };
+        }
+
+        operator BasicStringView<Ch>() const noexcept {
+            return _data;
         }
 
         u32 size() const noexcept {
@@ -126,15 +143,12 @@ namespace gm {
     };
 
     export {
+
         using Real = f64;
 
         using String = BasicString<char>;
-        using String16 = BasicString<char16_t>;
-        using String32 = BasicString<char32_t>;
-
         using StringView = BasicStringView<char>;
-        using String16View = BasicStringView<char16_t>;
-        using String32View = BasicStringView<char32_t>;
+
     }
 
 }
@@ -157,7 +171,7 @@ namespace gm {
             _type{ ValueType::real },
             _real{ real } {}
 
-        Value(const String& string) noexcept :
+        Value(StringView string) noexcept :
             _type{ ValueType::string },
             _real{},
             _string{ string } {}
@@ -199,7 +213,11 @@ namespace gm {
 
     public:
         IFunction(const FunctionData* data) noexcept :
-            _data{ data } {};
+            _data{ data } {}
+
+        void operator()(const auto&... args) const noexcept {
+            call(args...);
+        }
 
         std::string_view name() const noexcept {
             return { _data->name, _data->name_length };
@@ -214,13 +232,13 @@ namespace gm {
             return _data->address;
         }
 
-        template <class R, class... Args>
-        R call(Args... args) const noexcept {
+        template <class R = void>
+        R call(const auto&... args) const noexcept {
             // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr u32 args_count{ sizeof...(args) };
             assert(_data->arg_count == -1 || _data->arg_count == args_count);
 
-            Value args_wrapped[]{ args... }, ret;
+            Value args_wrapped[]{ static_cast<Value>(args)... }, ret;
             Value* args_ptr{ args_wrapped };
             Value* ret_ptr{ &ret };
             void* fn_ptr{ _data->address };

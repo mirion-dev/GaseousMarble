@@ -41,7 +41,7 @@ namespace gm {
         using pointer = SpriteHandle;
 
         void operator()(pointer handle) const noexcept {
-            IFunctionResource::at(FunctionId::sprite_delete).call<void, Real>(handle.id());
+            IFunctionResource::at(FunctionId::sprite_delete)(handle.id());
         }
     };
 
@@ -61,12 +61,10 @@ namespace gm {
     public:
         Font() noexcept = default;
 
-        Font(std::string_view font_name, std::string_view sprite_path) noexcept :
-            _name{ font_name } {
-
+        Font(std::string_view font_name, std::string_view sprite_path) noexcept {
             auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
             std::ifstream file{ glyph_path, std::ios::binary };
-            if (!file) {
+            if (!file.is_open()) {
                 return;
             }
 
@@ -76,18 +74,6 @@ namespace gm {
                 return;
             }
 
-            _sprite.reset(
-                IFunctionResource::at(FunctionId::sprite_add)
-                .call<u32, String, Real, Real, Real, Real, Real>(
-                    sprite_path,
-                    1,
-                    false,
-                    false,
-                    0,
-                    0
-                )
-            );
-
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
             file.read(reinterpret_cast<char*>(&_offset_y), sizeof(_offset_y));
             while (file) {
@@ -95,6 +81,12 @@ namespace gm {
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
                 file.read(reinterpret_cast<char*>(&_glyph_map[ch]), sizeof(_glyph_map[ch]));
             }
+            if (!file.eof()) {
+                return;
+            }
+
+            _name = font_name;
+            _sprite.reset(IFunctionResource::at(FunctionId::sprite_add).call<u32>(sprite_path, 1, false, false, 0, 0));
         }
 
         operator bool() const noexcept {
@@ -256,25 +248,24 @@ namespace gm {
             for (u32 ch : text) {
                 auto& [glyph_x, glyph_y, glyph_width, offset_x]{ glyph_map.at(ch) };
 
-                IFunctionResource::at(FunctionId::draw_sprite_general)
-                    .call<void, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real, Real>(
-                        font_id,
-                        0,
-                        glyph_x,
-                        glyph_y,
-                        glyph_width,
-                        glyph_height,
-                        (x + offset_x) * _setting.scale_x,
-                        y * _setting.scale_y,
-                        _setting.scale_x,
-                        _setting.scale_y,
-                        0,
-                        _setting.color_top,
-                        _setting.color_top,
-                        _setting.color_bottom,
-                        _setting.color_bottom,
-                        _setting.alpha
-                    );
+                IFunctionResource::at(FunctionId::draw_sprite_general)(
+                    font_id,
+                    0,
+                    glyph_x,
+                    glyph_y,
+                    glyph_width,
+                    glyph_height,
+                    (x + offset_x) * _setting.scale_x,
+                    y * _setting.scale_y,
+                    _setting.scale_x,
+                    _setting.scale_y,
+                    0,
+                    _setting.color_top,
+                    _setting.color_top,
+                    _setting.color_bottom,
+                    _setting.color_bottom,
+                    _setting.alpha
+                );
 
                 x += offset_x + glyph_width + letter_spacing;
                 if (ch == ' ') {
