@@ -10,40 +10,43 @@ Draw draw;
 
 // reserve for the new Draw
 API Real gm_init() noexcept {
-    return true;
+    return 0;
 }
 
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
     if (font_map.contains(std::string{ font_name })) {
-        return true;
+        return 1; // font already exists
     }
 
     Font font{ font_name, sprite_path };
     if (!font) {
-        return false;
+        return -1; // file not found or corrupt
     }
 
     font_map.emplace(font_name, std::move(font));
-    return true;
+    return 0;
 }
 
 API Real gm_free(StringView font_name) noexcept {
     auto iter{ font_map.find(std::string{ font_name }) };
-    if (iter == font_map.end() || &iter->second == draw.setting().font) {
-        return false;
+    if (iter == font_map.end()) {
+        return 1; // font not found
+    }
+    if (&iter->second == draw.setting().font) {
+        return -1; // font currently in use
     }
 
     font_map.erase(iter);
-    return true;
+    return 0;
 }
 
 API Real gm_clear() noexcept {
     font_map.clear();
-    return true;
+    return 0;
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    return draw.text(x, y, text);
+    return draw.text(x, y, text) ? 0 : -1; // font not found
 }
 
 API Real gm_width(StringView text) noexcept {
@@ -57,107 +60,107 @@ API Real gm_height(StringView text) noexcept {
 API Real gm_set_font(StringView font_name) noexcept {
     auto iter{ font_map.find(std::string{ font_name }) };
     if (iter == font_map.end()) {
-        return false;
+        return -1; // font not found
     }
 
     draw.setting().font = &iter->second;
-    return true;
+    return 0;
 }
 
 API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
     draw.setting().color_top = static_cast<u32>(color_top);
     draw.setting().color_bottom = static_cast<u32>(color_bottom);
-    return true;
+    return 0;
 }
 
 API Real gm_set_color(Real color) noexcept {
     gm_set_color2(color, color);
-    return true;
+    return 0;
 }
 
 API Real gm_set_alpha(Real alpha) noexcept {
     if (alpha < 0 || alpha > 1) {
-        return false;
+        return -1; // invalid argument
     }
 
     draw.setting().alpha = alpha;
-    return true;
+    return 0;
 }
 
 API Real gm_set_halign(Real align) noexcept {
     draw.setting().halign = align == 0 ? 0 : align < 0 ? -1 : 1;
-    return true;
+    return 0;
 }
 
 API Real gm_set_valign(Real align) noexcept {
     draw.setting().valign = align == 0 ? 0 : align < 0 ? -1 : 1;
-    return true;
+    return 0;
 }
 
 API Real gm_set_justified(Real justified) noexcept {
     draw.setting().justified = justified;
-    return true;
+    return 0;
 }
 
 API Real gm_set_align(Real halign, Real valign) noexcept {
     gm_set_halign(halign);
     gm_set_valign(valign);
-    return true;
+    return 0;
 }
 
 API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
     gm_set_align(halign, valign);
     gm_set_justified(justified);
-    return true;
+    return 0;
 }
 
 API Real gm_set_letter_spacing(Real spacing) noexcept {
     draw.setting().letter_spacing = spacing;
-    return true;
+    return 0;
 }
 
 API Real gm_set_word_spacing(Real spacing) noexcept {
     draw.setting().word_spacing = spacing;
-    return true;
+    return 0;
 }
 
 API Real gm_set_paragraph_spacing(Real spacing) noexcept {
     draw.setting().paragraph_spacing = spacing;
-    return true;
+    return 0;
 }
 
 API Real gm_set_line_height(Real height) noexcept {
     if (height <= 0) {
-        return false;
+        return -1; // invalid argument
     }
 
     draw.setting().line_height = height;
-    return true;
+    return 0;
 }
 
 API Real gm_set_max_line_length(Real length) noexcept {
     if (length < 0) {
-        return false;
+        return -1; // invalid argument
     }
 
     draw.setting().max_line_length = length;
-    return true;
+    return 0;
 }
 
 API Real gm_set_offset(Real x, Real y) noexcept {
     draw.setting().offset_x = x;
     draw.setting().offset_y = y;
-    return true;
+    return 0;
 }
 
 API Real gm_set_scale(Real x, Real y) noexcept {
     if (x <= 0 || y <= 0) {
-        return false;
+        return -1; // invalid argument(s)
     }
 
     draw.setting().scale_x = x;
     draw.setting().scale_y = y;
-    return true;
+    return 0;
 }
 
 // MSVC will unhappy if I use String as the return type
