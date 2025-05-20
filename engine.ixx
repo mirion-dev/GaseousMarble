@@ -215,25 +215,7 @@ namespace gm {
         IFunction(const FunctionData* data) noexcept :
             _data{ data } {}
 
-        void operator()(const auto&... args) const noexcept {
-            call(args...);
-        }
-
-        std::string_view name() const noexcept {
-            return { _data->name, _data->name_length };
-        }
-
-        // -1 indicates variable arguments
-        i32 arg_count() const noexcept {
-            return _data->arg_count;
-        }
-
-        void* address() const noexcept {
-            return _data->address;
-        }
-
-        template <class R = void>
-        R call(const auto&... args) const noexcept {
+        Value operator()(const auto&... args) const noexcept {
             // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr u32 args_count{ sizeof...(args) };
             assert(_data->arg_count == -1 || _data->arg_count == args_count);
@@ -250,7 +232,20 @@ namespace gm {
                 call fn_ptr;
                 }
 
-            return static_cast<R>(ret);
+            return ret;
+        }
+
+        std::string_view name() const noexcept {
+            return { _data->name, _data->name_length };
+        }
+
+        // -1 indicates variable arguments
+        i32 arg_count() const noexcept {
+            return _data->arg_count;
+        }
+
+        void* address() const noexcept {
+            return _data->address;
         }
     };
 

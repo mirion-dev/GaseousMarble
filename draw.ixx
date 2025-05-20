@@ -86,7 +86,7 @@ namespace gm {
             }
 
             _name = font_name;
-            _sprite.reset(IFunctionResource::at(FunctionId::sprite_add).call<u32>(sprite_path, 1, false, false, 0, 0));
+            _sprite.reset(SpriteHandle{ IFunctionResource::at(FunctionId::sprite_add)(sprite_path, 1, false, false, 0, 0) });
         }
 
         operator bool() const noexcept {
