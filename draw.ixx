@@ -8,7 +8,6 @@ import std;
 import :core;
 import :engine;
 
-// Font
 namespace gm {
 
     export class SpriteHandle {
@@ -86,7 +85,9 @@ namespace gm {
             }
 
             _name = font_name;
-            _sprite.reset(SpriteHandle{ IFunctionResource::at(FunctionId::sprite_add)(sprite_path, 1, false, false, 0, 0) });
+            _sprite.reset(
+                static_cast<u32>(IFunctionResource::at(FunctionId::sprite_add)(sprite_path, 1, false, false, 0, 0))
+            );
         }
 
         operator bool() const noexcept {
@@ -122,11 +123,6 @@ namespace gm {
             return _glyph_map;
         }
     };
-
-}
-
-// Draw
-namespace gm {
 
     export struct DrawSetting {
         Font* font{};
@@ -188,7 +184,14 @@ namespace gm {
 
             f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
             auto add_line{
-                [this, max_line_length, &result](std::u32string_view text, f64 line_length, f64 is_full, f64 is_paragraph_end) {
+                   // @formatter:off
+                [this, max_line_length, &result](
+                    std::u32string_view text,
+                    f64 line_length,
+                    f64 is_full,
+                    f64 is_paragraph_end
+                ) {
+                    // @formatter:on
                     f64 width{ line_length };
                     f64 letter_spacing{ _setting.letter_spacing };
                     if (_setting.justified && max_line_length != 0 && is_full && text.size() != 1) {

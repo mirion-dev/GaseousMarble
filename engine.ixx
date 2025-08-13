@@ -7,8 +7,11 @@ export module gm:engine;
 import std;
 import :core;
 
-// fundamental types of GML
 namespace gm {
+
+    // ------------------------
+    // fundamental types of GML
+    // ------------------------
 
     struct StringHeader {
         u16 code_page;
@@ -151,10 +154,9 @@ namespace gm {
 
     }
 
-}
-
-// interface of GameMaker function resources
-namespace gm {
+    // -----------------------------------------
+    // interface of GameMaker function resources
+    // -----------------------------------------
 
     enum class ValueType {
         real,
@@ -225,12 +227,14 @@ namespace gm {
             Value* ret_ptr{ &ret };
             void* fn_ptr{ _data->address };
 
+            // @formatter:off
             __asm {
                 push args_ptr;
                 push args_count;
                 push ret_ptr;
                 call fn_ptr;
-                }
+            }
+            // @formatter:on
 
             return ret;
         }
