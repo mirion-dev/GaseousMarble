@@ -1,4 +1,4 @@
-> [!Warning]
+﻿> [!Warning]
 > You are viewing the readme for the `master` branch, which may contain unreleased features. For a specific version, please select the corresponding tag.
  
 # GaseousMarble
@@ -9,7 +9,7 @@ Draw Unicode texts in GameMaker 8.2, 80% faster than [FoxWriting](https://github
 
 GaseousMarble provides following functions for drawing texts
 
-| **Function** | **Description** | **Error Code** |
+| **Function** | **Description** | **Status Code**<br>`0` - OK |
 | -- | -- | -- |
 | `gm_font(font_name, sprite_path)` | Adds a font. The font sprite and glyph data can be generated using `tools/generate_font.py`. | `1` - Font already exists<br>`-1` - File not found or corrupt |
 | `gm_free(font_name)` | Frees a font. | `1` - Font not found |
@@ -20,7 +20,7 @@ GaseousMarble provides following functions for drawing texts
 
 as well as setters and getters for configuring the drawing setting
 
-| **Setter** | **Getter** | **Setter Error Code** |
+| **Setter** | **Getter** | **Setter Status Code**<br>`0` - OK |
 | -- | -- | -- |
 | `gm_set_font(font_name)` | `gm_get_font()` | `-1` - Font not found |
 | `gm_set_color(color)`<br>`gm_set_color2(color_top, color_bottom)` | `gm_get_color_top()`<br>`gm_get_color_bottom()` | |
