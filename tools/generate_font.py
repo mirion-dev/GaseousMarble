@@ -1,3 +1,4 @@
+from typing import cast
 from fontTools.ttLib import TTFont
 from PIL import Image, ImageFont, ImageDraw
 import os
@@ -6,50 +7,50 @@ import struct
 
 
 def generate_font(
-    font_path_list: str | list[str], sprite_path: str, *,
-    font_size=16, char_list: str | None = None, dense=False, smoothing=True, fill='white', stroke_width=0, stroke_fill='black'
+    font_path: str | list[str], sprite_path: str, *,
+    font_size=16, charset: str | None = None, dense=False, smoothing=True, fill='white', stroke_width=0, stroke_fill='black'
 ):
     if font_size <= 0:
-        raise Exception('The font size should be positive.')
+        raise Exception('The `font_size` should be positive.')
+    if charset != None and len(charset) == 0:
+        raise Exception('The `charset` should be non-empty.')
     if stroke_width < 0:
-        raise Exception('The stroke width should be non-negative.')
+        raise Exception('The `stroke_width` should be non-negative.')
 
-    if isinstance(font_path_list, str):
-        font_path_list = [font_path_list]
-
-    font_path_list = list(map(os.path.abspath, font_path_list))
-    sprite_path = os.path.abspath(sprite_path)
-    glyph_path = os.path.splitext(sprite_path)[0] + '.gly'
+    if isinstance(font_path, str):
+        font_path = [font_path]
 
     '''
-    counts used code points
+    assign font to every character in the charset
     '''
-    cp_map = {}
-    cp_list = set()
-    for path in font_path_list:
-        cp = set()
-        with TTFont(path) as font:
-            for table in font['cmap'].tables:
-                cp |= table.cmap.keys()
-        cp -= cp_list
+    chars_map = dict[str, set[str]]()
+    assigned_chars = set[str]()
+    for path in font_path:
+        code_points = cast(dict[int, str] | None, TTFont(path).getBestCmap())
+        if code_points == None:
+            continue
 
-        cp_map[path] = set(filter(lambda x: chr(x).isprintable(), cp))
-        cp_list |= cp_map[path]
+        chars = {chr(i) for i in code_points.keys() if chr(i).isprintable()}
+        chars_map[path] = chars - assigned_chars
+        assigned_chars |= chars_map[path]
 
-    if char_list != None:
-        cp_char_list = set(map(ord, filter(str.isprintable, char_list)))
-        for cp in cp_map.values():
-            cp &= cp_char_list
-            cp_char_list -= cp
+    if charset != None:
+        needed_chars = set(filter(str.isprintable, charset))
+        for (path, chars) in chars_map.items():
+            chars &= needed_chars
+            if len(chars) == 0:
+                chars_map.pop(path)
+            else:
+                needed_chars -= chars
 
-        if len(cp_char_list) != 0:
-            raise Exception(f'Unable to find a suitable font for following characters: {list(map(chr, cp_char_list))}')
+        if len(needed_chars) != 0:
+            raise Exception(f'Unable to find a suitable font for following characters: {list(needed_chars)}')
 
-    code_points = {path: sorted(cp) for (path, cp) in cp_map.items()}
-    font_list = [ImageFont.truetype(path, font_size) for path in code_points]
+    chars_map = {path: ''.join(sorted(chars)) for (path, chars) in chars_map.items()}
+    fonts = [ImageFont.truetype(path, font_size) for path in chars_map.keys()]
 
     '''
-    calculates the line height and min top
+    calculate the sprite size when in a single line
     '''
     image0 = Image.new('RGBA', (1, 1))
     draw0 = ImageDraw.Draw(image0)
@@ -60,31 +61,31 @@ def generate_font(
     glyph_spacing = 0 if dense else 1
     min_top = 0
     max_bottom = 0
-    for (font, cp) in zip(font_list, code_points.values()):
+    for (font, chars) in zip(fonts, chars_map.values()):
         draw0.font = font
-        for i in cp:
-            (l, t, r, b) = draw0.textbbox((0, 0), chr(i), stroke_width=stroke_width)
+        for ch in chars:
+            (l, t, r, b) = draw0.textbbox((0, 0), ch, stroke_width=stroke_width)
             w = r - l
             line_length += w + glyph_spacing
             min_top = min(min_top, t)
             max_bottom = max(max_bottom, b)
 
-    line_length -= glyph_spacing
-    line_height = max_bottom - min_top + glyph_spacing
+    line_length = int(line_length) - glyph_spacing
+    line_height = int(max_bottom - min_top) + glyph_spacing
 
     '''
-    calculates the max line length
+    calculate the sprite size to arrange glyphs into a roughly square
     '''
     max_line_length = line_length
     line_count = 1
     if max_line_length > 1024:
         # x == h * (l / x + 1)
-        max_line_length = math.ceil((line_height + math.sqrt(line_height * (line_height + 4 * line_length))) / 2)
+        max_line_length = int((line_height + math.sqrt(line_height * (line_height + 4 * line_length))) / 2)
         line_length = 0
-        for (font, cp) in zip(font_list, code_points.values()):
+        for (font, chars) in zip(fonts, chars_map.values()):
             draw0.font = font
-            for i in cp:
-                (l, t, r, b) = draw0.textbbox((0, 0), chr(i), stroke_width=stroke_width)
+            for ch in chars:
+                (l, t, r, b) = draw0.textbbox((0, 0), ch, stroke_width=stroke_width)
                 w = r - l
                 if line_length + w > max_line_length:
                     line_length = 0
@@ -99,26 +100,28 @@ def generate_font(
     if not smoothing:
         draw.fontmode = '1'
 
-    os.makedirs(os.path.dirname(glyph_path), exist_ok=True)
-    with open(glyph_path, 'wb+') as file:
-        file.write(b'GLY\0' + struct.pack('Hh', line_height - glyph_spacing, min_top))
+    data_path = os.path.splitext(sprite_path)[0] + '.gly'
+    os.makedirs(os.path.dirname(data_path), exist_ok=True)
+    with open(data_path, 'wb+') as file:
+        file.write(b'GLY\x00\x12\x00' + struct.pack('Hh', line_height - glyph_spacing, int(min_top)))
 
         x = 0
         y = -min_top
-        for (font, cp) in zip(font_list, code_points.values()):
+        for (font, chars) in zip(fonts, chars_map.values()):
             draw.font = font
-            for i in cp:
-                (l, t, r, b) = draw.textbbox((0, 0), chr(i), stroke_width=stroke_width)
+            for ch in chars:
+                (l, t, r, b) = draw.textbbox((0, 0), ch, stroke_width=stroke_width)
+                a = draw.textlength(ch)
                 w = r - l
                 if x + w > max_line_length:
                     x = 0
                     y += line_height
-                file.write(struct.pack('IHHHh', i, x, y, w, l))
+                file.write(struct.pack('IHHHHh', ord(ch), int(x), int(y), int(w), int(a), int(l)))
 
-                pos = (x - l, y)
+                pos = (int(x - l), int(y))
                 # draw.rectangle(((x - 1, y + t - 1), (x + w, y + b)), outline='red')
-                draw.text(pos, chr(i), fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
-                draw.text(pos, chr(i), fill)
+                draw.text(pos, ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
+                draw.text(pos, ch, fill)  # make glyphs more clear
 
                 x += w + glyph_spacing
 
