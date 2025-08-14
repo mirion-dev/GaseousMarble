@@ -1,6 +1,7 @@
 ﻿module;
 
 #include <cassert>
+#include <icu.h>
 
 export module gm:draw;
 
@@ -161,12 +162,19 @@ namespace gm {
 
         MeasureResult _measure(std::string_view text) const noexcept {
             auto& glyph_map{ _setting.font->glyph_map() };
-            auto filtered_text{
-                std::ranges::to<std::u32string>(
-                    utf8_decode(text)
-                    | std::views::filter([&glyph_map](u32 ch) { return ch == '\n' || glyph_map.contains(ch); })
-                )
-            };
+            const char* str{ text.data() };
+            i32 j{}, n{ static_cast<i32>(text.size()) }, ch;
+            std::u32string filtered_text;
+            filtered_text.reserve(n);
+            while (j != n) {
+                U8_NEXT_OR_FFFD(str, j, n, ch);
+                if (ch == 0xfffd) {
+                    break;
+                }
+                if (ch == '\n' || glyph_map.contains(ch)) {
+                    filtered_text.push_back(ch);
+                }
+            }
 
             MeasureResult result;
 
