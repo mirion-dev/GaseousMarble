@@ -12,9 +12,9 @@ import :engine;
 namespace gm {
 
     export class SpriteHandle {
-        static constexpr auto _null_id{ static_cast<u32>(-1) };
+        static constexpr auto NULL_ID{ static_cast<u32>(-1) };
 
-        u32 _id{ _null_id };
+        u32 _id{ NULL_ID };
 
     public:
         SpriteHandle() noexcept = default;
@@ -25,7 +25,7 @@ namespace gm {
             _id{ id } {}
 
         operator bool() const noexcept {
-            return _id != _null_id;
+            return _id != NULL_ID;
         }
 
         bool operator==(SpriteHandle other) const noexcept {

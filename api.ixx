@@ -1,4 +1,8 @@
-﻿#define API extern "C" __declspec(dllexport)
+﻿#ifdef GASEOUSMARBLE_EXPORTS
+#define API extern "C" __declspec(dllexport)
+#else
+#define API extern "C" __declspec(dllimport)
+#endif
 
 import std;
 import gm;

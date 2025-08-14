@@ -22,12 +22,12 @@ namespace gm {
 
     export template <class Ch>
     class BasicStringView {
-        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(Ch) };
+        static constexpr u32 HEADER_SIZE{ sizeof(StringHeader) / sizeof(Ch) };
 
         const Ch* _data{};
 
         auto _header() const noexcept {
-            return reinterpret_cast<const StringHeader*>(_data - _offset);
+            return reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE);
         }
 
     public:
@@ -61,19 +61,19 @@ namespace gm {
 
     export template <class Ch>
     class BasicString {
-        static constexpr u32 _offset{ sizeof(StringHeader) / sizeof(Ch) };
-        static constexpr u16 _cp_utf8{ 65001 };
-        static constexpr u16 _cp_utf16{ 1200 };
-        static constexpr u16 _cp_utf32{ 12000 };
+        static constexpr u32 HEADER_SIZE{ sizeof(StringHeader) / sizeof(Ch) };
+        static constexpr u16 CP_UTF8{ 65001 };
+        static constexpr u16 CP_UTF16{ 1200 };
+        static constexpr u16 CP_UTF32{ 12000 };
 
         Ch* _data;
 
         auto _header() noexcept {
-            return reinterpret_cast<StringHeader*>(_data - _offset);
+            return reinterpret_cast<StringHeader*>(_data - HEADER_SIZE);
         }
 
         auto _header() const noexcept {
-            return reinterpret_cast<const StringHeader*>(_data - _offset);
+            return reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE);
         }
 
     public:
@@ -89,10 +89,10 @@ namespace gm {
         BasicString(const std::convertible_to<std::basic_string_view<Ch>> auto& str) noexcept {
             auto view{ static_cast<std::basic_string_view<Ch>>(str) };
 
-            _data = new Ch[_offset + view.size() + 1] + _offset;
+            _data = new Ch[HEADER_SIZE + view.size() + 1] + HEADER_SIZE;
 
             new(_header()) StringHeader{
-                sizeof(Ch) == 1 ? _cp_utf8 : sizeof(Ch) == 2 ? _cp_utf16 : _cp_utf32,
+                sizeof(Ch) == 1 ? CP_UTF8 : sizeof(Ch) == 2 ? CP_UTF16 : CP_UTF32,
                 sizeof(Ch),
                 1,
                 view.size()
@@ -101,9 +101,9 @@ namespace gm {
         }
 
         BasicString(BasicStringView<Ch> str) noexcept :
-            _data{ new Ch[_offset + str.size() + 1] + _offset } {
+            _data{ new Ch[HEADER_SIZE + str.size() + 1] + HEADER_SIZE } {
 
-            std::uninitialized_copy(str.data() - _offset, str.data() + str.size() + 1, _data - _offset);
+            std::uninitialized_copy(str.data() - HEADER_SIZE, str.data() + str.size() + 1, _data - HEADER_SIZE);
         }
 
         BasicString(const BasicString& other) noexcept :
@@ -114,7 +114,7 @@ namespace gm {
 
         ~BasicString() noexcept {
             if (--_header()->ref_count == 0) {
-                delete[](_data - _offset);
+                delete[](_data - HEADER_SIZE);
             }
         }
 
@@ -219,8 +219,8 @@ namespace gm {
 
         Value operator()(const auto&... args) const noexcept {
             // this assertion may fail on game exit since GameMaker has already released function resources
-            static constexpr u32 args_count{ sizeof...(args) };
-            assert(_data->arg_count == -1 || _data->arg_count == args_count);
+            static constexpr u32 ARGS_COUNT{ sizeof...(args) };
+            assert(_data->arg_count == -1 || _data->arg_count == ARGS_COUNT);
 
             Value args_wrapped[]{ static_cast<Value>(args)... }, ret;
             Value* args_ptr{ args_wrapped };
@@ -230,7 +230,7 @@ namespace gm {
             // @formatter:off
             __asm {
                 push args_ptr;
-                push args_count;
+                push ARGS_COUNT;
                 push ret_ptr;
                 call fn_ptr;
             }
@@ -254,15 +254,15 @@ namespace gm {
     };
 
     export class IFunctionResource {
-        static constexpr auto _resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
+        static constexpr auto RESOURCE_PTR{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
 
     public:
         static IFunction at(FunctionId id) noexcept {
-            return _resource->data + static_cast<i32>(id);
+            return RESOURCE_PTR->data + static_cast<i32>(id);
         }
 
         static u32 count() noexcept {
-            return _resource->count;
+            return RESOURCE_PTR->count;
         }
     };
 
