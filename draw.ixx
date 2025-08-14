@@ -159,19 +159,7 @@ namespace gm {
             f64 total_height{};
         };
 
-        const MeasureResult& _measure(std::string_view text) const noexcept {
-            static constexpr u32 max_cache_size{ 16 };
-            static std::unordered_map<std::string, MeasureResult> cache;
-
-            auto iter{ cache.find(std::string{ text }) };
-            if (iter != cache.end()) {
-                return iter->second;
-            }
-
-            if (cache.size() > max_cache_size) {
-                cache.clear();
-            }
-
+        MeasureResult _measure(std::string_view text) const noexcept {
             auto& glyph_map{ _setting.font->glyph_map() };
             auto filtered_text{
                 std::ranges::to<std::u32string>(
@@ -240,7 +228,7 @@ namespace gm {
             }
             add_line({ begin, i }, line_length - last_spacing, false, false);
 
-            return cache.emplace(text, std::move(result)).first->second;
+            return result;
         }
 
         void _line(f64 x, f64 y, std::u32string_view text, f64 letter_spacing) const noexcept {
@@ -295,7 +283,7 @@ namespace gm {
                 return false;
             }
 
-            const MeasureResult& result{ _measure(text) };
+            MeasureResult result{ _measure(text) };
 
             x += _setting.offset_x / _setting.scale_x;
             y += (_setting.offset_y + _setting.font->offset_y()) / _setting.scale_y;
