@@ -3,7 +3,7 @@
  
 # GaseousMarble
 
-Draw Unicode texts in GameMaker 8.2, 80% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting).
+Draw Unicode texts in GameMaker 8.2, 80% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting) and support more options.
 
 ## Usage
 
@@ -20,7 +20,7 @@ GaseousMarble provides following functions for drawing texts
 
 as well as setters and getters for configuring the drawing setting
 
-| **Setter** | **Getter** | **Returned Value** |
+| **Setter** | **Getter** | **Setter Returned Value** |
 | -- | -- | -- |
 | `gm_set_font(font_name)` | `gm_get_font()` | `0` - OK<br>`-1` - Font not found |
 | `gm_set_color(color)`<br>`gm_set_color2(color_top, color_bottom)` | `gm_get_color_top()`<br>`gm_get_color_bottom()` | Always OK |
@@ -36,10 +36,9 @@ as well as setters and getters for configuring the drawing setting
 
 ## Credits
 
-This project was inspired by the following open-source projects. Their code wasn't directly copied but was adapted and modified to better suit the needs of this project. Thank you to the developers for their efforts and contributions.
+This project utilizes data from the reverse-engineering efforts of the following projects. Thanks to the original authors for their work.
 
-| **Project** | **Referenced** |
+| **Project** | **Reference** |
 | -- | -- |
-| [FoxWriting](https://github.com/Noisyfox/FoxWriting) | Implementation of text drawing |
-| [GMAPI](https://github.com/snakedeveloper/gmapi) | Engine internal data structures |
-| [GMAPI 8.1](https://github.com/gm-archive/gmapi-8.1) | Magic numbers for engine resources |
+| [GMAPI](https://github.com/snakedeveloper/gmapi) | Data structures |
+| [GMAPI 8.1](https://github.com/gm-archive/gmapi-8.1) | Magic numbers |
