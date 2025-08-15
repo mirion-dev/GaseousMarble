@@ -51,25 +51,36 @@ namespace gm {
         return utf16;
     }
 
-    export std::optional<std::vector<std::u16string_view>> tokenize(std::u16string_view text) noexcept {
+    export struct Token {
+        std::u16string_view text;
+        UWordBreak type;
+    };
+
+    export std::optional<std::vector<Token>> tokenize(std::u16string_view text) noexcept {
         UErrorCode status{};
 
         std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
-            ubrk_open(UBRK_WORD, nullptr, text.data(), text.size(), &status), ubrk_close
+            ubrk_open(UBRK_WORD, nullptr, text.data(), text.size(), &status),
+            ubrk_close
         };
         if (U_FAILURE(status)) {
             return {};
         }
 
-        std::vector<std::u16string_view> tokens;
-        i32 begin{ ubrk_first(iter.get()) };
+        std::vector<Token> tokens;
+        i32 first{ ubrk_first(iter.get()) };
         while (true) {
-            i32 end{ ubrk_next(iter.get()) };
-            if (end == -1) {
+            i32 last{ ubrk_next(iter.get()) };
+            if (last == -1) {
                 break;
             }
-            tokens.emplace_back(text.data() + begin, text.data() + end);
-            begin = end;
+
+            tokens.emplace_back(
+                std::u16string_view{ text.data() + first, text.data() + last },
+                static_cast<UWordBreak>(ubrk_getRuleStatus(iter.get()))
+            );
+
+            first = last;
         }
         return tokens;
     }
