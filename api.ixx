@@ -27,13 +27,16 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         font = { font_name, sprite_path };
     }
     catch (const std::ios_base::failure&) {
-        return -1; // file not found
+        return -1; // data file not found
     }
     catch (const InvalidHeaderError&) {
-        return -2; // invalid file header
+        return -2; // invalid data file header
     }
     catch (const DataCorruptionError&) {
-        return -3; // data is corrupt
+        return -3; // data file is corrupt
+    }
+    catch (const SpriteAddFailure&) {
+        return -4; // adding sprite failed
     }
 
     font_map.emplace(font_name, std::move(font));

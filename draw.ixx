@@ -12,16 +12,16 @@ import :engine;
 namespace gm {
 
     export class SpriteHandle {
-        static constexpr auto NULL_ID{ static_cast<u32>(-1) };
+        static constexpr i32 NULL_ID{ -1 };
 
-        u32 _id{ NULL_ID };
+        i32 _id{ NULL_ID };
 
     public:
         SpriteHandle() noexcept = default;
 
         SpriteHandle(std::nullptr_t) noexcept {};
 
-        SpriteHandle(u32 id) noexcept :
+        SpriteHandle(i32 id) noexcept :
             _id{ id } {}
 
         operator bool() const noexcept {
@@ -32,7 +32,7 @@ namespace gm {
             return _id == other._id;
         }
 
-        u32 id() const noexcept {
+        i32 id() const noexcept {
             return _id;
         }
     };
@@ -62,12 +62,17 @@ namespace gm {
         using std::runtime_error::runtime_error;
     };
 
+    export class SpriteAddFailure : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
     export class Font {
         u16 _height;
         i16 _top;
         std::string _name;
         std::unique_ptr<SpriteHandle, SpriteDeleter> _sprite;
-        std::unordered_map<u32, GlyphData> _glyph_map;
+        std::unordered_map<i32, GlyphData> _glyph_data;
 
     public:
         Font() noexcept = default;
@@ -76,14 +81,14 @@ namespace gm {
             auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
             std::ifstream file{ glyph_path, std::ios::binary };
             if (!file.is_open()) {
-                throw std::ios_base::failure{ std::format("Unable to open the file {}.", glyph_path) };
+                throw std::ios_base::failure{ std::format("Unable to open the file \"{}\".", glyph_path) };
             }
 
             static constexpr char GLYPH_SIGN[]{ "GLY\x00\x12\x00" };
             char sign[sizeof(GLYPH_SIGN) - 1];
             file.read(sign, sizeof(sign));
             if (!file || std::strncmp(sign, GLYPH_SIGN, sizeof(sign)) != 0) {
-                throw InvalidHeaderError{ std::format("Invalid file header in {}.", glyph_path) };
+                throw InvalidHeaderError{ std::format("Invalid file header in \"{}\".", glyph_path) };
             }
 
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
@@ -91,16 +96,20 @@ namespace gm {
             while (!file.eof()) {
                 u32 ch;
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
-                file.read(reinterpret_cast<char*>(&_glyph_map[ch]), sizeof(_glyph_map[ch]));
+                file.read(reinterpret_cast<char*>(&_glyph_data[ch]), sizeof(_glyph_data[ch]));
                 if (!file) {
-                    throw DataCorruptionError{ std::format("File {} is corrupt.", glyph_path) };
+                    throw DataCorruptionError{ std::format("File \"{}\" is corrupt.", glyph_path) };
             }
             }
 
             _name = font_name;
+
             _sprite.reset(
-                static_cast<u32>(IFunctionResource::at(FunctionId::sprite_add)(sprite_path, 1, false, false, 0, 0))
+                static_cast<i32>(IFunctionResource::at(FunctionId::sprite_add)(sprite_path, 1, false, false, 0, 0))
             );
+            if (_sprite == nullptr) {
+                throw SpriteAddFailure{ std::format("Unable to add sprite \"{}\"", sprite_path) };
+        }
         }
 
         operator bool() const noexcept {
@@ -131,9 +140,9 @@ namespace gm {
             return _sprite.get();
         }
 
-        const auto& glyph_map() const noexcept {
+        const auto& glyph_data() const noexcept {
             assert(_sprite != nullptr);
-            return _glyph_map;
+            return _glyph_data;
         }
     };
 
