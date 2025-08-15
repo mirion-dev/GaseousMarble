@@ -166,38 +166,37 @@ namespace gm {
     };
 
     export class Draw {
-        DrawSetting _setting;
-
-        struct MeasureResult {
-            struct Line {
-                std::u32string text;
+        struct LineMetrics {
+            std::vector<Token> tokens;
                 f64 width;
                 f64 height;
-                f64 letter_spacing;
+            f64 justified_spacing;
             };
 
-            std::vector<Line> lines;
-            f64 total_width{};
-            f64 total_height{};
+        struct TextMetrics {
+            std::u16string text;
+            std::vector<LineMetrics> lines;
+            f64 width;
+            f64 height;
         };
 
-        MeasureResult _measure(std::string_view text) const noexcept {
-            auto& glyph_map{ _setting.font->glyph_map() };
-            const char* str{ text.data() };
-            i32 j{}, n{ static_cast<i32>(text.size()) }, ch;
-            std::u32string filtered_text;
-            filtered_text.reserve(n);
-            while (j != n) {
-                U8_NEXT_OR_FFFD(str, j, n, ch);
-                if (ch == 0xfffd) {
-                    break;
+        std::generator<u32> _unicode_view(std::u16string_view text) const noexcept {
+            auto& glyph_data{ setting.font->glyph_data() };
+            const char16_t* str{ text.data() };
+            std::size_t size{ text.size() }, i{};
+            u32 ch;
+            while (i < size) {
+                U16_NEXT(str, i, size, ch);
+                if (glyph_data.contains(ch)) {
+                    co_yield ch;
                 }
-                if (ch == '\n' || glyph_map.contains(ch)) {
-                    filtered_text.push_back(ch);
+                if (u_isUWhiteSpace(ch)) {
+                    co_yield u_getIntPropertyValue(ch, UCHAR_LINE_BREAK) ? '\n' : ' ';
                 }
             }
+        }
 
-            MeasureResult result;
+        std::optional<TextMetrics> _measure(std::string_view text) const noexcept {
 
             f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
             auto add_line{
@@ -261,9 +260,9 @@ namespace gm {
         }
 
         void _line(f64 x, f64 y, std::u32string_view text, f64 letter_spacing) const noexcept {
-            auto& glyph_map{ _setting.font->glyph_map() };
-            u16 glyph_height{ _setting.font->height() };
-            u32 font_id{ _setting.font->sprite().id() };
+            auto& glyph_map{ setting.font->glyph_data() };
+            u16 glyph_height{ setting.font->height() };
+            u32 font_id{ setting.font->sprite().id() };
 
             for (u32 ch : text) {
                 auto& [glyph_x, glyph_y, glyph_width, offset_x]{ glyph_map.at(ch) };
@@ -275,21 +274,21 @@ namespace gm {
                     glyph_y,
                     glyph_width,
                     glyph_height,
-                    (x + offset_x) * _setting.scale_x,
-                    y * _setting.scale_y,
-                    _setting.scale_x,
-                    _setting.scale_y,
+                    (x + offset_x) * setting.scale_x,
+                    y * setting.scale_y,
+                    setting.scale_x,
+                    setting.scale_y,
                     0,
-                    _setting.color_top,
-                    _setting.color_top,
-                    _setting.color_bottom,
-                    _setting.color_bottom,
-                    _setting.alpha
+                    setting.color_top,
+                    setting.color_top,
+                    setting.color_bottom,
+                    setting.color_bottom,
+                    setting.alpha
                 );
 
                 x += offset_x + glyph_width + letter_spacing;
                 if (ch == ' ') {
-                    x += _setting.word_spacing;
+                    x += setting.word_spacing;
                 }
             }
         }
@@ -298,36 +297,35 @@ namespace gm {
         DrawSetting setting;
 
         f64 width(std::string_view text) const noexcept {
-            return _measure(text).total_width * _setting.scale_x;
+            return _measure(text).width * setting.scale_x;
         }
 
         f64 height(std::string_view text) const noexcept {
-            return _measure(text).total_height * _setting.scale_y;
+            return _measure(text).height * setting.scale_y;
         }
 
         bool text(f64 x, f64 y, std::string_view text) const noexcept {
-            if (_setting.font == nullptr) {
+            if (setting.font == nullptr) {
                 return false;
             }
 
-            MeasureResult result{ _measure(text) };
+            TextMetrics metrics{ _measure(text) };
+            x += setting.offset_x / setting.scale_x;
+            y += (setting.offset_y + setting.font->top()) / setting.scale_y;
 
-            x += _setting.offset_x / _setting.scale_x;
-            y += (_setting.offset_y + _setting.font->offset_y()) / _setting.scale_y;
-
-            if (_setting.valign == 0) {
-                y -= result.total_height / 2;
+            if (setting.valign == 0) {
+                y -= metrics.height / 2;
             }
-            else if (_setting.valign > 0) {
-                y -= result.total_height;
+            else if (setting.valign > 0) {
+                y -= metrics.height;
             }
 
-            for (auto& [text, width, height, letter_spacing] : result.lines) {
+            for (auto& [text, width, height, letter_spacing] : metrics.lines) {
                 f64 real_x{ x };
-                if (_setting.halign == 0) {
+                if (setting.halign == 0) {
                     real_x -= width / 2;
                 }
-                else if (_setting.halign > 0) {
+                else if (setting.halign > 0) {
                     real_x -= width;
                 }
 
@@ -335,7 +333,6 @@ namespace gm {
 
                 y += height;
             }
-
             return true;
         }
     };
