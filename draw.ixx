@@ -48,7 +48,7 @@ namespace gm {
     export struct GlyphData {
         u16 x, y;
         u16 width;
-        u16 advance;
+        i16 advance;
         i16 left;
     };
 
@@ -265,7 +265,7 @@ namespace gm {
             u32 font_id{ setting.font->sprite().id() };
 
             for (u32 ch : text) {
-                auto& [x, y, width, left, advance]{ glyph_map.at(ch) };
+                auto& [x, y, width, advance, left]{ glyph_map.at(ch) };
 
                 IFunctionResource::at(FunctionId::draw_sprite_general)(
                     font_id,

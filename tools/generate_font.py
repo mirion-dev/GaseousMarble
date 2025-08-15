@@ -116,7 +116,7 @@ def generate_font(
                 if x + w > max_line_length:
                     x = 0
                     y += line_height
-                file.write(struct.pack('IHHHHh', ord(ch), int(x), int(y), int(w), int(a), int(l)))
+                file.write(struct.pack('IHHHhh', ord(ch), int(x), int(y), int(w), int(a), int(l)))
 
                 pos = (int(x - l), int(y))
                 # draw.rectangle(((x - 1, y + t - 1), (x + w, y + b)), outline='red')
