@@ -22,9 +22,9 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         return 1; // font already exists
     }
 
-    Font font;
+    std::optional<Font> font;
     try {
-        font = { font_name, sprite_path };
+        font.emplace(font_name, sprite_path);
     }
     catch (const std::ios_base::failure&) {
         return -1; // file not found
@@ -33,7 +33,7 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         return -2; // file is corrupt
     }
 
-    font_map.emplace(font_name, std::move(font));
+    font_map.emplace(font_name, std::move(*font));
     return 0;
 }
 
