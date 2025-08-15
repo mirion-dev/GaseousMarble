@@ -100,12 +100,6 @@ namespace gm {
             new(std::uninitialized_copy(view.begin(), view.end(), _data)) Ch{};
         }
 
-        BasicString(BasicStringView<Ch> str) noexcept :
-            _data{ new Ch[HEADER_SIZE + str.size() + 1] + HEADER_SIZE } {
-
-            std::uninitialized_copy(str.data() - HEADER_SIZE, str.data() + str.size() + 1, _data - HEADER_SIZE);
-        }
-
         BasicString(const BasicString& other) noexcept :
             _data{ other._data } {
 
@@ -126,10 +120,6 @@ namespace gm {
 
         operator std::basic_string_view<Ch>() const noexcept {
             return { _data, _header()->size };
-        }
-
-        operator BasicStringView<Ch>() const noexcept {
-            return _data;
         }
 
         u32 size() const noexcept {
