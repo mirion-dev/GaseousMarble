@@ -52,6 +52,16 @@ namespace gm {
         i16 left;
     };
 
+    export class InvalidHeaderError : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    export class DataCorruptionError : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
     export class Font {
         u16 _height;
         i16 _top;
@@ -73,7 +83,7 @@ namespace gm {
             char sign[sizeof(GLYPH_SIGN) - 1];
             file.read(sign, sizeof(sign));
             if (!file || std::strncmp(sign, GLYPH_SIGN, sizeof(sign)) != 0) {
-                throw std::runtime_error{ std::format("Invalid file header in {}.", glyph_path) };
+                throw InvalidHeaderError{ std::format("Invalid file header in {}.", glyph_path) };
             }
 
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
@@ -83,7 +93,7 @@ namespace gm {
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
                 file.read(reinterpret_cast<char*>(&_glyph_map[ch]), sizeof(_glyph_map[ch]));
                 if (!file) {
-                    throw std::runtime_error{ std::format("File {} is corrupt.", glyph_path) };
+                    throw DataCorruptionError{ std::format("File {} is corrupt.", glyph_path) };
             }
             }
 

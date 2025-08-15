@@ -22,18 +22,21 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         return 1; // font already exists
     }
 
-    std::optional<Font> font;
+    Font font;
     try {
-        font.emplace(font_name, sprite_path);
+        font = { font_name, sprite_path };
     }
     catch (const std::ios_base::failure&) {
         return -1; // file not found
     }
-    catch (const std::runtime_error&) {
-        return -2; // file is corrupt
+    catch (const InvalidHeaderError&) {
+        return -2; // invalid file header
+    }
+    catch (const DataCorruptionError&) {
+        return -3; // data is corrupt
     }
 
-    font_map.emplace(font_name, std::move(*font));
+    font_map.emplace(font_name, std::move(font));
     return 0;
 }
 
