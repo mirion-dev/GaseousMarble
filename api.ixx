@@ -53,7 +53,7 @@ API Real gm_clear() noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    return draw.text(x, y, text) ? 0 : -1; // font not found
+    return static_cast<Real>(draw.text(x, y, text));
 }
 
 API Real gm_width(StringView text) noexcept {

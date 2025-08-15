@@ -265,16 +265,16 @@ namespace gm {
             u32 font_id{ setting.font->sprite().id() };
 
             for (u32 ch : text) {
-                auto& [glyph_x, glyph_y, glyph_width, offset_x]{ glyph_map.at(ch) };
+                auto& [x, y, width, left, advance]{ glyph_map.at(ch) };
 
                 IFunctionResource::at(FunctionId::draw_sprite_general)(
                     font_id,
                     0,
-                    glyph_x,
-                    glyph_y,
-                    glyph_width,
+                    x,
+                    y,
+                    width,
                     glyph_height,
-                    (x + offset_x) * setting.scale_x,
+                    (x + left) * setting.scale_x,
                     y * setting.scale_y,
                     setting.scale_x,
                     setting.scale_y,
@@ -286,7 +286,7 @@ namespace gm {
                     setting.alpha
                 );
 
-                x += offset_x + glyph_width + letter_spacing;
+                x += left + width + letter_spacing;
                 if (ch == ' ') {
                     x += setting.word_spacing;
                 }
@@ -297,19 +297,32 @@ namespace gm {
         DrawSetting setting;
 
         f64 width(std::string_view text) const noexcept {
-            return _measure(text).width * setting.scale_x;
+            auto opt_metrics{ _measure(text) };
+            return opt_metrics ? opt_metrics->width : -1;
         }
 
         f64 height(std::string_view text) const noexcept {
-            return _measure(text).height * setting.scale_y;
+            auto opt_metrics{ _measure(text) };
+            return opt_metrics ? opt_metrics->height : -1;
         }
 
-        bool text(f64 x, f64 y, std::string_view text) const noexcept {
+        enum class DrawTextResult {
+            success         = 0,
+            font_not_found  = -1,
+            fail_to_measure = -2
+        };
+
+        DrawTextResult text(f64 x, f64 y, std::string_view text) const noexcept {
             if (setting.font == nullptr) {
-                return false;
+                return DrawTextResult::font_not_found;
             }
 
-            TextMetrics metrics{ _measure(text) };
+            auto opt_metrics{ _measure(text) };
+            if (!opt_metrics) {
+                return DrawTextResult::fail_to_measure;
+            }
+            TextMetrics metrics{ std::move(*opt_metrics) };
+
             x += setting.offset_x / setting.scale_x;
             y += (setting.offset_y + setting.font->top()) / setting.scale_y;
 
@@ -333,7 +346,8 @@ namespace gm {
 
                 y += height;
             }
-            return true;
+
+            return DrawTextResult::success;
         }
     };
 
