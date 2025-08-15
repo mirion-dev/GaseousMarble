@@ -22,9 +22,15 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         return 1; // font already exists
     }
 
-    Font font{ font_name, sprite_path };
-    if (!font) {
-        return -1; // file not found or corrupt
+    Font font;
+    try {
+        font = { font_name, sprite_path };
+    }
+    catch (const std::ios_base::failure&) {
+        return -1; // file not found
+    }
+    catch (const std::runtime_error&) {
+        return -2; // file is corrupt
     }
 
     font_map.emplace(font_name, std::move(font));
@@ -58,13 +64,13 @@ API Real gm_set_font(StringView font_name) noexcept {
         return -1; // font not found
     }
 
-    draw.setting().font = &iter->second;
+    draw.setting.font = &iter->second;
     return 0;
 }
 
 API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
-    draw.setting().color_top = static_cast<u32>(color_top);
-    draw.setting().color_bottom = static_cast<u32>(color_bottom);
+    draw.setting.color_top = static_cast<u32>(color_top);
+    draw.setting.color_bottom = static_cast<u32>(color_bottom);
     return 0;
 }
 
@@ -78,22 +84,22 @@ API Real gm_set_alpha(Real alpha) noexcept {
         return -1; // invalid argument
     }
 
-    draw.setting().alpha = alpha;
+    draw.setting.alpha = alpha;
     return 0;
 }
 
 API Real gm_set_halign(Real align) noexcept {
-    draw.setting().halign = align == 0 ? 0 : align < 0 ? -1 : 1;
+    draw.setting.halign = align == 0 ? 0 : align < 0 ? -1 : 1;
     return 0;
 }
 
 API Real gm_set_valign(Real align) noexcept {
-    draw.setting().valign = align == 0 ? 0 : align < 0 ? -1 : 1;
+    draw.setting.valign = align == 0 ? 0 : align < 0 ? -1 : 1;
     return 0;
 }
 
 API Real gm_set_justified(Real justified) noexcept {
-    draw.setting().justified = justified;
+    draw.setting.justified = justified;
     return 0;
 }
 
@@ -110,17 +116,17 @@ API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
 }
 
 API Real gm_set_letter_spacing(Real spacing) noexcept {
-    draw.setting().letter_spacing = spacing;
+    draw.setting.letter_spacing = spacing;
     return 0;
 }
 
 API Real gm_set_word_spacing(Real spacing) noexcept {
-    draw.setting().word_spacing = spacing;
+    draw.setting.word_spacing = spacing;
     return 0;
 }
 
 API Real gm_set_paragraph_spacing(Real spacing) noexcept {
-    draw.setting().paragraph_spacing = spacing;
+    draw.setting.paragraph_spacing = spacing;
     return 0;
 }
 
@@ -129,7 +135,7 @@ API Real gm_set_line_height(Real height) noexcept {
         return -1; // invalid argument
     }
 
-    draw.setting().line_height = height;
+    draw.setting.line_height = height;
     return 0;
 }
 
@@ -138,13 +144,13 @@ API Real gm_set_max_line_length(Real length) noexcept {
         return -1; // invalid argument
     }
 
-    draw.setting().max_line_length = length;
+    draw.setting.max_line_length = length;
     return 0;
 }
 
 API Real gm_set_offset(Real x, Real y) noexcept {
-    draw.setting().offset_x = x;
-    draw.setting().offset_y = y;
+    draw.setting.offset_x = x;
+    draw.setting.offset_y = y;
     return 0;
 }
 
@@ -153,72 +159,72 @@ API Real gm_set_scale(Real x, Real y) noexcept {
         return -1; // invalid argument(s)
     }
 
-    draw.setting().scale_x = x;
-    draw.setting().scale_y = y;
+    draw.setting.scale_x = x;
+    draw.setting.scale_y = y;
     return 0;
 }
 
 // MSVC will unhappy if I use String as the return type
 API const char* gm_get_font() noexcept {
-    return draw.setting().font->name().data();
+    return draw.setting.font->name().data();
 }
 
 API Real gm_get_color_top() noexcept {
-    return draw.setting().color_top;
+    return draw.setting.color_top;
 }
 
 API Real gm_get_color_bottom() noexcept {
-    return draw.setting().color_bottom;
+    return draw.setting.color_bottom;
 }
 
 API Real gm_get_alpha() noexcept {
-    return draw.setting().alpha;
+    return draw.setting.alpha;
 }
 
 API Real gm_get_halign() noexcept {
-    return draw.setting().halign;
+    return draw.setting.halign;
 }
 
 API Real gm_get_valign() noexcept {
-    return draw.setting().valign;
+    return draw.setting.valign;
 }
 
 API Real gm_is_justified() noexcept {
-    return draw.setting().justified;
+    return draw.setting.justified;
 }
 
 API Real gm_get_letter_spacing() noexcept {
-    return draw.setting().letter_spacing;
+    return draw.setting.letter_spacing;
 }
 
 API Real gm_get_word_spacing() noexcept {
-    return draw.setting().word_spacing;
+    return draw.setting.word_spacing;
 }
 
 API Real gm_get_paragraph_spacing() noexcept {
-    return draw.setting().paragraph_spacing;
+    return draw.setting.paragraph_spacing;
 }
 
 API Real gm_get_line_height() noexcept {
-    return draw.setting().line_height;
+    return draw.setting.line_height;
 }
 
 API Real gm_get_max_line_length() noexcept {
-    return draw.setting().max_line_length;
+    return draw.setting.max_line_length;
 }
 
 API Real gm_get_offset_x() noexcept {
-    return draw.setting().offset_x;
+    return draw.setting.offset_x;
 }
 
 API Real gm_get_offset_y() noexcept {
-    return draw.setting().offset_y;
+    return draw.setting.offset_y;
 }
 
 API Real gm_get_scale_x() noexcept {
-    return draw.setting().scale_x;
+    return draw.setting.scale_x;
 }
 
 API Real gm_get_scale_y() noexcept {
-    return draw.setting().scale_y;
+    return draw.setting.scale_y;
 }

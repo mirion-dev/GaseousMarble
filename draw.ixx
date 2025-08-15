@@ -48,12 +48,13 @@ namespace gm {
     export struct GlyphData {
         u16 x, y;
         u16 width;
-        i16 offset_x;
+        u16 advance;
+        i16 left;
     };
 
     export class Font {
         u16 _height;
-        i16 _offset_y;
+        i16 _top;
         std::string _name;
         std::unique_ptr<SpriteHandle, SpriteDeleter> _sprite;
         std::unordered_map<u32, GlyphData> _glyph_map;
@@ -61,28 +62,29 @@ namespace gm {
     public:
         Font() noexcept = default;
 
-        Font(std::string_view font_name, std::string_view sprite_path) noexcept {
+        Font(std::string_view font_name, std::string_view sprite_path) {
             auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
             std::ifstream file{ glyph_path, std::ios::binary };
             if (!file.is_open()) {
-                return;
+                throw std::ios_base::failure{ std::format("Unable to open the file {}.", glyph_path) };
             }
 
-            char magic[4];
-            file.read(magic, sizeof(magic));
-            if (std::strncmp(magic, "GLY", sizeof(magic)) != 0) {
-                return;
+            static constexpr char GLYPH_SIGN[]{ "GLY\x00\x12\x00" };
+            char sign[sizeof(GLYPH_SIGN) - 1];
+            file.read(sign, sizeof(sign));
+            if (!file || std::strncmp(sign, GLYPH_SIGN, sizeof(sign)) != 0) {
+                throw std::runtime_error{ std::format("Invalid file header in {}.", glyph_path) };
             }
 
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
-            file.read(reinterpret_cast<char*>(&_offset_y), sizeof(_offset_y));
-            while (file) {
+            file.read(reinterpret_cast<char*>(&_top), sizeof(_top));
+            while (!file.eof()) {
                 u32 ch;
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
                 file.read(reinterpret_cast<char*>(&_glyph_map[ch]), sizeof(_glyph_map[ch]));
+                if (!file) {
+                    throw std::runtime_error{ std::format("File {} is corrupt.", glyph_path) };
             }
-            if (!file.eof()) {
-                return;
             }
 
             _name = font_name;
@@ -104,9 +106,9 @@ namespace gm {
             return _height;
         }
 
-        i16 offset_y() const noexcept {
+        i16 top() const noexcept {
             assert(_sprite != nullptr);
-            return _offset_y;
+            return _top;
         }
 
         const std::string& name() const noexcept {
@@ -274,9 +276,7 @@ namespace gm {
         }
 
     public:
-        auto&& setting(this auto&& self) noexcept {
-            return std::forward_like<decltype(self)>(self._setting);
-        }
+        DrawSetting setting;
 
         f64 width(std::string_view text) const noexcept {
             return _measure(text).total_width * _setting.scale_x;
