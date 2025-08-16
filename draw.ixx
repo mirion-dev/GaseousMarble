@@ -197,11 +197,25 @@ namespace gm {
         }
 
         std::optional<TextMetrics> _measure(std::string_view text) const noexcept {
+            auto opt_utf16{ to_utf16(text) };
+            if (!opt_utf16) {
+                return {};
+            }
+            std::u16string utf16{ std::move(*opt_utf16) };
 
-            f64 max_line_length{ _setting.max_line_length / _setting.scale_x };
+            auto opt_tokens{ tokenize(utf16) };
+            if (!opt_tokens) {
+                return {};
+            }
+            std::vector tokens{ std::move(*opt_tokens) };
+
+            TextMetrics metrics;
+
+            auto& glyph_data{ setting.font->glyph_data() };
+            f64 max_line_length{ setting.max_line_length / setting.scale_x };
             auto add_line{
                    // @formatter:off
-                [this, max_line_length, &result](
+                [this, max_line_length, &metrics](
                     std::u32string_view text,
                     f64 line_length,
                     f64 is_full,
@@ -209,20 +223,20 @@ namespace gm {
                 ) {
                     // @formatter:on
                     f64 width{ line_length };
-                    f64 letter_spacing{ _setting.letter_spacing };
-                    if (_setting.justified && max_line_length != 0 && is_full && text.size() != 1) {
+                    f64 letter_spacing{ setting.letter_spacing };
+                    if (setting.justified && max_line_length != 0 && is_full && text.size() != 1) {
                         width = max_line_length;
                         letter_spacing += (max_line_length - line_length) / (text.size() - 1);
                     }
 
-                    f64 height{ _setting.font->height() * _setting.line_height };
+                    f64 height{ setting.font->height() * setting.line_height };
                     if (is_paragraph_end) {
-                        height += _setting.paragraph_spacing;
+                        height += setting.paragraph_spacing;
                     }
 
-                    result.lines.emplace_back(std::u32string{ text }, width, height, letter_spacing);
-                    result.total_width = std::max(result.total_width, width);
-                    result.total_height += height;
+                    metrics.lines.emplace_back(std::u32string{ text }, width, height, letter_spacing);
+                    metrics.width = std::max(metrics.width, width);
+                    metrics.height += height;
                 }
             };
 
@@ -256,7 +270,7 @@ namespace gm {
             }
             add_line({ begin, i }, line_length - last_spacing, false, false);
 
-            return result;
+            return metrics;
         }
 
         void _line(f64 x, f64 y, std::u32string_view text, f64 letter_spacing) const noexcept {
@@ -308,13 +322,13 @@ namespace gm {
 
         enum class DrawTextResult {
             success         = 0,
-            font_not_found  = -1,
+            font_not_set    = -1,
             fail_to_measure = -2
         };
 
         DrawTextResult text(f64 x, f64 y, std::string_view text) const noexcept {
             if (setting.font == nullptr) {
-                return DrawTextResult::font_not_found;
+                return DrawTextResult::font_not_set;
             }
 
             auto opt_metrics{ _measure(text) };
