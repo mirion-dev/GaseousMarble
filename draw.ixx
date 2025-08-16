@@ -249,10 +249,9 @@ namespace gm {
 
         static std::generator<u32> _unicode_view(std::u16string_view text) noexcept {
             const char16_t* ptr{ text.data() };
-            std::size_t size{ text.size() }, i{};
-            u32 ch;
-            while (i != size) {
-                U16_NEXT(ptr, i, size, ch);
+            i32 ch;
+            for (u32 i{}, size{ text.size() }; i != size;) {
+                U16_NEXT_UNSAFE(ptr, i, ch);
                 co_yield ch;
             }
         }
