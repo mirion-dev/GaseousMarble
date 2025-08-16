@@ -148,64 +148,70 @@ namespace gm {
     // interface of GameMaker function resources
     // -----------------------------------------
 
-    enum class ValueType {
-        real,
-        string
-    };
-
     class Value {
-        ValueType _type;
+        enum class Type {
+            real,
+            string
+        };
+
+        Type _type;
         Real _real;
         String _string;
 
     public:
         Value(Real real = {}) noexcept :
-            _type{ ValueType::real },
+            _type{ Type::real },
             _real{ real } {}
 
         Value(StringView string) noexcept :
-            _type{ ValueType::string },
+            _type{ Type::string },
             _real{},
             _string{ string } {}
 
         operator Real() const noexcept {
-            assert(_type == ValueType::real);
+            assert(_type == Type::real);
             return _real;
         }
 
         operator String() const noexcept {
-            assert(_type == ValueType::string);
+            assert(_type == Type::string);
             return _string;
         }
 
-        ValueType type() const noexcept {
+        Type type() const noexcept {
             return _type;
         }
     };
 
-    struct FunctionData {
-        u8 name_length;
-        char name[67];
-        void* address;
-        i32 arg_count;
-        bool require_pro;
-    };
+    export class Function {
+        struct Data {
+            u8 name_length;
+            char name[67];
+            void* address;
+            i32 arg_count;
+            bool require_pro;
+        };
 
-    struct FunctionResource {
-        FunctionData* data;
-        u32 count;
-    };
+        struct Resource {
+            Data* data;
+            u32 count;
+        };
 
-    export enum class FunctionId {
-#include "FunctionId.inc"
-    };
+        static constexpr auto RESOURCE_PTR{ reinterpret_cast<Resource*>(0x00686b1c) };
 
-    export class IFunction {
-        const FunctionData* _data;
+        const Data* _data;
 
     public:
-        IFunction(const FunctionData* data) noexcept :
-            _data{ data } {}
+        enum class Id {
+#include "FunctionId.inc"
+        };
+
+        Function(Id id) noexcept :
+            _data{ RESOURCE_PTR->data + static_cast<u32>(id) } {}
+
+        static u32 count() noexcept {
+            return RESOURCE_PTR->count;
+        }
 
         Value operator()(const auto&... args) const noexcept {
             // this assertion may fail on game exit since GameMaker has already released function resources
@@ -240,19 +246,6 @@ namespace gm {
 
         void* address() const noexcept {
             return _data->address;
-        }
-    };
-
-    export class IFunctionResource {
-        static constexpr auto RESOURCE_PTR{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
-
-    public:
-        static IFunction at(FunctionId id) noexcept {
-            return RESOURCE_PTR->data + static_cast<i32>(id);
-        }
-
-        static u32 count() noexcept {
-            return RESOURCE_PTR->count;
         }
     };
 

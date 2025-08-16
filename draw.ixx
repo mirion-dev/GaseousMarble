@@ -41,7 +41,7 @@ namespace gm {
         using pointer = SpriteHandle;
 
         void operator()(pointer handle) const noexcept {
-            static IFunction sprite_delete{ IFunctionResource::at(FunctionId::sprite_delete) };
+            static Function sprite_delete{ Function::Id::sprite_delete };
             sprite_delete(handle.id());
         }
     };
@@ -53,22 +53,24 @@ namespace gm {
         i16 left;
     };
 
-    export class InvalidHeaderError : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
-
-    export class DataCorruptionError : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
-
-    export class SpriteAddFailure : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
-
     export class Font {
+    public:
+        class InvalidHeaderError : public std::runtime_error {
+        public:
+        using std::runtime_error::runtime_error;
+    };
+
+        class DataCorruptionError : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+        class SpriteAddFailure : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    private:
         u16 _height;
         i16 _top;
         std::string _name;
@@ -105,7 +107,7 @@ namespace gm {
 
             _name = font_name;
 
-            static IFunction sprite_add{ IFunctionResource::at(FunctionId::sprite_add) };
+            static Function sprite_add{ Function::Id::sprite_add };
             _sprite.reset(static_cast<i32>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (_sprite == nullptr) {
                 throw SpriteAddFailure{ std::format("Unable to add sprite \"{}\"", sprite_path) };
