@@ -167,17 +167,6 @@ namespace gm {
             f64 scale_y{ 1 };
         };
 
-        enum class Warning {
-            no_warning,
-            missing_glyphs
-        };
-
-        enum class Error {
-            invalid_encoding,
-            tokenization_failed,
-            font_not_set
-        };
-
         struct LineMetrics {
             std::vector<Token> tokens;
             f64 width;
@@ -191,7 +180,17 @@ namespace gm {
             f64 height;
         };
 
-    private:
+        enum class Warning {
+            no_warning,
+            missing_glyphs
+        };
+
+        enum class Error {
+            invalid_encoding,
+            tokenization_failed,
+            font_not_set
+        };
+
         template <class T>
         struct ResultWarning {
             T result;
@@ -201,12 +200,6 @@ namespace gm {
         template <class T>
         using Result = std::expected<ResultWarning<T>, Error>;
 
-        void _line(f64 x, f64 y, const LineMetrics& line) const noexcept {
-            static Function draw_sprite_general{ Function::Id::draw_sprite_general };
-            // TODO
-        }
-
-    public:
         Setting setting;
 
         Result<TextMetrics> measure(std::string_view text) const noexcept {
@@ -236,7 +229,6 @@ namespace gm {
             }
 
             std::u16string u16(u16_size, '\0');
-
             char16_t* u16_ptr{ u16.data() };
             for (u32 i{}, j{}; i != text_size;) {
                 U8_NEXT_UNSAFE(text_ptr, i, ch);
@@ -279,18 +271,56 @@ namespace gm {
                 y -= metrics.height;
             }
 
-            for (auto& line : metrics.lines) {
+            static Function draw_sprite_general{ Function::Id::draw_sprite_general };
+            auto& glyph_data{ setting.font->glyph_data() };
+            i32 spr_id{ setting.font->sprite().id() };
+            u16 height{ setting.font->height() };
+            for (auto& [tokens, line_width, line_height, justified_spacing] : metrics.lines) {
                 f64 xx{ x };
                 if (setting.halign == 0) {
-                    xx -= line.width / 2;
+                    xx -= line_width / 2;
                 }
                 else if (setting.halign > 0) {
-                    xx -= line.width;
+                    xx -= line_width;
                 }
 
-                _line(xx, y, line);
+                for (auto& [text, type] : tokens) {
+                    for (u32 ch : unicode_view(text)) {
+                        auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
 
-                y += line.height;
+                        draw_sprite_general(
+                            spr_id,
+                            0,
+                            spr_x,
+                            spr_y,
+                            width,
+                            height,
+                            (xx + left) * setting.scale_x,
+                            y * setting.scale_y,
+                            setting.scale_x,
+                            setting.scale_y,
+                            0,
+                            setting.color_top,
+                            setting.color_top,
+                            setting.color_bottom,
+                            setting.color_bottom,
+                            setting.alpha
+                        );
+
+                        xx += advance + setting.letter_spacing;
+                        if (u_isUWhiteSpace(ch)) {
+                            xx += setting.word_spacing;
+                        }
+                        if (type >= UBRK_WORD_KANA) {
+                            xx += justified_spacing;
+                        }
+                    }
+                    if (type < UBRK_WORD_KANA) {
+                        xx += justified_spacing;
+                    }
+                }
+
+                y += line_height;
             }
 
             return ResultWarning{ std::monostate{}, warning };
