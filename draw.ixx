@@ -41,7 +41,8 @@ namespace gm {
         using pointer = SpriteHandle;
 
         void operator()(pointer handle) const noexcept {
-            IFunctionResource::at(FunctionId::sprite_delete)(handle.id());
+            static IFunction sprite_delete{ IFunctionResource::at(FunctionId::sprite_delete) };
+            sprite_delete(handle.id());
         }
     };
 
@@ -104,9 +105,8 @@ namespace gm {
 
             _name = font_name;
 
-            _sprite.reset(
-                static_cast<i32>(IFunctionResource::at(FunctionId::sprite_add)(sprite_path, 1, false, false, 0, 0))
-            );
+            static IFunction sprite_add{ IFunctionResource::at(FunctionId::sprite_add) };
+            _sprite.reset(static_cast<i32>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (_sprite == nullptr) {
                 throw SpriteAddFailure{ std::format("Unable to add sprite \"{}\"", sprite_path) };
         }
@@ -171,6 +171,92 @@ namespace gm {
             UWordBreak type;
         };
 
+        struct Tokens {
+            std::u16string text;
+            std::vector<Token> tokens;
+        };
+
+        enum struct TokenizeError {
+            missing_glyphs      = 1,
+            success             = 0,
+            invalid_encoding    = -1,
+            segmentation_failed = -2
+        };
+
+        std::pair<Tokens, TokenizeError> _tokenize(std::string_view text) const noexcept {
+            TokenizeError error{};
+            u32 res_size{};
+
+            auto filter{
+                [&glyph_data{ setting.font->glyph_data() }](u32 ch) {
+                    return glyph_data.contains(ch) || u_getIntPropertyValue(ch, UCHAR_LINE_BREAK);
+                }
+            };
+            const char* text_ptr{ text.data() };
+            u32 text_size{ text.size() };
+            i32 ch;
+            for (u32 i{}; i != text_size;) {
+                U8_NEXT(text_ptr, i, text_size, ch);
+                if (ch < 0) {
+                    return { {}, TokenizeError::invalid_encoding };
+                }
+
+                if (filter(ch)) {
+                    res_size += U16_LENGTH(ch);
+                }
+                else {
+                    error = TokenizeError::missing_glyphs;
+                }
+            }
+
+            std::u16string res(res_size, '\0');
+
+            char16_t* res_ptr{ res.data() };
+            for (u32 i{}, j{}; i != text_size;) {
+                U8_NEXT_UNSAFE(text_ptr, i, ch);
+                if (filter(ch)) {
+                    U16_APPEND_UNSAFE(res_ptr, j, ch);
+                }
+            }
+
+            UErrorCode icu_error{};
+            std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
+                ubrk_open(UBRK_WORD, nullptr, res_ptr, res_size, &icu_error),
+                ubrk_close
+            };
+            if (U_FAILURE(icu_error)) {
+                return { {}, TokenizeError::segmentation_failed };
+            }
+
+            std::vector<Token> tokens;
+            i32 first{ ubrk_first(iter.get()) };
+            while (true) {
+                i32 last{ ubrk_next(iter.get()) };
+                if (last == UBRK_DONE) {
+                    break;
+                }
+
+                tokens.emplace_back(
+                    std::u16string_view{ res_ptr + first, res_ptr + last },
+                    static_cast<UWordBreak>(ubrk_getRuleStatus(iter.get()))
+                );
+
+                first = last;
+            }
+
+            return { { std::move(res), std::move(tokens) }, error };
+        }
+
+        static std::generator<u32> _unicode_view(std::u16string_view text) noexcept {
+            const char16_t* ptr{ text.data() };
+            std::size_t size{ text.size() }, i{};
+            u32 ch;
+            while (i != size) {
+                U16_NEXT(ptr, i, size, ch);
+                co_yield ch;
+            }
+        }
+
         struct LineMetrics {
             std::vector<Token> tokens;
                 f64 width;
@@ -184,22 +270,6 @@ namespace gm {
             f64 width;
             f64 height;
         };
-
-        std::generator<u32> _unicode_view(std::u16string_view text) const noexcept {
-            auto& glyph_data{ setting.font->glyph_data() };
-            const char16_t* str{ text.data() };
-            std::size_t size{ text.size() }, i{};
-            u32 ch;
-            while (i < size) {
-                U16_NEXT(str, i, size, ch);
-                if (glyph_data.contains(ch)) {
-                    co_yield ch;
-                }
-                if (u_isUWhiteSpace(ch)) {
-                    co_yield u_getIntPropertyValue(ch, UCHAR_LINE_BREAK) ? '\n' : ' ';
-                }
-            }
-        }
 
         std::optional<TextMetrics> _measure(std::string_view text) const noexcept {
             auto opt_utf16{ to_utf16(text) };
@@ -278,21 +348,24 @@ namespace gm {
             return metrics;
         }
 
-        void _line(f64 x, f64 y, std::u32string_view text, f64 letter_spacing) const noexcept {
-            auto& glyph_map{ setting.font->glyph_data() };
-            u16 glyph_height{ setting.font->height() };
-            u32 font_id{ setting.font->sprite().id() };
+        void _line(f64 x, f64 y, const LineMetrics& line) const noexcept {
+            static IFunction draw_sprite_general{ IFunctionResource::at(FunctionId::draw_sprite_general) };
 
-            for (u32 ch : text) {
-                auto& [x, y, width, advance, left]{ glyph_map.at(ch) };
+            auto& glyph_data{ setting.font->glyph_data() };
+            u16 height{ setting.font->height() };
+            u32 spr_id{ setting.font->sprite().id() };
 
-                IFunctionResource::at(FunctionId::draw_sprite_general)(
-                    font_id,
+            for (auto& [text, type] : line.tokens) {
+                for (u32 ch : _unicode_view(text)) {
+                    auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+
+                    draw_sprite_general(
+                        spr_id,
                     0,
-                    x,
-                    y,
+                        spr_x,
+                        spr_y,
                     width,
-                    glyph_height,
+                        height,
                     (x + left) * setting.scale_x,
                     y * setting.scale_y,
                     setting.scale_x,
@@ -311,6 +384,7 @@ namespace gm {
                 }
             }
         }
+        }
 
     public:
         DrawSetting setting;
@@ -325,20 +399,20 @@ namespace gm {
             return opt_metrics ? opt_metrics->height : -1;
         }
 
-        enum class DrawTextResult {
-            success         = 0,
-            font_not_set    = -1,
-            fail_to_measure = -2
+        enum class DrawTextError {
+            success          = 0,
+            font_not_set     = -1,
+            measuring_failed = -2
         };
 
-        DrawTextResult text(f64 x, f64 y, std::string_view text) const noexcept {
+        DrawTextError text(f64 x, f64 y, std::string_view text) const noexcept {
             if (setting.font == nullptr) {
-                return DrawTextResult::font_not_set;
+                return DrawTextError::font_not_set;
             }
 
             auto opt_metrics{ _measure(text) };
             if (!opt_metrics) {
-                return DrawTextResult::fail_to_measure;
+                return DrawTextError::measuring_failed;
             }
             TextMetrics metrics{ std::move(*opt_metrics) };
 
@@ -352,21 +426,21 @@ namespace gm {
                 y -= metrics.height;
             }
 
-            for (auto& [text, width, height, letter_spacing] : metrics.lines) {
-                f64 real_x{ x };
+            for (auto& line : metrics.lines) {
+                f64 xx{ x };
                 if (setting.halign == 0) {
-                    real_x -= width / 2;
+                    xx -= line.width / 2;
                 }
                 else if (setting.halign > 0) {
-                    real_x -= width;
+                    xx -= line.width;
                 }
 
-                _line(real_x, y, text, letter_spacing);
+                _line(xx, y, line);
 
-                y += height;
+                y += line.height;
             }
 
-            return DrawTextResult::success;
+            return DrawTextError::success;
         }
     };
 
