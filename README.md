@@ -3,7 +3,7 @@
  
 # GaseousMarble
 
-Draw Unicode texts in GameMaker 8.2, 80% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting) and support more options.
+Draw Unicode texts in GameMaker 8.2, 80% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting), with more options.
 
 ## Usage
 
