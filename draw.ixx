@@ -166,6 +166,11 @@ namespace gm {
     };
 
     export class Draw {
+        struct Token {
+            std::u16string_view text;
+            UWordBreak type;
+        };
+
         struct LineMetrics {
             std::vector<Token> tokens;
                 f64 width;
