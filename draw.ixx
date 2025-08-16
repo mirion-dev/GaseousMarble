@@ -54,23 +54,6 @@ namespace gm {
     };
 
     export class Font {
-    public:
-        class InvalidHeaderError : public std::runtime_error {
-        public:
-        using std::runtime_error::runtime_error;
-    };
-
-        class DataCorruptionError : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
-
-        class SpriteAddFailure : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
-
-    private:
         u16 _height;
         i16 _top;
         std::string _name;
@@ -78,6 +61,21 @@ namespace gm {
         std::unordered_map<i32, GlyphData> _glyph_data;
 
     public:
+        class InvalidHeaderError : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+
+        class DataCorruptionError : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+
+        class SpriteAddFailure : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+
         Font() noexcept = default;
 
         Font(std::string_view font_name, std::string_view sprite_path) {
@@ -102,7 +100,7 @@ namespace gm {
                 file.read(reinterpret_cast<char*>(&_glyph_data[ch]), sizeof(_glyph_data[ch]));
                 if (!file) {
                     throw DataCorruptionError{ std::format("File \"{}\" is corrupt.", glyph_path) };
-            }
+                }
             }
 
             _name = font_name;
@@ -111,7 +109,7 @@ namespace gm {
             _sprite.reset(static_cast<i32>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (_sprite == nullptr) {
                 throw SpriteAddFailure{ std::format("Unable to add sprite \"{}\"", sprite_path) };
-        }
+            }
         }
 
         operator bool() const noexcept {
@@ -148,46 +146,72 @@ namespace gm {
         }
     };
 
-    export struct DrawSetting {
-        Font* font{};
-        u32 color_top{ 0xffffff };
-        u32 color_bottom{ 0xffffff };
-        f64 alpha{ 1 };
-        i8 halign{ -1 };
-        i8 valign{ -1 };
-        bool justified{};
-        f64 letter_spacing{};
-        f64 word_spacing{};
-        f64 paragraph_spacing{};
-        f64 line_height{ 1 };
-        f64 max_line_length{};
-        f64 offset_x{};
-        f64 offset_y{};
-        f64 scale_x{ 1 };
-        f64 scale_y{ 1 };
-    };
-
     export class Draw {
-        struct Token {
-            std::u16string_view text;
-            UWordBreak type;
+    public:
+        struct Setting {
+            Font* font{};
+            u32 color_top{ 0xffffff };
+            u32 color_bottom{ 0xffffff };
+            f64 alpha{ 1 };
+            i8 halign{ -1 };
+            i8 valign{ -1 };
+            bool justified{};
+            f64 letter_spacing{};
+            f64 word_spacing{};
+            f64 paragraph_spacing{};
+            f64 line_height{ 1 };
+            f64 max_line_length{};
+            f64 offset_x{};
+            f64 offset_y{};
+            f64 scale_x{ 1 };
+            f64 scale_y{ 1 };
         };
 
-        struct Tokens {
-            std::u16string text;
+        enum class Warning {
+            no_warning,
+            missing_glyphs
+        };
+
+        enum class Error {
+            invalid_encoding,
+            tokenization_failed,
+            font_not_set
+        };
+
+        struct LineMetrics {
             std::vector<Token> tokens;
+            f64 width;
+            f64 height;
+            f64 justified_spacing;
         };
 
-        enum struct TokenizeError {
-            missing_glyphs      = 1,
-            success             = 0,
-            invalid_encoding    = -1,
-            segmentation_failed = -2
+        struct TextMetrics {
+            std::vector<LineMetrics> lines;
+            f64 width;
+            f64 height;
         };
 
-        std::pair<Tokens, TokenizeError> _tokenize(std::string_view text) const noexcept {
-            TokenizeError error{};
-            u32 res_size{};
+    private:
+        template <class T>
+        struct ResultWarning {
+            T result;
+            Warning warning;
+        };
+
+        template <class T>
+        using Result = std::expected<ResultWarning<T>, Error>;
+
+        void _line(f64 x, f64 y, const LineMetrics& line) const noexcept {
+            static Function draw_sprite_general{ Function::Id::draw_sprite_general };
+            // TODO
+        }
+
+    public:
+        Setting setting;
+
+        Result<TextMetrics> measure(std::string_view text) const noexcept {
+            Warning warning{};
+            u32 u16_size{};
 
             auto filter{
                 [&glyph_data{ setting.font->glyph_data() }](u32 ch) {
@@ -200,214 +224,50 @@ namespace gm {
             for (u32 i{}; i != text_size;) {
                 U8_NEXT(text_ptr, i, text_size, ch);
                 if (ch < 0) {
-                    return { {}, TokenizeError::invalid_encoding };
+                    return std::unexpected{ Error::invalid_encoding };
                 }
 
                 if (filter(ch)) {
-                    res_size += U16_LENGTH(ch);
+                    u16_size += U16_LENGTH(ch);
                 }
                 else {
-                    error = TokenizeError::missing_glyphs;
+                    warning = Warning::missing_glyphs;
                 }
             }
 
-            std::u16string res(res_size, '\0');
+            std::u16string u16(u16_size, '\0');
 
-            char16_t* res_ptr{ res.data() };
+            char16_t* u16_ptr{ u16.data() };
             for (u32 i{}, j{}; i != text_size;) {
                 U8_NEXT_UNSAFE(text_ptr, i, ch);
                 if (filter(ch)) {
-                    U16_APPEND_UNSAFE(res_ptr, j, ch);
+                    U16_APPEND_UNSAFE(u16_ptr, j, ch);
                 }
             }
 
-            UErrorCode icu_error{};
-            std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
-                ubrk_open(UBRK_WORD, nullptr, res_ptr, res_size, &icu_error),
-                ubrk_close
-            };
-            if (U_FAILURE(icu_error)) {
-                return { {}, TokenizeError::segmentation_failed };
+            auto opt_tokens{ tokenize(u16) };
+            if (!opt_tokens) {
+                return std::unexpected{ Error::tokenization_failed };
             }
+            std::vector tokens{ std::move(*opt_tokens) };
 
-            std::vector<Token> tokens;
-            i32 first{ ubrk_first(iter.get()) };
-            while (true) {
-                i32 last{ ubrk_next(iter.get()) };
-                if (last == UBRK_DONE) {
-                    break;
-                }
+            TextMetrics metrics{};
 
-                tokens.emplace_back(
-                    std::u16string_view{ res_ptr + first, res_ptr + last },
-                    static_cast<UWordBreak>(ubrk_getRuleStatus(iter.get()))
-                );
+            // TODO
 
-                first = last;
-            }
-
-            return { { std::move(res), std::move(tokens) }, error };
+            return ResultWarning{ std::move(metrics), warning };
         }
 
-        static std::generator<u32> _unicode_view(std::u16string_view text) noexcept {
-            const char16_t* ptr{ text.data() };
-            i32 ch;
-            for (u32 i{}, size{ text.size() }; i != size;) {
-                U16_NEXT_UNSAFE(ptr, i, ch);
-                co_yield ch;
-            }
-        }
-
-        struct LineMetrics {
-            std::vector<Token> tokens;
-                f64 width;
-                f64 height;
-            f64 justified_spacing;
-            };
-
-        struct TextMetrics {
-            std::u16string text;
-            std::vector<LineMetrics> lines;
-            f64 width;
-            f64 height;
-        };
-
-        std::pair<TextMetrics, TokenizeError> _measure(std::string_view text) const noexcept {
-            auto [tokens, error]{ _tokenize(text) };
-            if (static_cast<int>(error) < 0) {
-                return { {}, error };
-            }
-
-            TextMetrics metrics;
-
-            auto& glyph_data{ setting.font->glyph_data() };
-            f64 max_line_length{ setting.max_line_length / setting.scale_x };
-            auto add_line{
-                   // @formatter:off
-                [this, max_line_length, &metrics](
-                    std::u32string_view text,
-                    f64 line_length,
-                    f64 is_full,
-                    f64 is_paragraph_end
-                ) {
-                    // @formatter:on
-                    f64 width{ line_length };
-                    f64 letter_spacing{ setting.letter_spacing };
-                    if (setting.justified && max_line_length != 0 && is_full && text.size() != 1) {
-                        width = max_line_length;
-                        letter_spacing += (max_line_length - line_length) / (text.size() - 1);
-                    }
-
-                    f64 height{ setting.font->height() * setting.line_height };
-                    if (is_paragraph_end) {
-                        height += setting.paragraph_spacing;
-                    }
-
-                    metrics.lines.emplace_back(std::u32string{ text }, width, height, letter_spacing);
-                    metrics.width = std::max(metrics.width, width);
-                    metrics.height += height;
-                }
-            };
-
-            f64 line_length{}, last_spacing{};
-            auto begin{ filtered_text.begin() }, end{ filtered_text.end() }, i{ begin };
-            while (i != end) {
-                if (*i != '\n') {
-                    auto& [glyph_x, glyph_y, glyph_width, offset_x]{ glyph_map.at(*i) };
-
-                    f64 right{ static_cast<f64>(offset_x + glyph_width) };
-                    f64 spacing{ _setting.letter_spacing };
-                    if (*i == ' ') {
-                        spacing += _setting.word_spacing;
-                    }
-
-                    if (max_line_length != 0 && line_length + right > max_line_length) {
-                        add_line({ begin, i }, line_length - last_spacing, true, false);
-                        begin = i;
-                        line_length = 0;
-                    }
-
-                    line_length += right + spacing;
-                    last_spacing = spacing;
-                    ++i;
-                }
-                else {
-                    add_line({ begin, i }, line_length - last_spacing, false, true);
-                    begin = ++i;
-                    line_length = last_spacing = 0;
-                }
-            }
-            add_line({ begin, i }, line_length - last_spacing, false, false);
-
-            return metrics;
-        }
-
-        void _line(f64 x, f64 y, const LineMetrics& line) const noexcept {
-            static IFunction draw_sprite_general{ IFunctionResource::at(FunctionId::draw_sprite_general) };
-
-            auto& glyph_data{ setting.font->glyph_data() };
-            u16 height{ setting.font->height() };
-            u32 spr_id{ setting.font->sprite().id() };
-
-            for (auto& [text, type] : line.tokens) {
-                for (u32 ch : _unicode_view(text)) {
-                    auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
-
-                    draw_sprite_general(
-                        spr_id,
-                    0,
-                        spr_x,
-                        spr_y,
-                    width,
-                        height,
-                    (x + left) * setting.scale_x,
-                    y * setting.scale_y,
-                    setting.scale_x,
-                    setting.scale_y,
-                    0,
-                    setting.color_top,
-                    setting.color_top,
-                    setting.color_bottom,
-                    setting.color_bottom,
-                    setting.alpha
-                );
-
-                x += left + width + letter_spacing;
-                if (ch == ' ') {
-                    x += setting.word_spacing;
-                }
-            }
-        }
-        }
-
-    public:
-        DrawSetting setting;
-
-        f64 width(std::string_view text) const noexcept {
-            auto [metrics, error]{ _measure(text) };
-            return static_cast<int>(error) >= 0 ? metrics.width : error;
-        }
-
-        f64 height(std::string_view text) const noexcept {
-            auto [metrics, error]{ _measure(text) };
-            return static_cast<int>(error) >= 0 ? metrics.height : error;
-        }
-
-        enum class DrawTextError {
-            success          = 0,
-            font_not_set     = -1,
-            measuring_failed = -2
-        };
-
-        DrawTextError text(f64 x, f64 y, std::string_view text) const noexcept {
+        Result<std::monostate> text(f64 x, f64 y, std::string_view text) const noexcept {
             if (setting.font == nullptr) {
-                return DrawTextError::font_not_set;
+                return std::unexpected{ Error::font_not_set };
             }
 
-            auto [metrics, error]{ _measure(text) };
-            if (static_cast<int>(error) < 0) {
-                return DrawTextError::measuring_failed;
+            auto exp_metrics{ measure(text) };
+            if (!exp_metrics) {
+                return std::unexpected{ exp_metrics.error() };
             }
+            auto& [metrics, warning]{ *exp_metrics };
 
             x += setting.offset_x / setting.scale_x;
             y += (setting.offset_y + setting.font->top()) / setting.scale_y;
@@ -433,7 +293,7 @@ namespace gm {
                 y += line.height;
             }
 
-            return DrawTextError::success;
+            return ResultWarning{ std::monostate{}, warning };
         }
     };
 

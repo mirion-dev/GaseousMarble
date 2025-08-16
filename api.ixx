@@ -12,7 +12,7 @@ using namespace gm;
 std::unordered_map<std::string, Font> font_map;
 Draw draw;
 
-// reserve for the new Draw
+// reserve for the `next` branch
 API Real gm_init() noexcept {
     return 0;
 }
@@ -27,16 +27,16 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         font = { font_name, sprite_path };
     }
     catch (const std::ios_base::failure&) {
-        return -1; // data file not found
+        return -1;
     }
-    catch (const InvalidHeaderError&) {
-        return -2; // invalid data file header
+    catch (const Font::InvalidHeaderError&) {
+        return -2;
     }
-    catch (const DataCorruptionError&) {
-        return -3; // data file is corrupt
+    catch (const Font::DataCorruptionError&) {
+        return -3;
     }
-    catch (const SpriteAddFailure&) {
-        return -4; // adding sprite failed
+    catch (const Font::SpriteAddFailure&) {
+        return -4;
     }
 
     font_map.emplace(font_name, std::move(font));
@@ -53,15 +53,60 @@ API Real gm_clear() noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    return static_cast<Real>(draw.text(x, y, text));
+    auto exp_warning{ draw.text(x, y, text) };
+    if (!exp_warning) {
+        switch (exp_warning.error()) {
+        case Draw::Error::invalid_encoding:
+            return -1;
+        case Draw::Error::tokenization_failed:
+            return -2;
+        case Draw::Error::font_not_set:
+            return -3;
+        default:
+            std::unreachable();
+        }
+    }
+
+    switch (exp_warning->warning) {
+    case Draw::Warning::no_warning:
+        return 0;
+    case Draw::Warning::missing_glyphs:
+        return 1;
+    default:
+        std::unreachable();
+    }
 }
 
 API Real gm_width(StringView text) noexcept {
-    return draw.width(text);
+    auto exp_metrics{ draw.measure(text) };
+    if (!exp_metrics) {
+        switch (exp_metrics.error()) {
+        case Draw::Error::invalid_encoding:
+            return -1;
+        case Draw::Error::tokenization_failed:
+            return -2;
+        default:
+            std::unreachable();
+        }
+    }
+
+    return exp_metrics->result.width;
 }
 
 API Real gm_height(StringView text) noexcept {
-    return draw.height(text);
+    auto exp_metrics{ draw.measure(text) };
+    if (!exp_metrics) {
+        switch (exp_metrics.error()) {
+        case Draw::Error::invalid_encoding:
+            return -1;
+        case Draw::Error::tokenization_failed:
+            return -2;
+        default:
+            std::unreachable();
+        }
+    }
+
+    return exp_metrics->result.height;
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
