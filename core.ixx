@@ -1,4 +1,8 @@
-﻿export module gm:core;
+﻿module;
+
+#include <icu.h>
+
+export module gm:core;
 
 import std;
 
@@ -23,6 +27,56 @@ namespace gm {
         using f32 = float;
         using f64 = double;
 
+    }
+
+    // ---------------
+    // text processing
+    // ---------------
+
+    export struct Token {
+        std::u16string_view text;
+        UWordBreak type;
+    };
+
+    // `text` should be well-formed
+    export std::optional<std::vector<Token>> tokenize(std::u16string_view text) noexcept {
+        std::vector<Token> tokens;
+
+        UErrorCode error{};
+        std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
+            ubrk_open(UBRK_WORD, nullptr, text.data(), text.size(), &error),
+            ubrk_close
+        };
+        if (U_FAILURE(error)) {
+            return {};
+        }
+
+        i32 first{ ubrk_first(iter.get()) };
+        while (true) {
+            i32 last{ ubrk_next(iter.get()) };
+            if (last == UBRK_DONE) {
+                break;
+            }
+
+            tokens.emplace_back(
+                std::u16string_view{ text.data() + first, text.data() + last },
+                static_cast<UWordBreak>(ubrk_getRuleStatus(iter.get()))
+            );
+
+            first = last;
+        }
+
+        return tokens;
+    }
+
+    // `text` should be well-formed
+    export std::generator<u32> unicode_view(std::u16string_view text) noexcept {
+        const char16_t* ptr{ text.data() };
+        i32 ch;
+        for (u32 i{}, size{ text.size() }; i != size;) {
+            U16_NEXT_UNSAFE(ptr, i, ch);
+            co_yield ch;
+        }
     }
 
 }
