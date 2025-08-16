@@ -206,11 +206,11 @@ namespace gm {
             Warning warning{};
             u32 u16_size{};
 
+            auto& glyph_data{ setting.font->glyph_data() };
             auto filter{
-                [&glyph_data{ setting.font->glyph_data() }](u32 ch) {
-                    return glyph_data.contains(ch) || u_getIntPropertyValue(ch, UCHAR_LINE_BREAK);
-                }
+                [&](u32 ch) { return glyph_data.contains(ch) || u_getIntPropertyValue(ch, UCHAR_LINE_BREAK); }
             };
+
             const char* text_ptr{ text.data() };
             u32 text_size{ text.size() };
             i32 ch;
@@ -245,7 +245,73 @@ namespace gm {
 
             TextMetrics metrics{};
 
-            // TODO
+            f64 max_line_length{ setting.max_line_length / setting.scale_x };
+            f64 line_height{ setting.font->height() * setting.line_height };
+            LineMetrics line{ .height = line_height };
+            f64 x{};
+            u64 justified_count{};
+            auto push{
+                [&](bool auto_wrap) {
+                    if (auto_wrap && setting.justified && max_line_length != 0 && justified_count > 1) {
+                        line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
+                        metrics.width = max_line_length;
+                    }
+                    else {
+                        metrics.width = std::max(metrics.width, line.width);
+                    }
+
+                    metrics.lines.emplace_back(std::move(line));
+                    metrics.height += line.height;
+
+                    line = { .height = line_height };
+                    x = 0;
+                    justified_count = 0;
+                }
+            };
+
+            for (auto& [text, type] : tokens) {
+                const char16_t* ptr{ text.data() };
+                u32 size{ text.size() };
+                i32 ch;
+                const char16_t *begin{ ptr }, *end{ ptr + size };
+                for (u32 i{}; i != size;) {
+                    U16_NEXT_UNSAFE(ptr, i, ch);
+                    if (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
+                        line.height += setting.paragraph_spacing;
+                        push(false);
+                        begin = nullptr;
+                        break;
+                    }
+
+                    auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+                    f64 spacing{ setting.letter_spacing }, right{ static_cast<f64>(left + width) };
+                    if (u_isUWhiteSpace(ch)) {
+                        spacing += setting.word_spacing;
+                    }
+
+                    if (max_line_length != 0 && line.width > max_line_length) {
+                        line.tokens.emplace_back(std::u16string_view{ begin, ptr + i }, type);
+                        push(true);
+                        begin = ptr + i;
+                    }
+
+                    line.width = x + right;
+                    x += advance + spacing;
+                    if (type >= UBRK_WORD_KANA) {
+                        ++justified_count;
+                    }
+                }
+                if (begin != nullptr) {
+                    if (type < UBRK_WORD_KANA) {
+                        ++justified_count;
+                    }
+
+                    line.tokens.emplace_back(std::u16string_view{ begin, end }, type);
+                }
+            }
+            if (!line.tokens.empty()) {
+                push(false);
+            }
 
             return ResultWarning{ std::move(metrics), warning };
         }
@@ -262,7 +328,7 @@ namespace gm {
             auto& [metrics, warning]{ *exp_metrics };
 
             x += setting.offset_x / setting.scale_x;
-            y += (setting.offset_y + setting.font->top()) / setting.scale_y;
+            y += setting.offset_y / setting.scale_y + setting.font->top();
 
             if (setting.valign == 0) {
                 y -= metrics.height / 2;
@@ -285,7 +351,10 @@ namespace gm {
                 }
 
                 for (auto& [text, type] : tokens) {
-                    for (u32 ch : unicode_view(text)) {
+                    const char16_t* ptr{ text.data() };
+                    i32 ch;
+                    for (u32 i{}, size{ text.size() }; i != size;) {
+                        U16_NEXT_UNSAFE(ptr, i, ch);
                         auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
 
                         draw_sprite_general(
