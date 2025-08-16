@@ -270,18 +270,11 @@ namespace gm {
             f64 height;
         };
 
-        std::optional<TextMetrics> _measure(std::string_view text) const noexcept {
-            auto opt_utf16{ to_utf16(text) };
-            if (!opt_utf16) {
-                return {};
+        std::pair<TextMetrics, TokenizeError> _measure(std::string_view text) const noexcept {
+            auto [tokens, error]{ _tokenize(text) };
+            if (static_cast<int>(error) < 0) {
+                return { {}, error };
             }
-            std::u16string utf16{ std::move(*opt_utf16) };
-
-            auto opt_tokens{ tokenize(utf16) };
-            if (!opt_tokens) {
-                return {};
-            }
-            std::vector tokens{ std::move(*opt_tokens) };
 
             TextMetrics metrics;
 
@@ -389,13 +382,13 @@ namespace gm {
         DrawSetting setting;
 
         f64 width(std::string_view text) const noexcept {
-            auto opt_metrics{ _measure(text) };
-            return opt_metrics ? opt_metrics->width : -1;
+            auto [metrics, error]{ _measure(text) };
+            return static_cast<int>(error) >= 0 ? metrics.width : error;
         }
 
         f64 height(std::string_view text) const noexcept {
-            auto opt_metrics{ _measure(text) };
-            return opt_metrics ? opt_metrics->height : -1;
+            auto [metrics, error]{ _measure(text) };
+            return static_cast<int>(error) >= 0 ? metrics.height : error;
         }
 
         enum class DrawTextError {
@@ -409,11 +402,10 @@ namespace gm {
                 return DrawTextError::font_not_set;
             }
 
-            auto opt_metrics{ _measure(text) };
-            if (!opt_metrics) {
+            auto [metrics, error]{ _measure(text) };
+            if (static_cast<int>(error) < 0) {
                 return DrawTextError::measuring_failed;
             }
-            TextMetrics metrics{ std::move(*opt_metrics) };
 
             x += setting.offset_x / setting.scale_x;
             y += (setting.offset_y + setting.font->top()) / setting.scale_y;
