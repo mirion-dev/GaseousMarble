@@ -100,8 +100,8 @@ namespace gm {
                 file.read(reinterpret_cast<char*>(&_glyph_data[ch]), sizeof(_glyph_data[ch]));
             }
             if (!file.eof()) {
-                    throw DataCorruptionError{ std::format("File \"{}\" is corrupt.", glyph_path) };
-                }
+                throw DataCorruptionError{ std::format("File \"{}\" is corrupt.", glyph_path) };
+            }
 
             _name = font_name;
 
@@ -167,6 +167,11 @@ namespace gm {
             f64 scale_y{ 1 };
         };
 
+        struct Token {
+            std::u16string_view text;
+            bool continuous;
+        };
+
         struct LineMetrics {
             std::vector<Token> tokens;
             f64 width;
@@ -204,19 +209,28 @@ namespace gm {
         Setting setting;
 
         Result<TextMetrics> measure(std::string_view text) const noexcept {
-            Warning warning{};
-            u32 u16_size{};
-
             auto& glyph_data{ setting.font->glyph_data() };
-            auto filter{
-                [&](u32 ch) { return glyph_data.contains(ch) || u_getIntPropertyValue(ch, UCHAR_LINE_BREAK); }
+            auto is_line_break{
+                [](u32 ch) {
+                    switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
+                    case U_LB_LINE_FEED:
+                    case U_LB_CARRIAGE_RETURN:
+                    case U_LB_MANDATORY_BREAK:
+                    case U_LB_NEXT_LINE:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
             };
+            auto filter{ [&](u32 ch) { return glyph_data.contains(ch) || is_line_break(ch); } };
 
-            const char* text_ptr{ text.data() };
-            u32 text_size{ text.size() };
-            i32 ch;
-            for (u32 i{}; i != text_size;) {
-                U8_NEXT(text_ptr, i, text_size, ch);
+            Warning warning{};
+            const char* u8_ptr{ text.data() };
+            u32 u8_size{ text.size() }, u16_size{};
+            for (u32 i{}; i != u8_size;) {
+                i32 ch;
+                U8_NEXT(u8_ptr, i, u8_size, ch);
                 if (ch < 0) {
                     return std::unexpected{ Error::invalid_encoding };
                 }
@@ -231,87 +245,94 @@ namespace gm {
 
             std::u16string u16(u16_size, '\0');
             char16_t* u16_ptr{ u16.data() };
-            for (u32 i{}, j{}; i != text_size;) {
-                U8_NEXT_UNSAFE(text_ptr, i, ch);
+            for (u32 i{}, j{}; i != u8_size;) {
+                i32 ch;
+                U8_NEXT_UNSAFE(u8_ptr, i, ch);
                 if (filter(ch)) {
                     U16_APPEND_UNSAFE(u16_ptr, j, ch);
                 }
             }
 
-            auto opt_tokens{ tokenize(u16) };
-            if (!opt_tokens) {
+            UErrorCode error{};
+            std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
+                ubrk_open(UBRK_WORD, nullptr, u16_ptr, u16_size, &error),
+                ubrk_close
+            };
+            if (U_FAILURE(error)) {
                 return std::unexpected{ Error::tokenization_failed };
             }
-            std::vector tokens{ std::move(*opt_tokens) };
-
-            TextMetrics metrics{ std::move(u16) };
 
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
-            f64 line_height{ setting.font->height() * setting.line_height };
-            LineMetrics line{ .height = line_height };
+            TextMetrics metrics{ std::move(u16) };
+            LineMetrics line{};
+            char16_t* ptr{ u16_ptr };
+            u32 size{};
+            bool cont{};
             f64 x{};
-            u64 justified_count{};
-            auto push{
-                [&](bool auto_wrap) {
-                    if (auto_wrap && setting.justified && max_line_length != 0 && justified_count > 1) {
-                        line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
-                        metrics.width = max_line_length;
+            i32 first{ ubrk_first(iter.get()) };
+            while (true) {
+                i32 last{ ubrk_next(iter.get()) };
+                if (last == UBRK_DONE) {
+                    if (size != 0) {
+                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
                     }
-                    else {
-                        metrics.width = std::max(metrics.width, line.width);
-                    }
-
                     metrics.lines.emplace_back(std::move(line));
-                    metrics.height += line.height;
-
-                    line = { .height = line_height };
-                    x = 0;
-                    justified_count = 0;
+                    break;
                 }
-            };
 
-            for (auto& [text, type] : tokens) {
-                const char16_t* ptr{ text.data() };
-                u32 size{ text.size() };
-                i32 ch;
-                const char16_t *begin{ ptr }, *end{ ptr + size };
-                for (u32 i{}; i != size;) {
-                    U16_NEXT_UNSAFE(ptr, i, ch);
-                    if (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
-                        line.height += setting.paragraph_spacing;
-                        push(false);
-                        begin = nullptr;
+                char16_t* word_ptr{ u16_ptr + first };
+                u32 word_size{ static_cast<u32>(last - first) }, i{};
+                bool word_cont{ ubrk_getRuleStatus(iter.get()) >= UBRK_WORD_KANA };
+                if (cont != word_cont) {
+                    if (size != 0) {
+                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
+                    }
+                    ptr = word_ptr;
+                    size = 0;
+                    cont = word_cont;
+                }
+
+                f64 xx{ x };
+                while (true) {
+                    if (i == word_size) {
+                        size += word_size;
+                        x = xx;
+                        break;
+                    }
+
+                    i32 ch;
+                    U16_NEXT_UNSAFE(word_ptr, i, ch);
+                    if (is_line_break(ch)) {
+                        if (size != 0) {
+                            line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
+                        }
+                        metrics.lines.emplace_back(std::move(line));
+                        line = {};
+                        ptr = word_ptr + word_size;
+                        size = 0;
+                        x = 0;
                         break;
                     }
 
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
-                    f64 spacing{ setting.letter_spacing }, right{ static_cast<f64>(left + width) };
+                    auto right{ static_cast<f64>(left + width) };
+                    if (max_line_length != 0 && xx + right > max_line_length && size != 0) {
+                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
+                        metrics.lines.emplace_back(std::move(line));
+                        line = {};
+                        ptr = word_ptr;
+                        size = 0;
+                        xx -= x;
+                        x = 0;
+                    }
+
+                    xx += advance + setting.letter_spacing;
                     if (u_isUWhiteSpace(ch)) {
-                        spacing += setting.word_spacing;
-                    }
-
-                    if (max_line_length != 0 && line.width > max_line_length) {
-                        line.tokens.emplace_back(std::u16string_view{ begin, ptr + i }, type);
-                        push(true);
-                        begin = ptr + i;
-                    }
-
-                    line.width = x + right;
-                    x += advance + spacing;
-                    if (type >= UBRK_WORD_KANA) {
-                        ++justified_count;
+                        xx += setting.word_spacing;
                     }
                 }
-                if (begin != nullptr) {
-                    if (type < UBRK_WORD_KANA) {
-                        ++justified_count;
-                    }
 
-                    line.tokens.emplace_back(std::u16string_view{ begin, end }, type);
-                }
-            }
-            if (!line.tokens.empty()) {
-                push(false);
+                first = last;
             }
 
             return ResultWarning{ std::move(metrics), warning };
