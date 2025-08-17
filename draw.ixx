@@ -277,7 +277,12 @@ namespace gm {
             u32 justified_count{};
             auto push_token{
                 [&] {
-                    if (size != 0) {
+                    if (size == 0) {
+                        return;
+                    }
+                    if (!cont) {
+                        ++justified_count;
+                    }
                         line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
                         size = 0;
                     }
@@ -296,6 +301,7 @@ namespace gm {
                     metrics.width = std::max(metrics.width, line.width);
                     metrics.height += line.height;
 
+                    cont = false;
                     line = { .height = line_height };
                     x = 0;
                     justified_count = 0;
@@ -327,9 +333,6 @@ namespace gm {
                         if (line.width > max_line_length) {
                             push_line();
                             ptr = word_ptr + word_size;
-                        }
-                        else if (!cont) {
-                            ++justified_count;
                         }
                         break;
                     }
