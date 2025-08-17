@@ -94,14 +94,14 @@ namespace gm {
 
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
             file.read(reinterpret_cast<char*>(&_top), sizeof(_top));
-            while (!file.eof()) {
+            while (file) {
                 u32 ch;
                 file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
                 file.read(reinterpret_cast<char*>(&_glyph_data[ch]), sizeof(_glyph_data[ch]));
-                if (!file) {
+            }
+            if (!file.eof()) {
                     throw DataCorruptionError{ std::format("File \"{}\" is corrupt.", glyph_path) };
                 }
-            }
 
             _name = font_name;
 

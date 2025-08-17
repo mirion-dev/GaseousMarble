@@ -20,7 +20,7 @@ global.gm_set_line_height = external_define(dll_path, 'gm_set_line_height', dll_
 global.gm_set_max_line_length = external_define(dll_path, 'gm_set_max_line_length', dll_cdecl, ty_real, 1, ty_real)
 
 external_call(global.gm_init)
-external_call(global.gm_font, 'default', './resources/font_default.png')
+external_call(global.gm_font, 'default', './gm_fonts/font_default.png')
 external_call(global.gm_set_font, 'default')
 external_call(global.gm_set_max_line_length, room_width)
 external_call(global.gm_set_line_height, .86)
