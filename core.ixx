@@ -1,8 +1,4 @@
-﻿module;
-
-#include <icu.h>
-
-export module gm:core;
+﻿export module gm:core;
 
 import std;
 
