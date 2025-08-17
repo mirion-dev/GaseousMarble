@@ -324,7 +324,11 @@ namespace gm {
                     if (i == word_size) {
                         size += word_size;
                         x = xx;
-                        if (!cont) {
+                        if (line.width > max_line_length) {
+                            push_line();
+                            ptr = word_ptr + word_size;
+                        }
+                        else if (!cont) {
                             ++justified_count;
                         }
                         break;
@@ -341,14 +345,7 @@ namespace gm {
 
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
                     auto right{ static_cast<f64>(left + width) };
-                    if (max_line_length != 0 && xx + right > max_line_length) {
-                        if (x == 0) {
-                            size = word_size;
-                            push_line();
-                            ptr = word_ptr + word_size;
-                            break;
-                        }
-
+                    if (max_line_length != 0 && xx + right > max_line_length && x != 0) {
                         xx -= x;
                         push_line(true);
                         ptr = word_ptr;
