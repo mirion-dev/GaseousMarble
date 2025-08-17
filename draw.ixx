@@ -258,6 +258,8 @@ namespace gm {
             LineMetrics line{ .height = line_height };
             f64 x{};
             u32 justified_count{};
+
+            // update `line`, `justified_count` and reset `size`
             auto push_token{
                 [&] {
                     if (size == 0) {
@@ -270,6 +272,8 @@ namespace gm {
                     size = 0;
                 }
             };
+
+            // update `metrics` and reset `size`, `line`, `x`, `justified_count`
             auto push_line{
                 [&](bool auto_wrap = false) {
                     push_token();
