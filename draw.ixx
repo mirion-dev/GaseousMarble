@@ -213,9 +213,9 @@ namespace gm {
             auto is_line_break{
                 [](u32 ch) {
                     switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
-                    case U_LB_LINE_FEED:
-                    case U_LB_CARRIAGE_RETURN:
                     case U_LB_MANDATORY_BREAK:
+                    case U_LB_CARRIAGE_RETURN:
+                    case U_LB_LINE_FEED:
                     case U_LB_NEXT_LINE:
                         return true;
                     default:
@@ -307,64 +307,63 @@ namespace gm {
                 }
             };
 
-            i32 first{ ubrk_first(iter.get()) };
-            while (true) {
-                i32 last{ ubrk_next(iter.get()) };
+            for (i32 first{ ubrk_first(iter.get()) }, last; ; first = last) {
+                last = ubrk_next(iter.get());
                 if (last == UBRK_DONE) {
-                    push_line();
                     break;
                 }
 
                 char16_t* word_ptr{ u16_ptr + first };
                 u32 word_size{ static_cast<u32>(last - first) }, i{};
-                bool word_cont{ ubrk_getRuleStatus(iter.get()) >= UBRK_WORD_KANA };
-                if (cont != word_cont) {
-                    push_token();
-                    ptr = word_ptr;
-                    cont = word_cont;
+                i32 ch;
+                U16_NEXT_UNSAFE(word_ptr, i, ch);
+                if (is_line_break(ch)) {
+                    line.height += setting.paragraph_spacing;
+                    push_line();
+                    ptr = word_ptr + word_size;
+                    continue;
                 }
 
-                f64 xx{ x }, line_width{};
-                while (true) {
-                    if (i == word_size) {
-                        size += word_size;
-                        x = xx;
-                        line.width = line_width;
-                        if (line.width > max_line_length) {
-                            push_line();
-                            ptr = word_ptr + word_size;
-                        }
-                        break;
+                    bool word_cont{ ubrk_getRuleStatus(iter.get()) >= UBRK_WORD_KANA };
+                    if (cont != word_cont) {
+                        push_token();
+                        ptr = word_ptr;
+                        cont = word_cont;
                     }
 
-                    i32 ch;
-                    U16_NEXT_UNSAFE(word_ptr, i, ch);
-                    if (is_line_break(ch)) {
-                        line.height += setting.paragraph_spacing;
+                    f64 xx{ x }, line_width{};
+                    while (true) {
+                        auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+                        if (max_line_length != 0 && xx + left + width > max_line_length && x != 0) {
+                            xx -= x;
+                            push_line(true);
+                            ptr = word_ptr;
+                        }
+
+                        line_width = xx + left + width;
+                        xx += advance + setting.letter_spacing;
+                        if (u_isUWhiteSpace(ch)) {
+                            xx += setting.word_spacing;
+                        }
+                        if (cont) {
+                            ++justified_count;
+                        }
+
+                        if (i == word_size) {
+                            break;
+                        }
+                        U16_NEXT_UNSAFE(word_ptr, i, ch);
+                    }
+
+                    size += word_size;
+                    x = xx;
+                    line.width = line_width;
+                    if (line_width > max_line_length) {
                         push_line();
                         ptr = word_ptr + word_size;
-                        break;
                     }
-
-                    auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
-                    if (max_line_length != 0 && xx + left + width > max_line_length && x != 0) {
-                        xx -= x;
-                        push_line(true);
-                        ptr = word_ptr;
-                    }
-
-                    line_width = xx + left + width;
-                    xx += advance + setting.letter_spacing;
-                    if (u_isUWhiteSpace(ch)) {
-                        xx += setting.word_spacing;
-                    }
-                    if (cont) {
-                        ++justified_count;
-                    }
-                }
-
-                first = last;
             }
+            push_line();
 
             return ResultWarning{ std::move(metrics), warning };
         }
