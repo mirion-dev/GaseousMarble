@@ -223,7 +223,11 @@ namespace gm {
                     }
                 }
             };
-            auto filter{ [&](u32 ch) { return glyph_data.contains(ch) || is_line_break(ch); } };
+            auto filter{
+                [&](u32 ch) {
+                    return glyph_data.contains(ch) || is_line_break(ch);
+                }
+            };
 
             Warning warning{};
             const char* u8_ptr{ text.data() };
@@ -263,20 +267,42 @@ namespace gm {
             }
 
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
+            f64 line_height{ setting.font->height() * setting.line_height };
             TextMetrics metrics{ std::move(u16) };
-            LineMetrics line{};
             char16_t* ptr{ u16_ptr };
             u32 size{};
             bool cont{};
+            LineMetrics line{};
             f64 x{};
+            auto push_token{
+                [&] {
+                    if (size != 0) {
+                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
+                        size = 0;
+                    }
+                }
+            };
+            auto push_line{
+                [&](bool is_hard = false) {
+                    push_token();
+                    line.height = line_height;
+                    if (is_hard) {
+                        line.height += setting.paragraph_spacing;
+                    }
+
+                    metrics.lines.emplace_back(std::move(line));
+                    metrics.height += line.height;
+
+                    line = {};
+                    x = 0;
+                }
+            };
+
             i32 first{ ubrk_first(iter.get()) };
             while (true) {
                 i32 last{ ubrk_next(iter.get()) };
                 if (last == UBRK_DONE) {
-                    if (size != 0) {
-                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
-                    }
-                    metrics.lines.emplace_back(std::move(line));
+                    push_line();
                     break;
                 }
 
@@ -284,11 +310,8 @@ namespace gm {
                 u32 word_size{ static_cast<u32>(last - first) }, i{};
                 bool word_cont{ ubrk_getRuleStatus(iter.get()) >= UBRK_WORD_KANA };
                 if (cont != word_cont) {
-                    if (size != 0) {
-                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
-                    }
+                    push_token();
                     ptr = word_ptr;
-                    size = 0;
                     cont = word_cont;
                 }
 
@@ -303,27 +326,17 @@ namespace gm {
                     i32 ch;
                     U16_NEXT_UNSAFE(word_ptr, i, ch);
                     if (is_line_break(ch)) {
-                        if (size != 0) {
-                            line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
-                        }
-                        metrics.lines.emplace_back(std::move(line));
-                        line = {};
+                        push_line(true);
                         ptr = word_ptr + word_size;
-                        size = 0;
-                        x = 0;
                         break;
                     }
 
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
                     auto right{ static_cast<f64>(left + width) };
                     if (max_line_length != 0 && xx + right > max_line_length && size != 0) {
-                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
-                        metrics.lines.emplace_back(std::move(line));
-                        line = {};
-                        ptr = word_ptr;
-                        size = 0;
                         xx -= x;
-                        x = 0;
+                        push_line();
+                        ptr = word_ptr;
                     }
 
                     xx += advance + setting.letter_spacing;
