@@ -175,6 +175,7 @@ namespace gm {
         };
 
         struct TextMetrics {
+            std::u16string text;
             std::vector<LineMetrics> lines;
             f64 width;
             f64 height;
@@ -243,7 +244,7 @@ namespace gm {
             }
             std::vector tokens{ std::move(*opt_tokens) };
 
-            TextMetrics metrics{};
+            TextMetrics metrics{ std::move(u16) };
 
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
             f64 line_height{ setting.font->height() * setting.line_height };
