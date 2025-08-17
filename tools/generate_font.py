@@ -64,14 +64,14 @@ def generate_font(
     for (font, chars) in zip(fonts, chars_map.values()):
         draw0.font = font
         for ch in chars:
-            (l, t, r, b) = draw0.textbbox((0, 0), ch, stroke_width=stroke_width)
+            (l, t, r, b) = map(round, draw0.textbbox((0, 0), ch, stroke_width=stroke_width))
             w = r - l
             line_length += w + glyph_spacing
             min_top = min(min_top, t)
             max_bottom = max(max_bottom, b)
 
-    line_length = int(line_length) - glyph_spacing
-    line_height = int(max_bottom - min_top) + glyph_spacing
+    line_length = line_length - glyph_spacing
+    line_height = max_bottom - min_top + glyph_spacing
 
     '''
     calculate the sprite size to arrange glyphs into a roughly square
@@ -80,12 +80,12 @@ def generate_font(
     line_count = 1
     if max_line_length > 1024:
         # x == h * (l / x + 1)
-        max_line_length = int((line_height + math.sqrt(line_height * (line_height + 4 * line_length))) / 2)
+        max_line_length = math.ceil((line_height + math.sqrt(line_height * (line_height + 4 * line_length))) / 2)
         line_length = 0
         for (font, chars) in zip(fonts, chars_map.values()):
             draw0.font = font
             for ch in chars:
-                (l, t, r, b) = draw0.textbbox((0, 0), ch, stroke_width=stroke_width)
+                (l, t, r, b) = map(round, draw0.textbbox((0, 0), ch, stroke_width=stroke_width))
                 w = r - l
                 if line_length + w > max_line_length:
                     line_length = 0
@@ -103,22 +103,22 @@ def generate_font(
     data_path = os.path.splitext(sprite_path)[0] + '.gly'
     os.makedirs(os.path.dirname(data_path), exist_ok=True)
     with open(data_path, 'wb+') as file:
-        file.write(b'GLY\x00\x12\x00' + struct.pack('Hh', line_height - glyph_spacing, int(min_top)))
+        file.write(b'GLY\x00\x12\x00' + struct.pack('Hh', line_height - glyph_spacing, min_top))
 
         x = 0
         y = -min_top
         for (font, chars) in zip(fonts, chars_map.values()):
             draw.font = font
             for ch in chars:
-                (l, t, r, b) = draw.textbbox((0, 0), ch, stroke_width=stroke_width)
-                a = draw.textlength(ch)
+                (l, t, r, b) = map(round, draw.textbbox((0, 0), ch, stroke_width=stroke_width))
+                a = round(draw.textlength(ch))
                 w = r - l
                 if x + w > max_line_length:
                     x = 0
                     y += line_height
-                file.write(struct.pack('IHHHhh', ord(ch), int(x), int(y), int(w), int(a), int(l)))
+                file.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, l))
 
-                pos = (int(x - l), int(y))
+                pos = (x - l, y)
                 # draw.rectangle(((x - 1, y + t - 1), (x + w, y + b)), outline='red')
                 draw.text(pos, ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
                 draw.text(pos, ch, fill)  # make glyphs more clear
