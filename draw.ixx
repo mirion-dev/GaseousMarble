@@ -333,7 +333,14 @@ namespace gm {
 
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
                     auto right{ static_cast<f64>(left + width) };
-                    if (max_line_length != 0 && xx + right > max_line_length && size != 0) {
+                    if (max_line_length != 0 && xx + right > max_line_length) {
+                        if (size == 0) {
+                            size = word_size;
+                            push_line();
+                            ptr = word_ptr + word_size;
+                            break;
+                        }
+
                         xx -= x;
                         push_line();
                         ptr = word_ptr;
