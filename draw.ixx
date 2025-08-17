@@ -210,24 +210,7 @@ namespace gm {
 
         Result<TextMetrics> measure(std::string_view text) const noexcept {
             auto& glyph_data{ setting.font->glyph_data() };
-            auto is_line_break{
-                [](u32 ch) {
-                    switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
-                    case U_LB_MANDATORY_BREAK:
-                    case U_LB_CARRIAGE_RETURN:
-                    case U_LB_LINE_FEED:
-                    case U_LB_NEXT_LINE:
-                        return true;
-                    default:
-                        return false;
-                    }
-                }
-            };
-            auto filter{
-                [&](u32 ch) {
-                    return glyph_data.contains(ch) || is_line_break(ch);
-                }
-            };
+            auto filter{ [&](u32 ch) { return glyph_data.contains(ch) || is_line_break(ch); } };
 
             Warning warning{};
             const char* u8_ptr{ text.data() };
@@ -324,7 +307,8 @@ namespace gm {
                     continue;
                 }
 
-                    bool word_cont{ ubrk_getRuleStatus(iter.get()) >= UBRK_WORD_KANA };
+                i32 word_type{ ubrk_getRuleStatus(iter.get()) };
+                bool word_cont{ word_type >= UBRK_WORD_KANA || word_type == UBRK_WORD_NONE && is_wide(ch) };
                     if (cont != word_cont) {
                         push_token();
                         ptr = word_ptr;

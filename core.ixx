@@ -1,4 +1,8 @@
-﻿export module gm:core;
+﻿module;
+
+#include <icu.h>
+
+export module gm:core;
 
 import std;
 
@@ -23,6 +27,32 @@ namespace gm {
         using f32 = float;
         using f64 = double;
 
+    }
+
+    // --------------------
+    // character properties
+    // --------------------
+
+    bool is_line_break(u32 ch) {
+        switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
+        case U_LB_MANDATORY_BREAK:
+        case U_LB_CARRIAGE_RETURN:
+        case U_LB_LINE_FEED:
+        case U_LB_NEXT_LINE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    bool is_wide(u32 ch) {
+        switch (u_getIntPropertyValue(ch, UCHAR_EAST_ASIAN_WIDTH)) {
+        case U_EA_FULLWIDTH:
+        case U_EA_WIDE:
+            return true;
+        default:
+            return false;
+        }
     }
 
 }
