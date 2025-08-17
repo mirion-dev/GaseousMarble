@@ -283,7 +283,6 @@ namespace gm {
                     metrics.width = std::max(metrics.width, line.width);
                     metrics.height += line.height;
 
-                    cont = false;
                     line = { .height = line_height };
                     x = 0;
                     justified_count = 0;
@@ -304,48 +303,49 @@ namespace gm {
                     line.height += setting.paragraph_spacing;
                     push_line();
                     ptr = word_ptr + word_size;
+                    cont = false;
                     continue;
                 }
 
                 i32 word_type{ ubrk_getRuleStatus(iter.get()) };
                 bool word_cont{ word_type >= UBRK_WORD_KANA || word_type == UBRK_WORD_NONE && is_wide(ch) };
-                    if (cont != word_cont) {
-                        push_token();
+                if (cont != word_cont) {
+                    push_token();
+                    ptr = word_ptr;
+                    cont = word_cont;
+                }
+
+                f64 xx{ x }, line_width{};
+                while (true) {
+                    auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+                    if (max_line_length != 0 && xx + left + width > max_line_length && x != 0) {
+                        xx -= x;
+                        push_line(true);
                         ptr = word_ptr;
-                        cont = word_cont;
                     }
 
-                    f64 xx{ x }, line_width{};
-                    while (true) {
-                        auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
-                        if (max_line_length != 0 && xx + left + width > max_line_length && x != 0) {
-                            xx -= x;
-                            push_line(true);
-                            ptr = word_ptr;
-                        }
-
-                        line_width = xx + left + width;
-                        xx += advance + setting.letter_spacing;
-                        if (u_isUWhiteSpace(ch)) {
-                            xx += setting.word_spacing;
-                        }
-                        if (cont) {
-                            ++justified_count;
-                        }
-
-                        if (i == word_size) {
-                            break;
-                        }
-                        U16_NEXT_UNSAFE(word_ptr, i, ch);
+                    line_width = xx + left + width;
+                    xx += advance + setting.letter_spacing;
+                    if (u_isUWhiteSpace(ch)) {
+                        xx += setting.word_spacing;
+                    }
+                    if (cont) {
+                        ++justified_count;
                     }
 
-                    size += word_size;
-                    x = xx;
-                    line.width = line_width;
-                    if (line_width > max_line_length) {
-                        push_line();
-                        ptr = word_ptr + word_size;
+                    if (i == word_size) {
+                        break;
                     }
+                    U16_NEXT_UNSAFE(word_ptr, i, ch);
+                }
+
+                size += word_size;
+                x = xx;
+                line.width = line_width;
+                if (line_width > max_line_length) {
+                    push_line();
+                    ptr = word_ptr + word_size;
+                }
             }
             push_line();
 
