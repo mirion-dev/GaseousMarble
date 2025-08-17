@@ -385,7 +385,7 @@ namespace gm {
                     xx -= line_width;
                 }
 
-                for (auto& [text, type] : tokens) {
+                for (auto& [text, cont] : tokens) {
                     const char16_t* ptr{ text.data() };
                     i32 ch;
                     for (u32 i{}, size{ text.size() }; i != size;) {
@@ -415,11 +415,11 @@ namespace gm {
                         if (u_isUWhiteSpace(ch)) {
                             xx += setting.word_spacing;
                         }
-                        if (type >= UBRK_WORD_KANA) {
+                        if (cont) {
                             xx += justified_spacing;
                         }
                     }
-                    if (type < UBRK_WORD_KANA) {
+                    if (!cont) {
                         xx += justified_spacing;
                     }
                 }
