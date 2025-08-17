@@ -272,9 +272,9 @@ namespace gm {
             char16_t* ptr{ u16_ptr };
             u32 size{};
             bool cont{};
-            u32 justified_count{};
-            LineMetrics line{};
+            LineMetrics line{ .height = line_height };
             f64 x{};
+            u32 justified_count{};
             auto push_token{
                 [&] {
                     if (size != 0) {
@@ -284,14 +284,10 @@ namespace gm {
                 }
             };
             auto push_line{
-                [&](bool is_hard = false) {
+                [&](bool auto_wrap = false) {
                     push_token();
 
-                    line.height = line_height;
-                    if (is_hard) {
-                        line.height += setting.paragraph_spacing;
-                    }
-                    else if (setting.justified && max_line_length != 0 && justified_count > 1) {
+                    if (auto_wrap && setting.justified && max_line_length != 0 && justified_count > 1) {
                         line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
                         line.width = max_line_length;
                     }
@@ -300,8 +296,9 @@ namespace gm {
                     metrics.width = std::max(metrics.width, line.width);
                     metrics.height += line.height;
 
-                    line = {};
+                    line = { .height = line_height };
                     x = 0;
+                    justified_count = 0;
                 }
             };
 
@@ -336,7 +333,8 @@ namespace gm {
                     i32 ch;
                     U16_NEXT_UNSAFE(word_ptr, i, ch);
                     if (is_line_break(ch)) {
-                        push_line(true);
+                        line.height += setting.paragraph_spacing;
+                        push_line();
                         ptr = word_ptr + word_size;
                         break;
                     }
@@ -344,7 +342,7 @@ namespace gm {
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
                     auto right{ static_cast<f64>(left + width) };
                     if (max_line_length != 0 && xx + right > max_line_length) {
-                        if (size == 0) {
+                        if (x == 0) {
                             size = word_size;
                             push_line();
                             ptr = word_ptr + word_size;
@@ -352,7 +350,7 @@ namespace gm {
                         }
 
                         xx -= x;
-                        push_line();
+                        push_line(true);
                         ptr = word_ptr;
                     }
 
