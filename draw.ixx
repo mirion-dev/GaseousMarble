@@ -283,9 +283,8 @@ namespace gm {
                     if (!cont) {
                         ++justified_count;
                     }
-                        line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
-                        size = 0;
-                    }
+                    line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
+                    size = 0;
                 }
             };
             auto push_line{
@@ -325,11 +324,12 @@ namespace gm {
                     cont = word_cont;
                 }
 
-                f64 xx{ x };
+                f64 xx{ x }, line_width{};
                 while (true) {
                     if (i == word_size) {
                         size += word_size;
                         x = xx;
+                        line.width = line_width;
                         if (line.width > max_line_length) {
                             push_line();
                             ptr = word_ptr + word_size;
@@ -347,14 +347,13 @@ namespace gm {
                     }
 
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
-                    auto right{ static_cast<f64>(left + width) };
-                    if (max_line_length != 0 && xx + right > max_line_length && x != 0) {
+                    if (max_line_length != 0 && xx + left + width > max_line_length && x != 0) {
                         xx -= x;
                         push_line(true);
                         ptr = word_ptr;
                     }
 
-                    line.width = xx + right;
+                    line_width = xx + left + width;
                     xx += advance + setting.letter_spacing;
                     if (u_isUWhiteSpace(ch)) {
                         xx += setting.word_spacing;
