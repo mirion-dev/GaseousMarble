@@ -40,7 +40,7 @@
         </Expand>
     </Type>
 
-    <Type Name="gm::IFunction">
+    <Type Name="gm::Function">
         <Intrinsic Name="name" Expression="_data->name"/>
         <Intrinsic Name="address" Expression="_data->address"/>
         <Intrinsic Name="arg_count" Expression="_data->arg_count"/>
@@ -50,20 +50,6 @@
         <DisplayString Condition="arg_count() >= 2">{name(), sb}(&lt;{arg_count()} args&gt;)</DisplayString>
         <Expand>
             <Item Name="[address]">address(), nvo</Item>
-        </Expand>
-    </Type>
-
-    <Type Name="gm::IFunctionResource">
-        <Intrinsic Name="resource" Expression="(gm::FunctionResource*)0x00686b1c"/>
-        <Intrinsic Name="count" Expression="resource()->count"/>
-        <DisplayString Condition="count() == 0">[No function]</DisplayString>
-        <DisplayString Condition="count() == 1">[1 function]</DisplayString>
-        <DisplayString Condition="count() > 1">[{count()} functions]</DisplayString>
-        <Expand>
-            <ArrayItems>
-                <Size>count()</Size>
-                <ValuePointer>resource()->data</ValuePointer>
-            </ArrayItems>
         </Expand>
     </Type>
 
