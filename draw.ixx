@@ -272,6 +272,7 @@ namespace gm {
             char16_t* ptr{ u16_ptr };
             u32 size{};
             bool cont{};
+            u32 justified_count{};
             LineMetrics line{};
             f64 x{};
             auto push_token{
@@ -285,12 +286,18 @@ namespace gm {
             auto push_line{
                 [&](bool is_hard = false) {
                     push_token();
+
                     line.height = line_height;
                     if (is_hard) {
                         line.height += setting.paragraph_spacing;
                     }
+                    else if (setting.justified && max_line_length != 0 && justified_count > 1) {
+                        line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
+                        line.width = max_line_length;
+                    }
 
                     metrics.lines.emplace_back(std::move(line));
+                    metrics.width = std::max(metrics.width, line.width);
                     metrics.height += line.height;
 
                     line = {};
@@ -320,6 +327,9 @@ namespace gm {
                     if (i == word_size) {
                         size += word_size;
                         x = xx;
+                        if (!cont) {
+                            ++justified_count;
+                        }
                         break;
                     }
 
@@ -346,9 +356,13 @@ namespace gm {
                         ptr = word_ptr;
                     }
 
+                    line.width = xx + right;
                     xx += advance + setting.letter_spacing;
                     if (u_isUWhiteSpace(ch)) {
                         xx += setting.word_spacing;
+                    }
+                    if (cont) {
+                        ++justified_count;
                     }
                 }
 
