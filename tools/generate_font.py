@@ -109,8 +109,8 @@ def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16,
             draw.font = font
             for ch in chars:
                 (l, t, r, b) = map(round, draw.textbbox((0, 0), ch, stroke_width=stroke_width))
-                a = round(draw.textlength(ch))
                 w = r - l + shadow_offset
+                a = w + round(draw.textlength(ch) - draw.textbbox((0, 0), ch)[2])
                 if x + w > max_line_length:
                     x = 0
                     y += line_height
