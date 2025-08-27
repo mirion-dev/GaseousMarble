@@ -149,11 +149,13 @@ namespace gm {
     // -----------------------------------------
 
     class Value {
+    public:
         enum class Type {
             real,
             string
         };
 
+    private:
         Type _type;
         Real _real;
         String _string;
