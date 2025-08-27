@@ -119,26 +119,6 @@ API Real gm_set_font(StringView font_name) noexcept {
     return 0;
 }
 
-API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
-    draw.setting.color_top = static_cast<u32>(color_top);
-    draw.setting.color_bottom = static_cast<u32>(color_bottom);
-    return 0;
-}
-
-API Real gm_set_color(Real color) noexcept {
-    gm_set_color2(color, color);
-    return 0;
-}
-
-API Real gm_set_alpha(Real alpha) noexcept {
-    if (alpha < 0 || alpha > 1) {
-        return -1; // invalid argument
-    }
-
-    draw.setting.alpha = alpha;
-    return 0;
-}
-
 API Real gm_set_halign(Real align) noexcept {
     draw.setting.halign = align == 0 ? 0 : align < 0 ? -1 : 1;
     return 0;
@@ -163,6 +143,26 @@ API Real gm_set_align(Real halign, Real valign) noexcept {
 API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
     gm_set_align(halign, valign);
     gm_set_justified(justified);
+    return 0;
+}
+
+API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
+    draw.setting.color_top = static_cast<u32>(color_top);
+    draw.setting.color_bottom = static_cast<u32>(color_bottom);
+    return 0;
+}
+
+API Real gm_set_color(Real color) noexcept {
+    gm_set_color2(color, color);
+    return 0;
+}
+
+API Real gm_set_alpha(Real alpha) noexcept {
+    if (alpha < 0 || alpha > 1) {
+        return -1; // invalid argument
+    }
+
+    draw.setting.alpha = alpha;
     return 0;
 }
 
@@ -215,21 +215,14 @@ API Real gm_set_scale(Real x, Real y) noexcept {
     return 0;
 }
 
+API Real gm_set_rotation(Real theta) noexcept {
+    draw.setting.rotation = theta;
+    return 0;
+}
+
 // MSVC will unhappy if I use String as the return type
 API const char* gm_get_font() noexcept {
     return draw.setting.font->name().data();
-}
-
-API Real gm_get_color_top() noexcept {
-    return draw.setting.color_top;
-}
-
-API Real gm_get_color_bottom() noexcept {
-    return draw.setting.color_bottom;
-}
-
-API Real gm_get_alpha() noexcept {
-    return draw.setting.alpha;
 }
 
 API Real gm_get_halign() noexcept {
@@ -242,6 +235,18 @@ API Real gm_get_valign() noexcept {
 
 API Real gm_is_justified() noexcept {
     return draw.setting.justified;
+}
+
+API Real gm_get_color_top() noexcept {
+    return draw.setting.color_top;
+}
+
+API Real gm_get_color_bottom() noexcept {
+    return draw.setting.color_bottom;
+}
+
+API Real gm_get_alpha() noexcept {
+    return draw.setting.alpha;
 }
 
 API Real gm_get_letter_spacing() noexcept {
@@ -278,4 +283,8 @@ API Real gm_get_scale_x() noexcept {
 
 API Real gm_get_scale_y() noexcept {
     return draw.setting.scale_y;
+}
+
+API Real gm_get_rotation() noexcept {
+    return draw.setting.rotation;
 }

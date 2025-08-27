@@ -150,12 +150,12 @@ namespace gm {
     public:
         struct Setting {
             Font* font{};
-            u32 color_top{ 0xffffff };
-            u32 color_bottom{ 0xffffff };
-            f64 alpha{ 1 };
             i8 halign{ -1 };
             i8 valign{ -1 };
             bool justified{};
+            u32 color_top{ 0xffffff };
+            u32 color_bottom{ 0xffffff };
+            f64 alpha{ 1 };
             f64 letter_spacing{};
             f64 word_spacing{};
             f64 paragraph_spacing{};
@@ -165,6 +165,7 @@ namespace gm {
             f64 offset_y{};
             f64 scale_x{ 1 };
             f64 scale_y{ 1 };
+            f64 rotation{};
         };
 
         struct Token {

@@ -23,9 +23,9 @@ as well as setters and getters for configuring the drawing setting
 | **Setter** | **Getter** | **Setter Returned Value** |
 | -- | -- | -- |
 | `gm_set_font(font_name)` | `gm_get_font()` | `0` - OK<br>`-1` - Font not found |
+| `gm_set_halign(align)`<br>`gm_set_valign(align)`<br>`gm_set_justified(justified)`<br>`gm_set_align(halign, valign)`<br>`gm_set_align3(halign, valign, justified)` | `gm_get_halign()`<br>`gm_get_valign()`<br>`gm_is_justified()` | Always OK |
 | `gm_set_color(color)`<br>`gm_set_color2(color_top, color_bottom)` | `gm_get_color_top()`<br>`gm_get_color_bottom()` | Always OK |
 | `gm_set_alpha(alpha)` | `gm_get_alpha()` | `0` - OK<br>`-1` - Invalid argument |
-| `gm_set_halign(align)`<br>`gm_set_valign(align)`<br>`gm_set_justified(justified)`<br>`gm_set_align(halign, valign)`<br>`gm_set_align3(halign, valign, justified)` | `gm_get_halign()`<br>`gm_get_valign()`<br>`gm_is_justified()` | Always OK |
 | `gm_set_letter_spacing(spacing)` | `gm_get_letter_spacing()` | Always OK |
 | `gm_set_word_spacing(spacing)` | `gm_get_word_spacing()` | Always OK |
 | `gm_set_paragraph_spacing(spacing)` | `gm_get_paragraph_spacing()` | Always OK |
@@ -33,6 +33,7 @@ as well as setters and getters for configuring the drawing setting
 | `gm_set_max_line_length(length)` | `gm_get_max_line_length()` | `0` - OK<br>`-1` - Invalid argument |
 | `gm_set_offset(x, y)` | `gm_get_offset_x()`<br>`gm_get_offset_y()` | Always OK |
 | `gm_set_scale(x, y)` | `gm_get_scale_x()`<br>`gm_get_scale_y()` | `0` - OK<br>`-1` - Invalid argument(s) |
+| `gm_set_rotation(theta)` | `gm_get_rotation()` | Always OK |
 
 ## Credits
 
