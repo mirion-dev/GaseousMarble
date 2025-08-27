@@ -386,6 +386,7 @@ namespace gm {
             auto& glyph_data{ setting.font->glyph_data() };
             i32 spr_id{ setting.font->sprite().id() };
             u16 height{ setting.font->height() };
+            f64 cos{ std::cos(setting.rotation) }, sin{ std::sin(setting.rotation) };
             for (auto& [tokens, line_width, line_height, justified_spacing] : metrics.lines) {
                 f64 cursor{ x };
                 if (setting.halign == 0) {
@@ -402,14 +403,10 @@ namespace gm {
                         U16_NEXT_UNSAFE(ptr, i, ch);
                         auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
 
-                        f64 draw_x{ cursor + left }, draw_y{ y };
-                        std::tie(draw_x, draw_y) = std::tuple{
-                            (origin_x + (draw_x - origin_x) * std::cos(setting.rotation)
-                                - (draw_y - origin_y) * std::sin(setting.rotation)),
-                            (origin_y + (draw_y - origin_y) * std::cos(setting.rotation)
-                                + (draw_x - origin_x) * std::sin(setting.rotation))
-                        };
-
+                        f64 delta_x{ cursor + left - origin_x };
+                        f64 delta_y{ y - origin_y };
+                        f64 draw_x{ origin_x + delta_x * cos - delta_y * sin };
+                        f64 draw_y{ origin_y + delta_y * cos + delta_x * sin };
                         draw_sprite_general(
                             spr_id,
                             0,
