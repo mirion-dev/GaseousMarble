@@ -373,6 +373,7 @@ namespace gm {
 
             x += setting.offset_x / setting.scale_x;
             y += setting.offset_y / setting.scale_y + setting.font->top();
+            f64 origin_x{ x }, origin_y{ y };
 
             if (setting.valign == 0) {
                 y -= metrics.height / 2;
@@ -402,6 +403,13 @@ namespace gm {
                         auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
 
                         f64 draw_x{ cursor + left }, draw_y{ y };
+                        std::tie(draw_x, draw_y) = std::tuple{
+                            (origin_x + (draw_x - origin_x) * std::cos(setting.rotation)
+                                - (draw_y - origin_y) * std::sin(setting.rotation)),
+                            (origin_y + (draw_y - origin_y) * std::cos(setting.rotation)
+                                + (draw_x - origin_x) * std::sin(setting.rotation))
+                        };
+
                         draw_sprite_general(
                             spr_id,
                             0,
@@ -413,7 +421,7 @@ namespace gm {
                             draw_y * setting.scale_y,
                             setting.scale_x,
                             setting.scale_y,
-                            0,
+                            -setting.rotation / std::numbers::pi * 180,
                             setting.color_top,
                             setting.color_top,
                             setting.color_bottom,
