@@ -104,7 +104,7 @@ def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16,
         file.write(b'GLY\x00\x12\x00' + struct.pack('Hh', line_height - dense, min_top))
 
         x = 0
-        y = -min_top
+        y = 0
         for (font, chars) in zip(fonts, chars_map.values()):
             draw.font = font
             for ch in chars:
@@ -116,11 +116,13 @@ def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16,
                     y += line_height
                 file.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, l))
 
-                # draw.rectangle(((x - 1, y + t - 1), (x + w, y + b + shadow_offset)), outline='red')
+                draw_x = x - l
+                draw_y = y - min_top
+                # draw.rectangle(((draw_x + l - 1, draw_y + t - 1), (draw_x + r + shadow_offset, draw_y + b + shadow_offset)), outline='red')
                 if shadow_offset != 0:
-                    draw.text((x - l + shadow_offset, y + shadow_offset), ch, fill=shadow_fill, stroke_width=stroke_width, stroke_fill=shadow_fill)
-                draw.text((x - l, y), ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
-                draw.text((x - l, y), ch, fill)  # make glyphs more clear
+                    draw.text((draw_x + shadow_offset, draw_y + shadow_offset), ch, fill=shadow_fill, stroke_width=stroke_width, stroke_fill=shadow_fill)
+                draw.text((draw_x, draw_y), ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
+                draw.text((draw_x, draw_y), ch, fill)  # make glyphs more clear
 
                 x += w + dense
 
