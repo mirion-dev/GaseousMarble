@@ -6,16 +6,15 @@ import math
 import struct
 
 
-def generate_font(
-    font_path: str | list[str], sprite_path: str, *,
-    font_size=16, charset: str | None = None, dense=False, smoothing=True, fill='white', stroke_width=0, stroke_fill='black'
-):
+def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16, charset: str | None = None, dense=False, smoothing=True, fill='white', stroke_width=0, stroke_fill='black', shadow_offset=0, shadow_fill='black'):
     if font_size <= 0:
         raise Exception('The `font_size` should be positive.')
     if charset != None and len(charset) == 0:
         raise Exception('The `charset` should be non-empty.')
     if stroke_width < 0:
         raise Exception('The `stroke_width` should be non-negative.')
+    if shadow_offset < 0:
+        raise Exception('The `shadow_offset` should be non-negative.')
 
     if isinstance(font_path, str):
         font_path = [font_path]
@@ -58,20 +57,19 @@ def generate_font(
         draw0.fontmode = '1'
 
     line_length = 0
-    glyph_spacing = 0 if dense else 1
     min_top = 0
     max_bottom = 0
     for (font, chars) in zip(fonts, chars_map.values()):
         draw0.font = font
         for ch in chars:
             (l, t, r, b) = map(round, draw0.textbbox((0, 0), ch, stroke_width=stroke_width))
-            w = r - l
-            line_length += w + glyph_spacing
+            w = r - l + shadow_offset
+            line_length += w + dense
             min_top = min(min_top, t)
-            max_bottom = max(max_bottom, b)
+            max_bottom = max(max_bottom, b + shadow_offset)
 
-    line_length = line_length - glyph_spacing
-    line_height = max_bottom - min_top + glyph_spacing
+    line_length = line_length - dense
+    line_height = max_bottom - min_top + dense
 
     '''
     calculate the sprite size to arrange glyphs into a roughly square
@@ -86,16 +84,16 @@ def generate_font(
             draw0.font = font
             for ch in chars:
                 (l, t, r, b) = map(round, draw0.textbbox((0, 0), ch, stroke_width=stroke_width))
-                w = r - l
+                w = r - l + shadow_offset
                 if line_length + w > max_line_length:
                     line_length = 0
                     line_count += 1
-                line_length += w + glyph_spacing
+                line_length += w + dense
 
     '''
     generates the font sprite and glyph data
     '''
-    image = Image.new('RGBA', (max_line_length, line_height * line_count - glyph_spacing))
+    image = Image.new('RGBA', (max_line_length, line_height * line_count - dense))
     draw = ImageDraw.Draw(image)
     if not smoothing:
         draw.fontmode = '1'
@@ -103,7 +101,7 @@ def generate_font(
     data_path = os.path.splitext(sprite_path)[0] + '.gly'
     os.makedirs(os.path.dirname(data_path), exist_ok=True)
     with open(data_path, 'wb+') as file:
-        file.write(b'GLY\x00\x12\x00' + struct.pack('Hh', line_height - glyph_spacing, min_top))
+        file.write(b'GLY\x00\x12\x00' + struct.pack('Hh', line_height - dense, min_top))
 
         x = 0
         y = -min_top
@@ -112,17 +110,18 @@ def generate_font(
             for ch in chars:
                 (l, t, r, b) = map(round, draw.textbbox((0, 0), ch, stroke_width=stroke_width))
                 a = round(draw.textlength(ch))
-                w = r - l
+                w = r - l + shadow_offset
                 if x + w > max_line_length:
                     x = 0
                     y += line_height
                 file.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, l))
 
-                pos = (x - l, y)
-                # draw.rectangle(((x - 1, y + t - 1), (x + w, y + b)), outline='red')
-                draw.text(pos, ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
-                draw.text(pos, ch, fill)  # make glyphs more clear
+                # draw.rectangle(((x - 1, y + t - 1), (x + w, y + b + shadow_offset)), outline='red')
+                if shadow_offset != 0:
+                    draw.text((x - l + shadow_offset, y + shadow_offset), ch, fill=shadow_fill, stroke_width=stroke_width, stroke_fill=shadow_fill)
+                draw.text((x - l, y), ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
+                draw.text((x - l, y), ch, fill)  # make glyphs more clear
 
-                x += w + glyph_spacing
+                x += w + dense
 
     image.save(sprite_path)
