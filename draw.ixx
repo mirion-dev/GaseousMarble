@@ -252,12 +252,15 @@ namespace gm {
 
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
             f64 line_height{ setting.font->height() * setting.line_height };
+
             TextMetrics metrics{ std::move(u16) };
+
             char16_t* ptr{ u16_ptr };
             u32 size{};
             bool cont{};
+
             LineMetrics line{ .height = line_height };
-            f64 x{};
+            f64 cursor{};
             u32 justified_count{};
 
             // update `line`, `justified_count` and reset `size`
@@ -289,7 +292,7 @@ namespace gm {
                     metrics.height += line.height;
 
                     line = { .height = line_height };
-                    x = 0;
+                    cursor = 0;
                     justified_count = 0;
                 }
             };
@@ -320,19 +323,19 @@ namespace gm {
                     cont = word_cont;
                 }
 
-                f64 xx{ x }, line_width{};
+                f64 next_cursor{ cursor }, next_line_width{};
                 while (true) {
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
-                    if (max_line_length != 0 && xx + left + width > max_line_length && x != 0) {
-                        xx -= x;
+                    if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
+                        next_cursor -= cursor;
                         push_line(true);
                         ptr = word_ptr;
                     }
 
-                    line_width = xx + left + width;
-                    xx += advance + setting.letter_spacing;
+                    next_line_width = next_cursor + left + width;
+                    next_cursor += advance + setting.letter_spacing;
                     if (u_isUWhiteSpace(ch)) {
-                        xx += setting.word_spacing;
+                        next_cursor += setting.word_spacing;
                     }
                     if (cont) {
                         ++justified_count;
@@ -345,9 +348,9 @@ namespace gm {
                 }
 
                 size += word_size;
-                x = xx;
-                line.width = line_width;
-                if (line_width > max_line_length) {
+                cursor = next_cursor;
+                line.width = next_line_width;
+                if (next_line_width > max_line_length) {
                     push_line();
                     ptr = word_ptr + word_size;
                 }
@@ -383,12 +386,12 @@ namespace gm {
             i32 spr_id{ setting.font->sprite().id() };
             u16 height{ setting.font->height() };
             for (auto& [tokens, line_width, line_height, justified_spacing] : metrics.lines) {
-                f64 xx{ x };
+                f64 cursor{ x };
                 if (setting.halign == 0) {
-                    xx -= line_width / 2;
+                    cursor -= line_width / 2;
                 }
                 else if (setting.halign > 0) {
-                    xx -= line_width;
+                    cursor -= line_width;
                 }
 
                 for (auto& [text, cont] : tokens) {
@@ -398,6 +401,7 @@ namespace gm {
                         U16_NEXT_UNSAFE(ptr, i, ch);
                         auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
 
+                        f64 draw_x{ cursor + left }, draw_y{ y };
                         draw_sprite_general(
                             spr_id,
                             0,
@@ -405,8 +409,8 @@ namespace gm {
                             spr_y,
                             width,
                             height,
-                            (xx + left) * setting.scale_x,
-                            y * setting.scale_y,
+                            draw_x * setting.scale_x,
+                            draw_y * setting.scale_y,
                             setting.scale_x,
                             setting.scale_y,
                             0,
@@ -417,16 +421,16 @@ namespace gm {
                             setting.alpha
                         );
 
-                        xx += advance + setting.letter_spacing;
+                        cursor += advance + setting.letter_spacing;
                         if (u_isUWhiteSpace(ch)) {
-                            xx += setting.word_spacing;
+                            cursor += setting.word_spacing;
                         }
                         if (cont) {
-                            xx += justified_spacing;
+                            cursor += justified_spacing;
                         }
                     }
                     if (!cont) {
-                        xx += justified_spacing;
+                        cursor += justified_spacing;
                     }
                 }
 
