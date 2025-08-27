@@ -25,9 +25,6 @@ string_height(string) 当前字体及将要通过 draw_text() 函数绘制的字
 string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
 string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。'''
 
-generate_font(
-    'simsun.ttf', '../test.gm82/gm_fonts/font_default.png',
-    font_size=18, charset=charset, stroke_width=1
-)
+generate_font('simsun.ttf', '../test.gm82/gm_fonts/font_default.png', font_size=18, charset=charset, stroke_width=1)
 
 shutil.copytree('../test.gm82/gm_fonts', '../example.gm82/gm_fonts', dirs_exist_ok=True)

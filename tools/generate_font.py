@@ -108,13 +108,14 @@ def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16,
         for (font, chars) in zip(fonts, chars_map.values()):
             draw.font = font
             for ch in chars:
+                (raw_l, raw_t, raw_r, raw_b) = map(round, draw.textbbox((0, 0), ch))
                 (l, t, r, b) = map(round, draw.textbbox((0, 0), ch, stroke_width=stroke_width))
                 w = r - l + shadow_offset
-                a = w + round(draw.textlength(ch) - draw.textbbox((0, 0), ch)[2])
+                a = w + round(draw.textlength(ch) - (raw_r - raw_l))
                 if x + w > max_line_length:
                     x = 0
                     y += line_height
-                file.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, l))
+                file.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, raw_l))
 
                 draw_x = x - l
                 draw_y = y - min_top
