@@ -11,9 +11,10 @@ using namespace gm;
 
 std::unordered_map<std::string, Font> font_map;
 Draw draw;
+DxDraw dx_draw;
 
-// reserve for the `next` branch
 API Real gm_init() noexcept {
+    dx_draw.init();
     return 0;
 }
 
@@ -53,6 +54,9 @@ API Real gm_clear() noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
+    dx_draw.text(x, y, text);
+    return 0;
+
     auto exp_warning{ draw.text(x, y, text) };
     if (!exp_warning) {
         switch (exp_warning.error()) {

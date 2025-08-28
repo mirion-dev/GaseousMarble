@@ -20,6 +20,7 @@
     <ClCompile Include="engine.ixx" />
     <ClCompile Include="api.ixx" />
     <ClCompile Include="draw.ixx" />
+    <ClCompile Include="dx_draw.ixx" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="gm.natvis" />

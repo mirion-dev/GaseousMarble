@@ -1,6 +1,10 @@
 ﻿module;
 
 #include <cassert>
+#include <d3d8.h>
+
+#undef CP_UTF8
+#undef interface
 
 export module gm:engine;
 
@@ -248,6 +252,39 @@ namespace gm {
 
         void* address() const noexcept {
             return _data->address;
+        }
+    };
+
+    // -----------------------------------------
+    // interface of GameMaker Direct3D resources
+    // -----------------------------------------
+
+    export class Direct3D {
+        struct Resource {
+            IDirect3D8* interface;
+            IDirect3DDevice8* device;
+            u64 _;
+            u32 render_width;
+            u32 render_height;
+        };
+
+        static constexpr auto RESOURCE_PTR{ reinterpret_cast<Resource*>(0x006886a4) };
+
+    public:
+        static IDirect3D8* interface() noexcept {
+            return RESOURCE_PTR->interface;
+        }
+
+        static IDirect3DDevice8* device() noexcept {
+            return RESOURCE_PTR->device;
+        }
+
+        static u32 render_width() noexcept {
+            return RESOURCE_PTR->render_width;
+        }
+
+        static u32 render_height() noexcept {
+            return RESOURCE_PTR->render_height;
         }
     };
 
