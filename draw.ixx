@@ -1,11 +1,7 @@
 ﻿module;
 
-#include <combaseapi.h>
-#include <d2d1.h>
-#include <d3dx8.h>
-#include <dwrite.h>
-#include <wincodec.h>
-#include <wrl/client.h>
+#include <cassert>
+#include <icu.h>
 
 export module gm:draw;
 
@@ -13,106 +9,440 @@ import std;
 import :core;
 import :engine;
 
-using Microsoft::WRL::ComPtr;
-
 namespace gm {
 
-    export class Draw {
-        ComPtr<IWICImagingFactory> _factory_wic;
-        ComPtr<ID2D1Factory> _factory_d2d;
-        ComPtr<IDWriteFactory> _factory_dw;
+    export class SpriteHandle {
+        static constexpr i32 NULL_ID{ -1 };
 
-        ComPtr<IWICBitmap> _bitmap;
-        ComPtr<ID2D1RenderTarget> _render_target;
-        ComPtr<ID2D1SolidColorBrush> _brush;
-        ComPtr<IDWriteTextFormat> _format;
-
-        ComPtr<IDirect3DTexture8> _texture;
-        ComPtr<ID3DXSprite> _sprite;
+        i32 _id{ NULL_ID };
 
     public:
-        bool init() noexcept {
-            IDirect3DDevice8* device{ IDirect3DResource::device() };
-            u32 width{ IDirect3DResource::render_width() };
-            u32 height{ IDirect3DResource::render_height() };
+        SpriteHandle() noexcept = default;
 
-            if (CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&_factory_wic))
-                || D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, IID_PPV_ARGS(&_factory_d2d))
-                || DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &_factory_dw)
-                || _factory_wic->CreateBitmap(width, height, GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnDemand, &_bitmap)
-                || _factory_d2d->CreateWicBitmapRenderTarget(
-                    _bitmap.Get(),
-                    D2D1::RenderTargetProperties(
-                        D2D1_RENDER_TARGET_TYPE_DEFAULT,
-                        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
-                    ),
-                    &_render_target
-                )
-                || _render_target->CreateSolidColorBrush(D2D1::ColorF{ D2D1::ColorF::White }, &_brush)
-                || _factory_dw->CreateTextFormat(
-                    L"Microsoft YaHei",
-                    nullptr,
-                    DWRITE_FONT_WEIGHT_NORMAL,
-                    DWRITE_FONT_STYLE_NORMAL,
-                    DWRITE_FONT_STRETCH_NORMAL,
-                    100,
-                    L"",
-                    &_format
-                )
-                || D3DXCreateTexture(device, width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &_texture)
-                || D3DXCreateSprite(device, &_sprite)) {
-                return false;
-            }
+        SpriteHandle(std::nullptr_t) noexcept {};
 
-            return true;
+        SpriteHandle(i32 id) noexcept :
+            _id{ id } {}
+
+        operator bool() const noexcept {
+            return _id != NULL_ID;
         }
 
-        bool text(f64 x, f64 y, std::string_view _text) const noexcept {
-            u32 width{ IDirect3DResource::render_width() };
-            u32 height{ IDirect3DResource::render_height() };
+        bool operator==(SpriteHandle other) const noexcept {
+            return _id == other._id;
+        }
 
-            auto text{ L"Hello World" };
-            ComPtr<IDWriteTextLayout> layout;
-            if (_factory_dw->CreateTextLayout(text, std::wcslen(text), _format.Get(), FLT_MAX, FLT_MAX, &layout)) {
-                return false;
+        i32 id() const noexcept {
+            return _id;
+        }
+    };
+
+    export struct SpriteDeleter {
+        using pointer = SpriteHandle;
+
+        void operator()(pointer handle) const noexcept {
+            static Function sprite_delete{ Function::Id::sprite_delete };
+            sprite_delete(handle.id());
+        }
+    };
+
+    export struct GlyphData {
+        u16 x, y;
+        u16 width;
+        i16 advance;
+        i16 left;
+    };
+
+    export class Font {
+        u16 _height;
+        i16 _top;
+        std::string _name;
+        std::unique_ptr<SpriteHandle, SpriteDeleter> _sprite;
+        std::unordered_map<i32, GlyphData> _glyph_data;
+
+    public:
+        class InvalidHeaderError : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+
+        class DataCorruptionError : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+
+        class SpriteAddFailure : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+
+        Font() noexcept = default;
+
+        Font(std::string_view font_name, std::string_view sprite_path) {
+            auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
+            std::ifstream file{ glyph_path, std::ios::binary };
+            if (!file.is_open()) {
+                throw std::ios_base::failure{ std::format("Unable to open the file \"{}\".", glyph_path) };
             }
 
-            _render_target->BeginDraw();
-            _render_target->Clear();
-            _render_target->DrawTextLayout(D2D1::Point2F(), layout.Get(), _brush.Get());
-            if (_render_target->EndDraw()) {
-                return false;
+            static constexpr char GLYPH_SIGN[]{ 'G', 'L', 'Y', 1, 0, 0 };
+            char sign[sizeof(GLYPH_SIGN)];
+            file.read(sign, sizeof(sign));
+            if (!file || !std::ranges::equal(sign, GLYPH_SIGN)) {
+                throw InvalidHeaderError{ std::format("Invalid file header in \"{}\".", glyph_path) };
             }
 
-            WICRect bitmap_rect{ 0, 0, static_cast<i32>(width), static_cast<i32>(height) };
-            ComPtr<IWICBitmapLock> bitmap_lock;
-            D3DLOCKED_RECT texture_lock;
-            if (_bitmap->Lock(&bitmap_rect, WICBitmapLockRead, &bitmap_lock)
-                || _texture->LockRect(0, &texture_lock, nullptr, 0)) {
-                return false;
+            file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
+            file.read(reinterpret_cast<char*>(&_top), sizeof(_top));
+            while (file) {
+                u32 ch;
+                file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
+                file.read(reinterpret_cast<char*>(&_glyph_data[ch]), sizeof(_glyph_data[ch]));
+            }
+            if (!file.eof()) {
+                throw DataCorruptionError{ std::format("File \"{}\" is corrupt.", glyph_path) };
             }
 
-            u32 texture_stride{ static_cast<u32>(texture_lock.Pitch) }, bitmap_stride, _;
-            u8 *texture_data{ static_cast<u8*>(texture_lock.pBits) }, *bitmap_data;
-            if (bitmap_lock->GetStride(&bitmap_stride)
-                || bitmap_lock->GetDataPointer(&_, &bitmap_data)) {
-                return false;
+            _name = font_name;
+
+            static Function sprite_add{ Function::Id::sprite_add };
+            _sprite.reset(static_cast<i32>(sprite_add(sprite_path, 1, false, false, 0, 0)));
+            if (_sprite == nullptr) {
+                throw SpriteAddFailure{ std::format("Unable to add sprite \"{}\"", sprite_path) };
+            }
+        }
+
+        operator bool() const noexcept {
+            return _sprite != nullptr;
+        }
+
+        bool operator==(const Font& other) const noexcept {
+            return _sprite == other._sprite;
+        }
+
+        u16 height() const noexcept {
+            assert(_sprite != nullptr);
+            return _height;
+        }
+
+        i16 top() const noexcept {
+            assert(_sprite != nullptr);
+            return _top;
+        }
+
+        const std::string& name() const noexcept {
+            assert(_sprite != nullptr);
+            return _name;
+        }
+
+        SpriteHandle sprite() const noexcept {
+            assert(_sprite != nullptr);
+            return _sprite.get();
+        }
+
+        const auto& glyph_data() const noexcept {
+            assert(_sprite != nullptr);
+            return _glyph_data;
+        }
+    };
+
+    export class Draw {
+    public:
+        struct Setting {
+            Font* font{};
+            i8 halign{ -1 };
+            i8 valign{ -1 };
+            bool justified{};
+            u32 color_top{ 0xffffff };
+            u32 color_bottom{ 0xffffff };
+            f64 alpha{ 1 };
+            f64 letter_spacing{};
+            f64 word_spacing{};
+            f64 paragraph_spacing{};
+            f64 line_height{ 1 };
+            f64 max_line_length{};
+            f64 offset_x{};
+            f64 offset_y{};
+            f64 scale_x{ 1 };
+            f64 scale_y{ 1 };
+            f64 rotation{};
+        };
+
+        struct Token {
+            std::u16string_view text;
+            bool continuous;
+        };
+
+        struct LineMetrics {
+            std::vector<Token> tokens;
+            f64 width;
+            f64 height;
+            f64 justified_spacing;
+        };
+
+        struct TextMetrics {
+            std::u16string text;
+            std::vector<LineMetrics> lines;
+            f64 width;
+            f64 height;
+        };
+
+        enum class Warning {
+            no_warning,
+            missing_glyphs
+        };
+
+        enum class Error {
+            invalid_encoding,
+            tokenization_failed,
+            font_not_set
+        };
+
+        template <class T>
+        struct ResultWarning {
+            T result;
+            Warning warning;
+        };
+
+        template <class T>
+        using Result = std::expected<ResultWarning<T>, Error>;
+
+        Setting setting;
+
+        Result<TextMetrics> measure(std::string_view text) const noexcept {
+            auto& glyph_data{ setting.font->glyph_data() };
+            auto filter{ [&](u32 ch) { return glyph_data.contains(ch) || is_line_break(ch); } };
+
+            Warning warning{};
+            const char* u8_ptr{ text.data() };
+            u32 u8_size{ text.size() }, u16_size{};
+            for (u32 i{}; i != u8_size;) {
+                i32 ch;
+                U8_NEXT(u8_ptr, i, u8_size, ch);
+                if (ch < 0) {
+                    return std::unexpected{ Error::invalid_encoding };
+                }
+
+                if (filter(ch)) {
+                    u16_size += U16_LENGTH(ch);
+                }
+                else {
+                    warning = Warning::missing_glyphs;
+                }
             }
 
-            for (u32 y{}; y < height; ++y) {
-                memcpy(texture_data + y * texture_stride, bitmap_data + y * bitmap_stride, width * 4);
+            std::u16string u16(u16_size, '\0');
+            char16_t* u16_ptr{ u16.data() };
+            for (u32 i{}, j{}; i != u8_size;) {
+                i32 ch;
+                U8_NEXT_UNSAFE(u8_ptr, i, ch);
+                if (filter(ch)) {
+                    U16_APPEND_UNSAFE(u16_ptr, j, ch);
+                }
             }
 
-            if (_texture->UnlockRect(0)) {
-                return false;
+            UErrorCode error{};
+            std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
+                ubrk_open(UBRK_WORD, nullptr, u16_ptr, u16_size, &error),
+                ubrk_close
+            };
+            if (U_FAILURE(error)) {
+                return std::unexpected{ Error::tokenization_failed };
             }
 
-            D3DXVECTOR2 pos{ static_cast<f32>(x), static_cast<f32>(y) };
-            if (_sprite->Draw(_texture.Get(), nullptr, nullptr, nullptr, 0, &pos, 0xffffffff)) {
-                return false;
+            f64 max_line_length{ setting.max_line_length / setting.scale_x };
+            f64 line_height{ setting.font->height() * setting.line_height };
+
+            TextMetrics metrics{ std::move(u16) };
+
+            char16_t* ptr{ u16_ptr };
+            u32 size{};
+            bool cont{};
+
+            LineMetrics line{ .height = line_height };
+            f64 cursor{};
+            u32 justified_count{};
+
+            // update `line`, `justified_count` and reset `size`
+            auto push_token{
+                [&] {
+                    if (size == 0) {
+                        return;
+                    }
+                    if (!cont) {
+                        ++justified_count;
+                    }
+                    line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
+                    size = 0;
+                }
+            };
+
+            // update `metrics` and reset `size`, `line`, `x`, `justified_count`
+            auto push_line{
+                [&](bool auto_wrap = false) {
+                    push_token();
+
+                    if (auto_wrap && setting.justified && max_line_length != 0 && justified_count > 1) {
+                        line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
+                        line.width = max_line_length;
+                    }
+
+                    metrics.lines.emplace_back(std::move(line));
+                    metrics.width = std::max(metrics.width, line.width);
+                    metrics.height += line.height;
+
+                    line = { .height = line_height };
+                    cursor = 0;
+                    justified_count = 0;
+                }
+            };
+
+            for (i32 first{ ubrk_first(iter.get()) }, last; ; first = last) {
+                last = ubrk_next(iter.get());
+                if (last == UBRK_DONE) {
+                    break;
+                }
+
+                char16_t* word_ptr{ u16_ptr + first };
+                u32 word_size{ static_cast<u32>(last - first) }, i{};
+                i32 ch;
+                U16_NEXT_UNSAFE(word_ptr, i, ch);
+                if (is_line_break(ch)) {
+                    line.height += setting.paragraph_spacing;
+                    push_line();
+                    ptr = word_ptr + word_size;
+                    cont = false;
+                    continue;
+                }
+
+                i32 word_type{ ubrk_getRuleStatus(iter.get()) };
+                bool word_cont{ word_type >= UBRK_WORD_KANA || word_type == UBRK_WORD_NONE && is_wide(ch) };
+                if (cont != word_cont) {
+                    push_token();
+                    ptr = word_ptr;
+                    cont = word_cont;
+                }
+
+                f64 next_cursor{ cursor }, next_line_width{};
+                while (true) {
+                    auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+                    if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
+                        next_cursor -= cursor;
+                        push_line(true);
+                        ptr = word_ptr;
+                    }
+
+                    next_line_width = next_cursor + left + width;
+                    next_cursor += advance + setting.letter_spacing;
+                    if (u_isUWhiteSpace(ch)) {
+                        next_cursor += setting.word_spacing;
+                    }
+                    if (cont) {
+                        ++justified_count;
+                    }
+
+                    if (i == word_size) {
+                        break;
+                    }
+                    U16_NEXT_UNSAFE(word_ptr, i, ch);
+                }
+
+                size += word_size;
+                cursor = next_cursor;
+                line.width = next_line_width;
+                if (next_line_width > max_line_length) {
+                    push_line();
+                    ptr = word_ptr + word_size;
+                }
+            }
+            push_line();
+
+            return ResultWarning{ std::move(metrics), warning };
+        }
+
+        Result<std::monostate> text(f64 x, f64 y, std::string_view text) const noexcept {
+            if (setting.font == nullptr) {
+                return std::unexpected{ Error::font_not_set };
             }
 
-            return true;
+            auto exp_metrics{ measure(text) };
+            if (!exp_metrics) {
+                return std::unexpected{ exp_metrics.error() };
+            }
+            auto& [metrics, warning]{ *exp_metrics };
+
+            x += setting.offset_x / setting.scale_x;
+            y += setting.offset_y / setting.scale_y + setting.font->top();
+            f64 origin_x{ x }, origin_y{ y };
+
+            if (setting.valign == 0) {
+                y -= metrics.height / 2;
+            }
+            else if (setting.valign > 0) {
+                y -= metrics.height;
+            }
+
+            static Function draw_sprite_general{ Function::Id::draw_sprite_general };
+            auto& glyph_data{ setting.font->glyph_data() };
+            i32 spr_id{ setting.font->sprite().id() };
+            u16 height{ setting.font->height() };
+            f64 cos{ std::cos(setting.rotation) }, sin{ std::sin(setting.rotation) };
+            for (auto& [tokens, line_width, line_height, justified_spacing] : metrics.lines) {
+                f64 cursor{ x };
+                if (setting.halign == 0) {
+                    cursor -= line_width / 2;
+                }
+                else if (setting.halign > 0) {
+                    cursor -= line_width;
+                }
+
+                for (auto& [text, cont] : tokens) {
+                    const char16_t* ptr{ text.data() };
+                    i32 ch;
+                    for (u32 i{}, size{ text.size() }; i != size;) {
+                        U16_NEXT_UNSAFE(ptr, i, ch);
+                        auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+
+                        f64 delta_x{ cursor + left - origin_x };
+                        f64 delta_y{ y - origin_y };
+                        f64 draw_x{ origin_x + delta_x * cos - delta_y * sin };
+                        f64 draw_y{ origin_y + delta_y * cos + delta_x * sin };
+                        draw_sprite_general(
+                            spr_id,
+                            0,
+                            spr_x,
+                            spr_y,
+                            width,
+                            height,
+                            draw_x * setting.scale_x,
+                            draw_y * setting.scale_y,
+                            setting.scale_x,
+                            setting.scale_y,
+                            -setting.rotation / std::numbers::pi * 180,
+                            setting.color_top,
+                            setting.color_top,
+                            setting.color_bottom,
+                            setting.color_bottom,
+                            setting.alpha
+                        );
+
+                        cursor += advance + setting.letter_spacing;
+                        if (u_isUWhiteSpace(ch)) {
+                            cursor += setting.word_spacing;
+                        }
+                        if (cont) {
+                            cursor += justified_spacing;
+                        }
+                    }
+                    if (!cont) {
+                        cursor += justified_spacing;
+                    }
+                }
+
+                y += line_height;
+            }
+
+            return ResultWarning{ std::monostate{}, warning };
         }
     };
 

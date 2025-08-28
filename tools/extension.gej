@@ -1,9 +1,9 @@
 {
 	"name": "GaseousMarble",
 	"folder": "GaseousMarble",
-	"version": "0.11.0",
+	"version": "1.0.0",
 	"author": "Mirion",
-	"date": "5/8/2025",
+	"date": "8/28/2025",
 	"license": "MIT",
 	"description": "Draw Unicode texts in GameMaker 8.2.",
 	"helpfile": "",
@@ -105,40 +105,6 @@
 					"returntype": 2
 				},
 				{
-					"name": "gm_set_color",
-					"extname": "gm_set_color",
-					"calltype": 12,
-					"helpline": "gm_set_color(color)",
-					"hidden": false,
-					"argtypes": [
-						2
-					],
-					"returntype": 2
-				},
-				{
-					"name": "gm_set_color2",
-					"extname": "gm_set_color2",
-					"calltype": 12,
-					"helpline": "gm_set_color2(color_top,color_bottom)",
-					"hidden": false,
-					"argtypes": [
-						2,
-						2
-					],
-					"returntype": 2
-				},
-				{
-					"name": "gm_set_alpha",
-					"extname": "gm_set_alpha",
-					"calltype": 12,
-					"helpline": "gm_set_alpha(alpha)",
-					"hidden": false,
-					"argtypes": [
-						2
-					],
-					"returntype": 2
-				},
-				{
 					"name": "gm_set_halign",
 					"extname": "gm_set_halign",
 					"calltype": 12,
@@ -192,6 +158,40 @@
 					"argtypes": [
 						2,
 						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm_set_color",
+					"extname": "gm_set_color",
+					"calltype": 12,
+					"helpline": "gm_set_color(color)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm_set_color2",
+					"extname": "gm_set_color2",
+					"calltype": 12,
+					"helpline": "gm_set_color2(color_top,color_bottom)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm_set_alpha",
+					"extname": "gm_set_alpha",
+					"calltype": 12,
+					"helpline": "gm_set_alpha(alpha)",
+					"hidden": false,
+					"argtypes": [
 						2
 					],
 					"returntype": 2
@@ -276,6 +276,17 @@
 					"returntype": 2
 				},
 				{
+					"name": "gm_set_rotation",
+					"extname": "gm_set_rotation",
+					"calltype": 12,
+					"helpline": "gm_set_rotation(theta)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
 					"name": "gm_get_font",
 					"extname": "gm_get_font",
 					"calltype": 12,
@@ -283,33 +294,6 @@
 					"hidden": false,
 					"argtypes": [],
 					"returntype": 1
-				},
-				{
-					"name": "gm_get_color_top",
-					"extname": "gm_get_color_top",
-					"calltype": 12,
-					"helpline": "gm_get_color_top()",
-					"hidden": false,
-					"argtypes": [],
-					"returntype": 2
-				},
-				{
-					"name": "gm_get_color_bottom",
-					"extname": "gm_get_color_bottom",
-					"calltype": 12,
-					"helpline": "gm_get_color_bottom()",
-					"hidden": false,
-					"argtypes": [],
-					"returntype": 2
-				},
-				{
-					"name": "gm_get_alpha",
-					"extname": "gm_get_alpha",
-					"calltype": 12,
-					"helpline": "gm_get_alpha()",
-					"hidden": false,
-					"argtypes": [],
-					"returntype": 2
 				},
 				{
 					"name": "gm_get_halign",
@@ -334,6 +318,33 @@
 					"extname": "gm_is_justified",
 					"calltype": 12,
 					"helpline": "gm_is_justified()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm_get_color_top",
+					"extname": "gm_get_color_top",
+					"calltype": 12,
+					"helpline": "gm_get_color_top()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm_get_color_bottom",
+					"extname": "gm_get_color_bottom",
+					"calltype": 12,
+					"helpline": "gm_get_color_bottom()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm_get_alpha",
+					"extname": "gm_get_alpha",
+					"calltype": 12,
+					"helpline": "gm_get_alpha()",
 					"hidden": false,
 					"argtypes": [],
 					"returntype": 2
@@ -415,6 +426,15 @@
 					"extname": "gm_get_scale_y",
 					"calltype": 12,
 					"helpline": "gm_get_scale_y()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm_get_rotation",
+					"extname": "gm_get_rotation",
+					"calltype": 12,
+					"helpline": "gm_get_rotation()",
 					"hidden": false,
 					"argtypes": [],
 					"returntype": 2

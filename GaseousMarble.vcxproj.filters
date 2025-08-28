@@ -30,9 +30,6 @@
     <ClCompile Include="gm.ixx">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="old.ixx">
-      <Filter>Header Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
