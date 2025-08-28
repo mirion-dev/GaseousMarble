@@ -101,7 +101,7 @@ def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16,
     data_path = os.path.splitext(sprite_path)[0] + '.gly'
     os.makedirs(os.path.dirname(data_path), exist_ok=True)
     with open(data_path, 'wb+') as file:
-        file.write(b'GLY\x00\x12\x00' + struct.pack('Hh', line_height - dense, min_top))
+        file.write(b'GLY\x01\x00\x00' + struct.pack('Hh', line_height - dense, min_top))
 
         x = 0
         y = 0

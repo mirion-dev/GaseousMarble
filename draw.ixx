@@ -85,10 +85,10 @@ namespace gm {
                 throw std::ios_base::failure{ std::format("Unable to open the file \"{}\".", glyph_path) };
             }
 
-            static constexpr char GLYPH_SIGN[]{ "GLY\x00\x12\x00" };
-            char sign[sizeof(GLYPH_SIGN) - 1];
+            static constexpr char GLYPH_SIGN[]{ 'G', 'L', 'Y', 1, 0, 0 };
+            char sign[sizeof(GLYPH_SIGN)];
             file.read(sign, sizeof(sign));
-            if (!file || std::strncmp(sign, GLYPH_SIGN, sizeof(sign)) != 0) {
+            if (!file || !std::ranges::equal(sign, GLYPH_SIGN)) {
                 throw InvalidHeaderError{ std::format("Invalid file header in \"{}\".", glyph_path) };
             }
 
