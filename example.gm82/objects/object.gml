@@ -6,9 +6,9 @@ applies_to=self
 */
 gm_font('default', './gm_fonts/font_default.png')
 gm_set_font('default')
+gm_set_letter_spacing(-1)
 gm_set_max_line_length(room_width)
 gm_set_line_height(.86)
-draw_set_color(c_white)
 #define Keyboard_82
 /*"/*'/**//* YYD ACTION
 lib_id=1
@@ -22,6 +22,7 @@ lib_id=1
 action_id=603
 applies_to=self
 */
+draw_set_color(c_white)
 draw_text(0, 0, fps)
 
 gm_draw(0, 0, "

@@ -16,15 +16,16 @@ global.gm_init = external_define(dll_path, 'gm_init', dll_cdecl, ty_real, 0)
 global.gm_font = external_define(dll_path, 'gm_font', dll_cdecl, ty_real, 2, ty_string, ty_string)
 global.gm_draw = external_define(dll_path, 'gm_draw', dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm_set_font = external_define(dll_path, 'gm_set_font', dll_cdecl, ty_real, 1, ty_string)
+global.gm_set_letter_spacing = external_define(dll_path, 'gm_set_letter_spacing', dll_cdecl, ty_real, 1, ty_real)
 global.gm_set_line_height = external_define(dll_path, 'gm_set_line_height', dll_cdecl, ty_real, 1, ty_real)
 global.gm_set_max_line_length = external_define(dll_path, 'gm_set_max_line_length', dll_cdecl, ty_real, 1, ty_real)
 
 external_call(global.gm_init)
 external_call(global.gm_font, 'default', './gm_fonts/font_default.png')
 external_call(global.gm_set_font, 'default')
+external_call(global.gm_set_letter_spacing, -1)
 external_call(global.gm_set_max_line_length, room_width)
 external_call(global.gm_set_line_height, .86)
-draw_set_color(c_white)
 #define Keyboard_82
 /*"/*'/**//* YYD ACTION
 lib_id=1
@@ -38,6 +39,7 @@ lib_id=1
 action_id=603
 applies_to=self
 */
+draw_set_color(c_white)
 draw_text(0, 0, fps)
 
 external_call(global.gm_draw, 0, 0, "
