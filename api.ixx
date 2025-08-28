@@ -54,7 +54,7 @@ API Real gm_clear() noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    dx_draw.text(x, y, text);
+    dx_draw.text();
     return 0;
 
     auto exp_warning{ draw.text(x, y, text) };
