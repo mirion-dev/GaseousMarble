@@ -2,7 +2,7 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
     <Type Name="gm::BasicString&lt;*&gt;">
-        <Intrinsic Name="header" Expression="(gm::StringHeader*)(_data - _offset)"/>
+        <Intrinsic Name="header" Expression="(gm::StringHeader*)(_data - HEADER_SIZE)"/>
         <Intrinsic Name="size" Expression="header()->size"/>
         <Intrinsic Name="ref_count" Expression="header()->ref_count"/>
         <DisplayString>{_data, [size()] na}</DisplayString>
@@ -17,7 +17,7 @@
     </Type>
 
     <Type Name="gm::BasicStringView&lt;*&gt;">
-        <Intrinsic Name="header" Expression="(gm::StringHeader*)(_data - _offset)"/>
+        <Intrinsic Name="header" Expression="(gm::StringHeader*)(_data - HEADER_SIZE)"/>
         <Intrinsic Name="size" Expression="header()->size"/>
         <Intrinsic Name="ref_count" Expression="header()->ref_count"/>
         <DisplayString>{_data, [size()] na}</DisplayString>
@@ -32,11 +32,11 @@
     </Type>
 
     <Type Name="gm::Value">
-        <DisplayString Condition="_type == gm::ValueType::real">{_real}</DisplayString>
-        <DisplayString Condition="_type == gm::ValueType::string">{_string}</DisplayString>
+        <DisplayString Condition="_type == gm::Value::Type::real">{_real}</DisplayString>
+        <DisplayString Condition="_type == gm::Value::Type::string">{_string}</DisplayString>
         <Expand>
-            <ExpandedItem Condition="_type == gm::ValueType::real">_real</ExpandedItem>
-            <ExpandedItem Condition="_type == gm::ValueType::string">_string</ExpandedItem>
+            <ExpandedItem Condition="_type == gm::Value::Type::real">_real</ExpandedItem>
+            <ExpandedItem Condition="_type == gm::Value::Type::string">_string</ExpandedItem>
         </Expand>
     </Type>
 
