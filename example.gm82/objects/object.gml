@@ -4,8 +4,12 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-gm_font('default', './gm_fonts/font_default.png')
-gm_set_font('default')
+var error{ error = gm_font("default", "./gm_fonts/font_default.png") }
+if (error < 0) {
+    show_error("gm_font error code: " + string(error), true)
+}
+
+gm_set_font("default")
 gm_set_letter_spacing(-1)
 gm_set_max_line_length(room_width)
 gm_set_line_height(.86)
@@ -25,7 +29,7 @@ applies_to=self
 draw_set_color(c_white)
 draw_text(0, 0, fps)
 
-gm_draw(0, 0, "
+var error{ error = gm_draw(0, 0, "
 在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源创建（不管是在 GM 设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平及垂直坐标。
 
 文本的绘制涉及以下函数：
@@ -47,4 +51,7 @@ draw_text_ext(x, y, string, sep, w) 基本与上面的函数作用相同，但�
 string_width(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。
 string_height(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。
 string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
-string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。")
+string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。") }
+if (error < 0) {
+    show_error("gm_draw error code: " + string(error), true)
+}
