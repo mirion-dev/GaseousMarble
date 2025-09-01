@@ -3,11 +3,11 @@
  
 # GaseousMarble
 
-Draw Unicode texts in GameMaker 8.2, 60% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting), with more options.
+Draw Unicode texts in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), 60% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting), with more options.
 
 ## Usage
 
-GaseousMarble provides following functions for drawing texts
+GaseousMarble provides the following functions for drawing texts:
 
 | **Function** | **Description** | **Returned Value** |
 | -- | -- | -- |
@@ -18,7 +18,7 @@ GaseousMarble provides following functions for drawing texts
 | `gm_width(text)` | Return the width of the text. | `>= 0` - Width<br>`-1` - Invalid encoding<br>`-2` - Failed to tokenize |
 | `gm_height(text)` | Return the height of the text. | `>= 0` - Height<br>`-1` - Invalid encoding<br>`-2` - Failed to tokenize |
 
-as well as setters and getters for configuring the drawing setting
+as well as the setters and getters for configuring the drawing settings:
 
 | **Setter** | **Getter** | **Setter Returned Value** |
 | -- | -- | -- |
@@ -35,9 +35,14 @@ as well as setters and getters for configuring the drawing setting
 | `gm_set_scale(x, y)` | `gm_get_scale_x()`<br>`gm_get_scale_y()` | `0` - OK<br>`-1` - Invalid argument(s) |
 | `gm_set_rotation(theta)` | `gm_get_rotation()` | Always OK |
 
+## Development
+
+1. Install [Visual Studio 2022](https://visualstudio.microsoft.com/).
+2. Install DirectX 8.1 SDK at `third_party/dx81/`.
+
 ## Credits
 
-This project utilizes data from the reverse-engineering efforts of the following projects. Thanks to the original authors for their work.
+This project utilizes data from the reverse-engineering of the following projects. Thanks to the authors for their work.
 
 | **Project** | **Reference** |
 | -- | -- |
