@@ -5,11 +5,11 @@ action_id=603
 applies_to=self
 */
 var dll_path
-if (parameter_string(1) == "-debug") {
-    dll_path = "../Debug/GaseousMarble.dll"
+if (parameter_string(1) == "-d") {
+    dll_path = "../../Debug/GaseousMarble.dll"
 }
 else {
-    dll_path = "../Release/GaseousMarble.dll"
+    dll_path = "../../Release/GaseousMarble.dll"
 }
 
 global.gm_init = external_define(dll_path, "gm_init", dll_cdecl, ty_real, 0)

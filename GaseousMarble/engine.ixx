@@ -205,7 +205,7 @@ namespace gm {
 
     public:
         enum class Id {
-#include "FunctionId.inc"
+#include "detail/FunctionId.inc"
         };
 
         Function(Id id) noexcept :
