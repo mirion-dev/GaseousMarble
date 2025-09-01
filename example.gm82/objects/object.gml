@@ -4,7 +4,7 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-var error{ error = gm_font("default", "./gm_fonts/font_default.png") }
+var error{ error = gm_font("default", "./gm_fonts/default.png") }
 if (error < 0) {
     show_error("gm_font error code: " + string(error), true)
 }

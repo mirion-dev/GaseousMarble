@@ -21,7 +21,7 @@ global.gm_set_line_height = external_define(dll_path, "gm_set_line_height", dll_
 global.gm_set_max_line_length = external_define(dll_path, "gm_set_max_line_length", dll_cdecl, ty_real, 1, ty_real)
 
 external_call(global.gm_init)
-var error{ error = external_call(global.gm_font, "default", "./gm_fonts/font_default.png") }
+var error{ error = external_call(global.gm_font, "default", "./gm_fonts/default.png") }
 if (error < 0) {
     show_error("gm_font error code: " + string(error), true)
 }
