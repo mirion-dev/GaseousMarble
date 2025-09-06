@@ -12,7 +12,6 @@ else {
     dll_path = "../../Release/GaseousMarble.dll"
 }
 
-global.gm_init = external_define(dll_path, "gm_init", dll_cdecl, ty_real, 0)
 global.gm_font = external_define(dll_path, "gm_font", dll_cdecl, ty_real, 2, ty_string, ty_string)
 global.gm_draw = external_define(dll_path, "gm_draw", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm_set_font = external_define(dll_path, "gm_set_font", dll_cdecl, ty_real, 1, ty_string)
@@ -20,7 +19,6 @@ global.gm_set_letter_spacing = external_define(dll_path, "gm_set_letter_spacing"
 global.gm_set_line_height = external_define(dll_path, "gm_set_line_height", dll_cdecl, ty_real, 1, ty_real)
 global.gm_set_max_line_length = external_define(dll_path, "gm_set_max_line_length", dll_cdecl, ty_real, 1, ty_real)
 
-external_call(global.gm_init)
 var error{ error = external_call(global.gm_font, "default", "./gm_fonts/default.png") }
 if (error < 0) {
     show_error("gm_font error code: " + string(error), true)

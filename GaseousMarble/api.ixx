@@ -12,10 +12,6 @@ using namespace gm;
 std::unordered_map<std::string, Font> font_map;
 Draw draw;
 
-API Real gm_init() noexcept {
-    return 0;
-}
-
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
     if (font_map.contains(std::string{ font_name })) {
         return 1; // font already exists

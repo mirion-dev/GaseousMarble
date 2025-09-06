@@ -1,4 +1,4 @@
-{
+﻿{
 	"name": "GaseousMarble",
 	"folder": "GaseousMarble",
 	"version": "1.0.0",
@@ -14,18 +14,9 @@
 			"filename": "GaseousMarble.dll",
 			"origname": "../Release/GaseousMarble.dll",
 			"kind": 1,
-			"init": "gm_init",
+			"init": "",
 			"final": "gm_clear",
 			"functions": [
-				{
-					"name": "gm_init",
-					"extname": "gm_init",
-					"calltype": 12,
-					"helpline": "gm_init()",
-					"hidden": true,
-					"argtypes": [],
-					"returntype": 2
-				},
 				{
 					"name": "gm_font",
 					"extname": "gm_font",
