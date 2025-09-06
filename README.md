@@ -37,8 +37,7 @@ as well as the setters and getters for configuring the drawing settings:
 
 ## Development
 
-1. Install [Visual Studio 2022](https://visualstudio.microsoft.com/).
-2. Install DirectX 8.1 SDK at `third_party/dx81/`.
+Install [Visual Studio 2022](https://visualstudio.microsoft.com/).
 
 ## Credits
 
