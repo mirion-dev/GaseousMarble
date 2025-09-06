@@ -12,7 +12,6 @@ using namespace gm;
 std::unordered_map<std::string, Font> font_map;
 Draw draw;
 
-// reserve for the `next` branch
 API Real gm_init() noexcept {
     return 0;
 }

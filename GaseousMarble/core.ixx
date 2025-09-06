@@ -33,7 +33,7 @@ namespace gm {
     // character properties
     // --------------------
 
-    bool is_line_break(u32 ch) {
+    bool is_line_break(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
         case U_LB_MANDATORY_BREAK:
         case U_LB_CARRIAGE_RETURN:
@@ -45,7 +45,7 @@ namespace gm {
         }
     }
 
-    bool is_wide(u32 ch) {
+    bool is_wide(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_EAST_ASIAN_WIDTH)) {
         case U_EA_FULLWIDTH:
         case U_EA_WIDE:
