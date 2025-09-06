@@ -61,19 +61,11 @@ namespace gm {
         std::unordered_map<i32, GlyphData> _glyph_data;
 
     public:
-        class InvalidHeaderError : public std::runtime_error {
-        public:
-            using std::runtime_error::runtime_error;
-        };
-
-        class DataCorruptionError : public std::runtime_error {
-        public:
-            using std::runtime_error::runtime_error;
-        };
-
-        class SpriteAddFailure : public std::runtime_error {
-        public:
-            using std::runtime_error::runtime_error;
+        enum class Error {
+            failed_to_open_file  = -1,
+            invalid_header       = -2,
+            data_corrupted       = -3,
+            failed_to_add_sprite = -4
         };
 
         Font() noexcept = default;
@@ -82,14 +74,14 @@ namespace gm {
             auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
             std::ifstream file{ glyph_path, std::ios::binary };
             if (!file.is_open()) {
-                throw std::ios_base::failure{ std::format("Unable to open the file \"{}\".", glyph_path) };
+                throw Error::failed_to_open_file;
             }
 
             static constexpr char GLYPH_SIGN[]{ 'G', 'L', 'Y', 1, 0, 0 };
             char sign[sizeof(GLYPH_SIGN)];
             file.read(sign, sizeof(sign));
             if (!file || !std::ranges::equal(sign, GLYPH_SIGN)) {
-                throw InvalidHeaderError{ std::format("Invalid file header in \"{}\".", glyph_path) };
+                throw Error::invalid_header;
             }
 
             file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
@@ -100,7 +92,7 @@ namespace gm {
                 file.read(reinterpret_cast<char*>(&_glyph_data[ch]), sizeof(_glyph_data[ch]));
             }
             if (!file.eof()) {
-                throw DataCorruptionError{ std::format("File \"{}\" is corrupt.", glyph_path) };
+                throw Error::data_corrupted;
             }
 
             _name = font_name;
@@ -108,7 +100,7 @@ namespace gm {
             static Function sprite_add{ Function::Id::sprite_add };
             _sprite.reset(static_cast<i32>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (_sprite == nullptr) {
-                throw SpriteAddFailure{ std::format("Unable to add sprite \"{}\"", sprite_path) };
+                throw Error::failed_to_add_sprite;
             }
         }
 
@@ -188,14 +180,14 @@ namespace gm {
         };
 
         enum class Warning {
-            no_warning,
-            missing_glyphs
+            no_warning     = 0,
+            missing_glyphs = 1
         };
 
         enum class Error {
-            invalid_encoding,
-            tokenization_failed,
-            font_not_set
+            invalid_encoding   = -1,
+            failed_to_tokenize = -2,
+            font_unspecified   = -3
         };
 
         template <class T>
@@ -247,7 +239,7 @@ namespace gm {
                 ubrk_close
             };
             if (U_FAILURE(error)) {
-                return std::unexpected{ Error::tokenization_failed };
+                return std::unexpected{ Error::failed_to_tokenize };
             }
 
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
@@ -362,7 +354,7 @@ namespace gm {
 
         Result<std::monostate> text(f64 x, f64 y, std::string_view text) const noexcept {
             if (setting.font == nullptr) {
-                return std::unexpected{ Error::font_not_set };
+                return std::unexpected{ Error::font_unspecified };
             }
 
             auto exp_metrics{ measure(text) };

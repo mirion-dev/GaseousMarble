@@ -25,17 +25,8 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
     try {
         font = { font_name, sprite_path };
     }
-    catch (const std::ios_base::failure&) {
-        return -1;
-    }
-    catch (const Font::InvalidHeaderError&) {
-        return -2;
-    }
-    catch (const Font::DataCorruptionError&) {
-        return -3;
-    }
-    catch (const Font::SpriteAddFailure&) {
-        return -4;
+    catch (Font::Error error) {
+        return static_cast<int>(error);
     }
 
     font_map.emplace(font_name, std::move(font));
@@ -54,39 +45,16 @@ API Real gm_clear() noexcept {
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
     auto exp_warning{ draw.text(x, y, text) };
     if (!exp_warning) {
-        switch (exp_warning.error()) {
-        case Draw::Error::invalid_encoding:
-            return -1;
-        case Draw::Error::tokenization_failed:
-            return -2;
-        case Draw::Error::font_not_set:
-            return -3;
-        default:
-            std::unreachable();
-        }
+        return static_cast<int>(exp_warning.error());
     }
 
-    switch (exp_warning->warning) {
-    case Draw::Warning::no_warning:
-        return 0;
-    case Draw::Warning::missing_glyphs:
-        return 1;
-    default:
-        std::unreachable();
-    }
+    return static_cast<int>(exp_warning->warning);
 }
 
 API Real gm_width(StringView text) noexcept {
     auto exp_metrics{ draw.measure(text) };
     if (!exp_metrics) {
-        switch (exp_metrics.error()) {
-        case Draw::Error::invalid_encoding:
-            return -1;
-        case Draw::Error::tokenization_failed:
-            return -2;
-        default:
-            std::unreachable();
-        }
+        return static_cast<int>(exp_metrics.error());
     }
 
     return exp_metrics->result.width;
@@ -95,14 +63,7 @@ API Real gm_width(StringView text) noexcept {
 API Real gm_height(StringView text) noexcept {
     auto exp_metrics{ draw.measure(text) };
     if (!exp_metrics) {
-        switch (exp_metrics.error()) {
-        case Draw::Error::invalid_encoding:
-            return -1;
-        case Draw::Error::tokenization_failed:
-            return -2;
-        default:
-            std::unreachable();
-        }
+        return static_cast<int>(exp_metrics.error());
     }
 
     return exp_metrics->result.height;
@@ -219,7 +180,7 @@ API Real gm_set_rotation(Real theta) noexcept {
     return 0;
 }
 
-// MSVC will unhappy if I use String as the return type
+// MSVC will unhappy if returning a String
 API const char* gm_get_font() noexcept {
     return draw.setting.font->name().data();
 }
