@@ -9,9 +9,7 @@ import :core;
 
 namespace gm {
 
-    // ------------------------
-    // fundamental types of GML
-    // ------------------------
+#pragma region fundamental types of GML
 
     struct StringHeader {
         u16 code_page;
@@ -144,9 +142,9 @@ namespace gm {
 
     }
 
-    // -----------------------------------------
-    // interface of GameMaker function resources
-    // -----------------------------------------
+#pragma endregion
+
+#pragma region interface of GameMaker function resources
 
     class Value {
     public:
@@ -250,5 +248,7 @@ namespace gm {
             return _data->address;
         }
     };
+
+#pragma endregion
 
 }

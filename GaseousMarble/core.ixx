@@ -8,9 +8,7 @@ import std;
 
 namespace gm {
 
-    // -----------------
-    // fundamental types
-    // -----------------
+#pragma region fundamental types
 
     export {
 
@@ -29,9 +27,9 @@ namespace gm {
 
     }
 
-    // --------------------
-    // character properties
-    // --------------------
+#pragma endregion
+
+#pragma region character properties
 
     bool is_line_break(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
@@ -54,5 +52,7 @@ namespace gm {
             return false;
         }
     }
+
+#pragma endregion
 
 }
