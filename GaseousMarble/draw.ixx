@@ -203,7 +203,7 @@ namespace gm {
 
         Result<TextMetrics> measure(std::string_view text) const noexcept {
             auto& glyph_data{ setting.font->glyph_data() };
-            auto filter{ [&](u32 ch) { return glyph_data.contains(ch) || is_line_break(ch); } };
+            auto filter{ [&](u32 ch) noexcept { return glyph_data.contains(ch) || is_line_break(ch); } };
 
             Warning warning{};
             const char* u8_ptr{ text.data() };
@@ -257,7 +257,7 @@ namespace gm {
 
             // update `line`, `justified_count` and reset `size`
             auto push_token{
-                [&] {
+                [&] noexcept {
                     if (size == 0) {
                         return;
                     }
@@ -271,7 +271,7 @@ namespace gm {
 
             // update `metrics` and reset `size`, `line`, `x`, `justified_count`
             auto push_line{
-                [&](bool auto_wrap = false) {
+                [&](bool auto_wrap = false) noexcept {
                     push_token();
 
                     if (auto_wrap && setting.justified && max_line_length != 0 && justified_count > 1) {
