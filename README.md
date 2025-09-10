@@ -37,7 +37,7 @@ as well as the setters and getters for configuring the drawing settings:
 
 ## Development
 
-Install [Visual Studio 2022](https://visualstudio.microsoft.com/).
+Install [Visual Studio 2026](https://visualstudio.microsoft.com/insiders/).
 
 ## Credits
 
