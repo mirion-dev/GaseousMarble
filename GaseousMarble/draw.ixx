@@ -71,7 +71,7 @@ namespace gm {
         Setting setting;
 
         Result<Text, Warning, Error> create_text(std::string_view text) const noexcept {
-            auto& glyph_data{ setting.font->glyph_data() };
+            auto& glyphs{ setting.font->glyphs() };
 
             std::u16string utf16;
             Warning warning{};
@@ -83,7 +83,7 @@ namespace gm {
                     ok = unicode_for_each(
                         text,
                         [&](i32 ch) noexcept {
-                            if (glyph_data.contains(ch) || is_line_break(ch)) {
+                            if (glyphs.contains(ch) || is_line_break(ch)) {
                                 U16_APPEND_UNSAFE(ptr, size, ch);
                             }
                             else {
@@ -170,7 +170,7 @@ namespace gm {
 
                     f64 next_cursor{ cursor }, next_line_width;
                     while (true) {
-                        auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+                        auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
                         if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
                             next_cursor -= cursor;
                             push_line(true);
@@ -229,7 +229,7 @@ namespace gm {
             }
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
-            auto& glyph_data{ setting.font->glyph_data() };
+            auto& glyphs{ setting.font->glyphs() };
             i32 spr_id{ setting.font->sprite().id() };
             u16 height{ setting.font->height() };
             f64 cos{ std::cos(setting.rotation) }, sin{ std::sin(setting.rotation) };
@@ -247,7 +247,7 @@ namespace gm {
                     i32 ch;
                     for (u32 i{}, size{ text.size() }; i != size;) {
                         U16_NEXT_UNSAFE(ptr, i, ch);
-                        auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+                        auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
 
                         f64 delta_x{ cursor + left - origin_x };
                         f64 delta_y{ y - origin_y };
