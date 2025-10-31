@@ -194,36 +194,25 @@ namespace gm {
 
         Result<TextMetrics, Warning, Error> measure(std::string_view text) const noexcept {
             auto& glyph_data{ setting.font->glyph_data() };
-            auto filter{ [&](u32 ch) noexcept { return glyph_data.contains(ch) || is_line_break(ch); } };
-
             Warning warning{};
-            const char* u8_ptr{ text.data() };
-            u32 u8_size{ text.size() }, u16_size{};
-            for (u32 i{}; i != u8_size;) {
-                i32 ch;
-                U8_NEXT(u8_ptr, i, u8_size, ch);
-                if (ch < 0) {
-                    return std::unexpected{ Error::invalid_encoding };
-                }
+            auto filter{
+                [&](i32 ch) {
+                    if (glyph_data.contains(ch) || is_line_break(ch)) {
+                        return true;
+                    }
 
-                if (filter(ch)) {
-                    u16_size += U16_LENGTH(ch);
-                }
-                else {
                     warning = Warning::missing_glyphs;
+                    return false;
                 }
+            };
+            auto opt{ utf8_to_utf16(text, filter) };
+            if (!opt) {
+                return std::unexpected{ Error::invalid_encoding };
             }
 
-            std::u16string u16(u16_size, '\0');
+            std::u16string u16{ *opt };
             char16_t* u16_ptr{ u16.data() };
-            for (u32 i{}, j{}; i != u8_size;) {
-                i32 ch;
-                U8_NEXT_UNSAFE(u8_ptr, i, ch);
-                if (filter(ch)) {
-                    U16_APPEND_UNSAFE(u16_ptr, j, ch);
-                }
-            }
-
+            u32 u16_size{ u16.size() };
             UErrorCode error{};
             std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
                 ubrk_open(UBRK_WORD, nullptr, u16_ptr, u16_size, &error),
