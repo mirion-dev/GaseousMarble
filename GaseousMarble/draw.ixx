@@ -194,26 +194,34 @@ namespace gm {
 
         Result<TextMetrics, Warning, Error> measure(std::string_view text) const noexcept {
             auto& glyph_data{ setting.font->glyph_data() };
+            std::u16string utf16;
             Warning warning{};
-            auto filter{
-                [&](i32 ch) noexcept {
-                    if (glyph_data.contains(ch) || is_line_break(ch)) {
-                        return true;
-                    }
-
-                    warning = Warning::missing_glyphs;
-                    return false;
+            bool failed{};
+            utf16.resize_and_overwrite(
+                text.size(),
+                [&](char16_t* ptr, u32) noexcept {
+                    u32 size{};
+                    failed = unicode_for_each(
+                        text,
+                        [&](i32 ch) noexcept {
+                            if (glyph_data.contains(ch) || is_line_break(ch)) {
+                                U16_APPEND_UNSAFE(ptr, size, ch);
+                            }
+                            else {
+                                warning = Warning::missing_glyphs;
+                            }
+                            return false;
+                        }
+                    );
+                    return size;
                 }
-            };
-
-            auto opt_u16{ to_utf16(text, filter) };
-            if (!opt_u16) {
+            );
+            if (failed) {
                 return std::unexpected{ Error::invalid_encoding };
             }
-            std::u16string u16{ std::move(*opt_u16) };
 
-            char16_t* u16_ptr{ u16.data() };
-            u32 u16_size{ u16.size() };
+            char16_t* u16_ptr{ utf16.data() };
+            u32 u16_size{ utf16.size() };
             UErrorCode error{};
             std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
                 ubrk_open(UBRK_WORD, nullptr, u16_ptr, u16_size, &error),
@@ -226,7 +234,7 @@ namespace gm {
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
             f64 line_height{ setting.font->height() * setting.line_height };
 
-            TextMetrics metrics{ std::move(u16) };
+            TextMetrics metrics{ std::move(utf16) };
 
             char16_t* ptr{ u16_ptr };
             u32 size{};

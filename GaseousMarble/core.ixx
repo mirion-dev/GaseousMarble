@@ -81,32 +81,18 @@ namespace gm {
         }
     }
 
-    template <class Pr = decltype([](i32) { return true; })>
-    std::optional<std::u16string> to_utf16(std::string_view u8, Pr filter = {}) noexcept {
-        const char* u8_ptr{ u8.data() };
-        u32 u8_size{ u8.size() };
-        std::u16string u16;
-        bool error{};
-        u16.resize_and_overwrite(u8_size,
-            [&](char16_t* u16_ptr, u32) noexcept {
-                u32 u16_size{};
-                for (u32 i{}; i != u8_size;) {
-                    i32 ch;
-                    U8_NEXT(u8_ptr, i, u8_size, ch);
-                    if (ch < 0 || !filter(ch)) {
-                        error = true;
-                        return 0uz;
-                    }
-
-                    U16_APPEND_UNSAFE(u16_ptr, u16_size, ch);
-                }
-                return u16_size;
-            });
-
-        if (error) {
-            return {};
+    bool unicode_for_each(std::string_view utf8, auto func) noexcept {
+        const char* ptr{ utf8.data() };
+        u32 size{ utf8.size() };
+        for (u32 i{}; i != size;) {
+            i32 ch;
+            U8_NEXT(ptr, i, size, ch);
+            if (ch < 0 || func(ch)) {
+                return true;
+            }
+            }
+        return false;
         }
-        return u16;
     }
 
 #pragma endregion
