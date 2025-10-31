@@ -29,6 +29,30 @@ namespace gm {
 
 #pragma endregion
 
+#pragma region error handling
+
+    template <class T, class W>
+    struct Wrapped {
+        T result;
+        W warning;
+    };
+
+    template <class W>
+    struct Wrapped<void, W> {
+        W warning;
+    };
+
+    template <class T, class W>
+    Wrapped(T, W) -> Wrapped<T, W>;
+
+    template <class W>
+    Wrapped(W) -> Wrapped<void, W>;
+
+    template <class T, class W, class E>
+    using Result = std::expected<Wrapped<T, W>, E>;
+
+#pragma endregion
+
 #pragma region character properties
 
     bool is_line_break(u32 ch) noexcept {

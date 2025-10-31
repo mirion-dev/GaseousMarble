@@ -190,18 +190,9 @@ namespace gm {
             font_unspecified   = -3
         };
 
-        template <class T>
-        struct ResultWarning {
-            T result;
-            Warning warning;
-        };
-
-        template <class T>
-        using Result = std::expected<ResultWarning<T>, Error>;
-
         Setting setting;
 
-        Result<TextMetrics> measure(std::string_view text) const noexcept {
+        Result<TextMetrics, Warning, Error> measure(std::string_view text) const noexcept {
             auto& glyph_data{ setting.font->glyph_data() };
             auto filter{ [&](u32 ch) noexcept { return glyph_data.contains(ch) || is_line_break(ch); } };
 
@@ -349,10 +340,10 @@ namespace gm {
             }
             push_line();
 
-            return ResultWarning{ std::move(metrics), warning };
+            return Wrapped{ std::move(metrics), warning };
         }
 
-        Result<std::monostate> text(f64 x, f64 y, std::string_view text) const noexcept {
+        Result<void, Warning, Error> text(f64 x, f64 y, std::string_view text) const noexcept {
             if (setting.font == nullptr) {
                 return std::unexpected{ Error::font_unspecified };
             }
@@ -434,7 +425,7 @@ namespace gm {
                 y += line_height;
             }
 
-            return ResultWarning{ std::monostate{}, warning };
+            return Wrapped{ warning };
         }
     };
 
