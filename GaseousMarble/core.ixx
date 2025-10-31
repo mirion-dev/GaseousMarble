@@ -31,13 +31,13 @@ namespace gm {
 
 #pragma region error handling
 
-    template <class R, class W>
+    export template <class R, class W>
     struct Payload {
         R result;
         W warning;
     };
 
-    template <class W>
+    export template <class W>
     struct Payload<void, W> {
         W warning;
     };
@@ -48,18 +48,18 @@ namespace gm {
     template <class W>
     Payload(W) -> Payload<void, W>;
 
-    template <class R, class W, class E>
+    export template <class R, class W, class E>
     using Result = std::expected<Payload<R, W>, E>;
 
 #pragma endregion
 
 #pragma region text handling
 
-    bool is_white_space(u32 ch) noexcept {
+    export bool is_white_space(u32 ch) noexcept {
         return u_isUWhiteSpace(ch);
     }
 
-    bool is_line_break(u32 ch) noexcept {
+    export bool is_line_break(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
         case U_LB_MANDATORY_BREAK:
         case U_LB_CARRIAGE_RETURN:
@@ -71,7 +71,7 @@ namespace gm {
         }
     }
 
-    bool is_wide(u32 ch) noexcept {
+    export bool is_wide(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_EAST_ASIAN_WIDTH)) {
         case U_EA_FULLWIDTH:
         case U_EA_WIDE:
@@ -81,7 +81,7 @@ namespace gm {
         }
     }
 
-    bool unicode_for_each(std::string_view utf8, auto func) noexcept {
+    export bool unicode_for_each(std::string_view utf8, auto func) noexcept {
         const char* ptr{ utf8.data() };
         u32 size{ utf8.size() };
         for (u32 i{}; i != size;) {
@@ -94,7 +94,7 @@ namespace gm {
         return true;
     }
 
-    bool word_break_for_each(std::u16string_view utf16, auto func) noexcept {
+    export bool word_break_for_each(std::u16string_view utf16, auto func) noexcept {
         const char16_t* ptr{ utf16.data() };
         u32 size{ utf16.size() };
         UErrorCode error{};
