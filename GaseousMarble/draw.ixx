@@ -194,14 +194,15 @@ namespace gm {
 
         Result<TextMetrics, Warning, Error> measure(std::string_view text) const noexcept {
             auto& glyph_data{ setting.font->glyph_data() };
+
             std::u16string utf16;
             Warning warning{};
-            bool failed{};
+            bool ok{};
             utf16.resize_and_overwrite(
                 text.size(),
                 [&](char16_t* ptr, u32) noexcept {
                     u32 size{};
-                    failed = unicode_for_each(
+                    ok = unicode_for_each(
                         text,
                         [&](i32 ch) noexcept {
                             if (glyph_data.contains(ch) || is_line_break(ch)) {
@@ -210,25 +211,14 @@ namespace gm {
                             else {
                                 warning = Warning::missing_glyphs;
                             }
-                            return false;
+                            return true;
                         }
                     );
                     return size;
                 }
             );
-            if (failed) {
+            if (!ok) {
                 return std::unexpected{ Error::invalid_encoding };
-            }
-
-            char16_t* u16_ptr{ utf16.data() };
-            u32 u16_size{ utf16.size() };
-            UErrorCode error{};
-            std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
-                ubrk_open(UBRK_WORD, nullptr, u16_ptr, u16_size, &error),
-                ubrk_close
-            };
-            if (U_FAILURE(error)) {
-                return std::unexpected{ Error::failed_to_tokenize };
             }
 
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
@@ -236,7 +226,7 @@ namespace gm {
 
             TextMetrics metrics{ std::move(utf16) };
 
-            char16_t* ptr{ u16_ptr };
+            const char16_t* ptr{ metrics.text.data() };
             u32 size{};
             bool cont{};
 
@@ -278,63 +268,64 @@ namespace gm {
                 }
             };
 
-            for (i32 first{ ubrk_first(iter.get()) }, last; ; first = last) {
-                last = ubrk_next(iter.get());
-                if (last == UBRK_DONE) {
-                    break;
-                }
-
-                char16_t* word_ptr{ u16_ptr + first };
-                u32 word_size{ static_cast<u32>(last - first) }, i{};
-                i32 ch;
-                U16_NEXT_UNSAFE(word_ptr, i, ch);
-                if (is_line_break(ch)) {
-                    line.height += setting.paragraph_spacing;
-                    push_line();
-                    ptr = word_ptr + word_size;
-                    cont = false;
-                    continue;
-                }
-
-                i32 word_type{ ubrk_getRuleStatus(iter.get()) };
-                bool word_cont{ word_type >= UBRK_WORD_KANA || word_type == UBRK_WORD_NONE && is_wide(ch) };
-                if (cont != word_cont) {
-                    push_token();
-                    ptr = word_ptr;
-                    cont = word_cont;
-                }
-
-                f64 next_cursor{ cursor }, next_line_width;
-                while (true) {
-                    auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
-                    if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
-                        next_cursor -= cursor;
-                        push_line(true);
-                        ptr = word_ptr;
-                    }
-
-                    next_line_width = next_cursor + left + width;
-                    next_cursor += advance + setting.letter_spacing;
-                    if (is_white_space(ch)) {
-                        next_cursor += setting.word_spacing;
-                    }
-                    if (cont) {
-                        ++justified_count;
-                    }
-
-                    if (i == word_size) {
-                        break;
-                    }
+            ok = word_break_for_each(
+                metrics.text,
+                [&](std::u16string_view word, i32 type) noexcept {
+                    const char16_t* word_ptr{ word.data() };
+                    u32 word_size{ word.size() }, i{};
+                    i32 ch;
                     U16_NEXT_UNSAFE(word_ptr, i, ch);
-                }
+                    if (is_line_break(ch)) {
+                        line.height += setting.paragraph_spacing;
+                        push_line();
+                        ptr = word_ptr + word_size;
+                        cont = false;
+                        return true;
+                    }
 
-                size += word_size;
-                cursor = next_cursor;
-                line.width = next_line_width;
-                if (next_line_width > max_line_length) {
-                    push_line();
-                    ptr = word_ptr + word_size;
+                    bool word_cont{ type >= UBRK_WORD_KANA || type == UBRK_WORD_NONE && is_wide(ch) };
+                    if (cont != word_cont) {
+                        push_token();
+                        ptr = word_ptr;
+                        cont = word_cont;
+                    }
+
+                    f64 next_cursor{ cursor }, next_line_width;
+                    while (true) {
+                        auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
+                        if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
+                            next_cursor -= cursor;
+                            push_line(true);
+                            ptr = word_ptr;
+                        }
+
+                        next_line_width = next_cursor + left + width;
+                        next_cursor += advance + setting.letter_spacing;
+                        if (is_white_space(ch)) {
+                            next_cursor += setting.word_spacing;
+                        }
+                        if (cont) {
+                            ++justified_count;
+                        }
+
+                        if (i == word_size) {
+                            break;
+                        }
+                        U16_NEXT_UNSAFE(word_ptr, i, ch);
+                    }
+
+                    size += word_size;
+                    cursor = next_cursor;
+                    line.width = next_line_width;
+                    if (next_line_width > max_line_length) {
+                        push_line();
+                        ptr = word_ptr + word_size;
+                    }
+                    return true;
                 }
+            );
+            if (!ok) {
+                return std::unexpected{ Error::failed_to_tokenize };
             }
             push_line();
 

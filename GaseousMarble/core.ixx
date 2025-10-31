@@ -87,12 +87,36 @@ namespace gm {
         for (u32 i{}; i != size;) {
             i32 ch;
             U8_NEXT(ptr, i, size, ch);
-            if (ch < 0 || func(ch)) {
-                return true;
+            if (ch < 0 || !func(ch)) {
+                return false;
             }
-            }
-        return false;
         }
+        return true;
+    }
+
+    bool word_break_for_each(std::u16string_view utf16, auto func) noexcept {
+        const char16_t* ptr{ utf16.data() };
+        u32 size{ utf16.size() };
+        UErrorCode error{};
+        std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
+            ubrk_open(UBRK_WORD, nullptr, ptr, size, &error),
+            ubrk_close
+        };
+        if (U_FAILURE(error)) {
+            return false;
+        }
+
+        for (i32 first{ ubrk_first(iter.get()) }, last; ; first = last) {
+            last = ubrk_next(iter.get());
+            if (last == UBRK_DONE) {
+                break;
+            }
+
+            if (!func(std::u16string_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
 #pragma endregion
