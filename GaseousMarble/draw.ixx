@@ -165,18 +165,22 @@ namespace gm {
             bool continuous;
         };
 
-        struct LineMetrics {
+        struct LineLayout {
             std::vector<Token> tokens;
             f64 width;
             f64 height;
             f64 justified_spacing;
         };
 
-        struct TextMetrics {
-            std::u16string text;
-            std::vector<LineMetrics> lines;
+        struct TextLayout {
+            std::vector<LineLayout> lines;
             f64 width;
             f64 height;
+        };
+
+        struct Text {
+            std::u16string text;
+            TextLayout layout;
         };
 
         enum class Warning {
@@ -185,6 +189,7 @@ namespace gm {
         };
 
         enum class Error {
+            no_error           = 0,
             invalid_encoding   = -1,
             failed_to_tokenize = -2,
             font_unspecified   = -3
@@ -192,7 +197,7 @@ namespace gm {
 
         Setting setting;
 
-        Result<TextMetrics, Warning, Error> measure(std::string_view text) const noexcept {
+        Result<Text, Warning, Error> create_text(std::string_view text) const noexcept {
             auto& glyph_data{ setting.font->glyph_data() };
 
             std::u16string utf16;
@@ -224,13 +229,13 @@ namespace gm {
             f64 max_line_length{ setting.max_line_length / setting.scale_x };
             f64 line_height{ setting.font->height() * setting.line_height };
 
-            TextMetrics metrics{ std::move(utf16) };
+            TextLayout layout;
 
-            const char16_t* ptr{ metrics.text.data() };
+            const char16_t* ptr{ utf16.data() };
             u32 size{};
             bool cont{};
 
-            LineMetrics line{ .height = line_height };
+            LineLayout line{ .height = line_height };
             f64 cursor{};
             u32 justified_count{};
 
@@ -258,9 +263,9 @@ namespace gm {
                         line.width = max_line_length;
                     }
 
-                    metrics.lines.emplace_back(std::move(line));
-                    metrics.width = std::max(metrics.width, line.width);
-                    metrics.height += line.height;
+                    layout.lines.emplace_back(std::move(line));
+                    layout.width = std::max(layout.width, line.width);
+                    layout.height += line.height;
 
                     line = { .height = line_height };
                     cursor = 0;
@@ -269,7 +274,7 @@ namespace gm {
             };
 
             ok = word_break_for_each(
-                metrics.text,
+                utf16,
                 [&](std::u16string_view word, i32 type) noexcept {
                     const char16_t* word_ptr{ word.data() };
                     u32 word_size{ word.size() }, i{};
@@ -329,29 +334,25 @@ namespace gm {
             }
             push_line();
 
-            return Wrapped{ std::move(metrics), warning };
+            return Payload{ Text{ std::move(utf16), std::move(layout) }, warning };
         }
 
-        Result<void, Warning, Error> text(f64 x, f64 y, std::string_view text) const noexcept {
+        Error text(f64 x, f64 y, const Text& text) const noexcept {
             if (setting.font == nullptr) {
-                return std::unexpected{ Error::font_unspecified };
+                return Error::font_unspecified;
             }
 
-            auto exp_metrics{ measure(text) };
-            if (!exp_metrics) {
-                return std::unexpected{ exp_metrics.error() };
-            }
-            auto [metrics, warning]{ std::move(*exp_metrics) };
+            auto& [_, layout]{ text };
 
             x += setting.offset_x / setting.scale_x;
             y += setting.offset_y / setting.scale_y + setting.font->top();
             f64 origin_x{ x }, origin_y{ y };
 
             if (setting.valign == 0) {
-                y -= metrics.height / 2;
+                y -= layout.height / 2;
             }
             else if (setting.valign > 0) {
-                y -= metrics.height;
+                y -= layout.height;
             }
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
@@ -359,7 +360,7 @@ namespace gm {
             i32 spr_id{ setting.font->sprite().id() };
             u16 height{ setting.font->height() };
             f64 cos{ std::cos(setting.rotation) }, sin{ std::sin(setting.rotation) };
-            for (auto& [tokens, line_width, line_height, justified_spacing] : metrics.lines) {
+            for (auto& [tokens, line_width, line_height, justified_spacing] : layout.lines) {
                 f64 cursor{ x };
                 if (setting.halign == 0) {
                     cursor -= line_width / 2;
@@ -414,7 +415,7 @@ namespace gm {
                 y += line_height;
             }
 
-            return Wrapped{ warning };
+            return {};
         }
     };
 

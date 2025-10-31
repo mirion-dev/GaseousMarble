@@ -31,25 +31,25 @@ namespace gm {
 
 #pragma region error handling
 
-    template <class T, class W>
-    struct Wrapped {
-        T result;
+    template <class R, class W>
+    struct Payload {
+        R result;
         W warning;
     };
 
     template <class W>
-    struct Wrapped<void, W> {
+    struct Payload<void, W> {
         W warning;
     };
 
-    template <class T, class W>
-    Wrapped(T, W) -> Wrapped<T, W>;
+    template <class R, class W>
+    Payload(R, W) -> Payload<R, W>;
 
     template <class W>
-    Wrapped(W) -> Wrapped<void, W>;
+    Payload(W) -> Payload<void, W>;
 
-    template <class T, class W, class E>
-    using Result = std::expected<Wrapped<T, W>, E>;
+    template <class R, class W, class E>
+    using Result = std::expected<Payload<R, W>, E>;
 
 #pragma endregion
 

@@ -39,30 +39,35 @@ API Real gm_clear() noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    auto exp_warning{ draw.text(x, y, text) };
-    if (!exp_warning) {
-        return static_cast<int>(exp_warning.error());
+    auto res_payload{ draw.create_text(text) };
+    if (!res_payload) {
+        return static_cast<int>(res_payload.error());
     }
 
-    return static_cast<int>(exp_warning->warning);
+    auto error{ draw.text(x, y, res_payload->result) };
+    if (error != Draw::Error::no_error) {
+        return static_cast<int>(error);
+    }
+
+    return static_cast<int>(res_payload->warning);
 }
 
 API Real gm_width(StringView text) noexcept {
-    auto exp_metrics{ draw.measure(text) };
-    if (!exp_metrics) {
-        return static_cast<int>(exp_metrics.error());
+    auto res_payload{ draw.create_text(text) };
+    if (!res_payload) {
+        return static_cast<int>(res_payload.error());
     }
 
-    return exp_metrics->result.width;
+    return res_payload->result.layout.width;
 }
 
 API Real gm_height(StringView text) noexcept {
-    auto exp_metrics{ draw.measure(text) };
-    if (!exp_metrics) {
-        return static_cast<int>(exp_metrics.error());
+    auto res_payload{ draw.create_text(text) };
+    if (!res_payload) {
+        return static_cast<int>(res_payload.error());
     }
 
-    return exp_metrics->result.height;
+    return res_payload->result.layout.height;
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
