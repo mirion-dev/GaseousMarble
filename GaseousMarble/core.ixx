@@ -55,6 +55,10 @@ namespace gm {
 
 #pragma region text handling
 
+    bool is_white_space(u32 ch) noexcept {
+        return u_isUWhiteSpace(ch);
+    }
+
     bool is_line_break(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
         case U_LB_MANDATORY_BREAK:
@@ -78,13 +82,13 @@ namespace gm {
     }
 
     template <class Pr = decltype([](i32) { return true; })>
-    std::optional<std::u16string> utf8_to_utf16(std::string_view text, Pr filter = {}) {
-        const char* u8_ptr{ text.data() };
-        u32 u8_size{ text.size() };
+    std::optional<std::u16string> to_utf16(std::string_view u8, Pr filter = {}) noexcept {
+        const char* u8_ptr{ u8.data() };
+        u32 u8_size{ u8.size() };
         std::u16string u16;
         bool error{};
         u16.resize_and_overwrite(u8_size,
-            [&](char16_t* u16_ptr, u32) {
+            [&](char16_t* u16_ptr, u32) noexcept {
                 u32 u16_size{};
                 for (u32 i{}; i != u8_size;) {
                     i32 ch;

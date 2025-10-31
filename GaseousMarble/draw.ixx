@@ -196,7 +196,7 @@ namespace gm {
             auto& glyph_data{ setting.font->glyph_data() };
             Warning warning{};
             auto filter{
-                [&](i32 ch) {
+                [&](i32 ch) noexcept {
                     if (glyph_data.contains(ch) || is_line_break(ch)) {
                         return true;
                     }
@@ -205,7 +205,7 @@ namespace gm {
                     return false;
                 }
             };
-            auto opt{ utf8_to_utf16(text, filter) };
+            auto opt{ to_utf16(text, filter) };
             if (!opt) {
                 return std::unexpected{ Error::invalid_encoding };
             }
@@ -295,7 +295,7 @@ namespace gm {
                     cont = word_cont;
                 }
 
-                f64 next_cursor{ cursor }, next_line_width{};
+                f64 next_cursor{ cursor }, next_line_width;
                 while (true) {
                     auto& [spr_x, spr_y, width, advance, left]{ glyph_data.at(ch) };
                     if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
@@ -306,7 +306,7 @@ namespace gm {
 
                     next_line_width = next_cursor + left + width;
                     next_cursor += advance + setting.letter_spacing;
-                    if (u_isUWhiteSpace(ch)) {
+                    if (is_white_space(ch)) {
                         next_cursor += setting.word_spacing;
                     }
                     if (cont) {
@@ -399,7 +399,7 @@ namespace gm {
                         );
 
                         cursor += advance + setting.letter_spacing;
-                        if (u_isUWhiteSpace(ch)) {
+                        if (is_white_space(ch)) {
                             cursor += setting.word_spacing;
                         }
                         if (cont) {
