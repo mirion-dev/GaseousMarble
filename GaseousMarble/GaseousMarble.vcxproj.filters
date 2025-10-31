@@ -6,6 +6,7 @@
     <ClCompile Include="draw.ixx" />
     <ClCompile Include="engine.ixx" />
     <ClCompile Include="gm.ixx" />
+    <ClCompile Include="font.ixx" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="debugger\gm.natvis" />
