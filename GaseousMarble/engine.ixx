@@ -185,7 +185,7 @@ namespace gm {
 
     export class Function {
         struct Data {
-            u8 name_length;
+            u8 name_size;
             char name[67];
             void* address;
             i32 arg_count;
@@ -206,10 +206,12 @@ namespace gm {
 #include "detail/FunctionId.inc"
         };
 
-        Function(Id id) noexcept :
-            _data{ RESOURCE_PTR->data + static_cast<u32>(id) } {}
+        Function(Id id) noexcept {
+            assert(static_cast<int>(id) < max_id());
+            _data = RESOURCE_PTR->data + static_cast<int>(id);
+        }
 
-        static u32 count() noexcept {
+        static int max_id() noexcept {
             return RESOURCE_PTR->count;
         }
 
@@ -236,7 +238,7 @@ namespace gm {
         }
 
         std::string_view name() const noexcept {
-            return { _data->name, _data->name_length };
+            return { _data->name, _data->name_size };
         }
 
         // -1 indicates variable arguments
