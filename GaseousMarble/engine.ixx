@@ -184,6 +184,14 @@ namespace gm {
     };
 
     export class Function {
+    public:
+        enum class Id {
+#include "detail/FunctionId.inc"
+        };
+
+        static constexpr i32 ARG_VARIABLE{ -1 };
+
+    private:
         struct Data {
             u8 name_size;
             char name[67];
@@ -199,12 +207,10 @@ namespace gm {
 
         static constexpr auto RESOURCE_PTR{ reinterpret_cast<Resource*>(0x00686b1c) };
 
-        const Data* _data;
+        Data* _data{};
 
     public:
-        enum class Id {
-#include "detail/FunctionId.inc"
-        };
+        Function() noexcept = default;
 
         Function(Id id) noexcept {
             assert(static_cast<int>(id) < max_id());
@@ -216,6 +222,8 @@ namespace gm {
         }
 
         Value operator()(const auto&... args) const noexcept {
+            assert(_data != nullptr);
+
             // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr u32 ARGS_COUNT{ sizeof...(args) };
             assert(_data->arg_count == -1 || _data->arg_count == ARGS_COUNT);
@@ -238,15 +246,17 @@ namespace gm {
         }
 
         std::string_view name() const noexcept {
+            assert(_data != nullptr);
             return { _data->name, _data->name_size };
         }
 
-        // -1 indicates variable arguments
         i32 arg_count() const noexcept {
+            assert(_data != nullptr);
             return _data->arg_count;
         }
 
         void* address() const noexcept {
+            assert(_data != nullptr);
             return _data->address;
         }
     };
