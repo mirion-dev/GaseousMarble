@@ -205,12 +205,13 @@ namespace gm {
                     return false;
                 }
             };
-            auto opt{ to_utf16(text, filter) };
-            if (!opt) {
+
+            auto opt_u16{ to_utf16(text, filter) };
+            if (!opt_u16) {
                 return std::unexpected{ Error::invalid_encoding };
             }
+            std::u16string u16{ std::move(*opt_u16) };
 
-            std::u16string u16{ *opt };
             char16_t* u16_ptr{ u16.data() };
             u32 u16_size{ u16.size() };
             UErrorCode error{};
@@ -341,7 +342,7 @@ namespace gm {
             if (!exp_metrics) {
                 return std::unexpected{ exp_metrics.error() };
             }
-            auto& [metrics, warning]{ *exp_metrics };
+            auto [metrics, warning]{ std::move(*exp_metrics) };
 
             x += setting.offset_x / setting.scale_x;
             y += setting.offset_y / setting.scale_y + setting.font->top();
