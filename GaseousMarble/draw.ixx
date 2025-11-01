@@ -151,7 +151,7 @@ namespace gm {
                 [&](std::u16string_view word, i32 type) noexcept {
                     const c16* word_ptr{ word.data() };
                     usize word_size{ word.size() }, i{};
-                    i32 ch;
+                    c32 ch;
                     U16_NEXT_UNSAFE(word_ptr, i, ch);
                     if (is_line_break(ch)) {
                         line.height += option.paragraph_spacing;
