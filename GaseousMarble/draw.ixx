@@ -71,6 +71,10 @@ namespace gm {
         Option option;
 
         Result<Text, Warning, Error> create_text(std::u8string_view str) const noexcept {
+            if (option.font == nullptr) {
+                return std::unexpected{ Error::font_unspecified };
+            }
+
             auto& glyphs{ option.font->glyphs() };
 
             std::u16string str16;
@@ -215,7 +219,7 @@ namespace gm {
                 return Error::font_unspecified;
             }
 
-            auto& [_, layout]{ text };
+            auto& layout{ text.layout };
 
             x += option.offset_x / option.scale_x;
             y += option.offset_y / option.scale_y + option.font->top();
