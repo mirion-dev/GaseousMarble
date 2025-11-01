@@ -17,21 +17,21 @@ namespace gm {
             failed_to_add_sprite = -1
         };
 
-        static constexpr i32 NULL_ID{ -1 };
+        static constexpr auto ID_NULL{ static_cast<usize>(-1) };
 
     private:
         struct Handle {
-            i32 id{ NULL_ID };
+            usize id{ ID_NULL };
 
             Handle() noexcept = default;
 
             Handle(std::nullptr_t) noexcept {};
 
-            Handle(i32 id) noexcept :
+            Handle(usize id) noexcept :
                 id{ id } {}
 
             operator bool() const noexcept {
-                return id != NULL_ID;
+                return id != ID_NULL;
             }
 
             bool operator==(Handle other) const noexcept {
@@ -53,17 +53,17 @@ namespace gm {
     public:
         Sprite() noexcept = default;
 
-        Sprite(std::string_view path) {
+        Sprite(std::u8string_view path) {
             static Function sprite_add{ Function::Id::sprite_add };
-            auto id{ static_cast<i32>(sprite_add(path, 1, false, false, 0, 0)) };
-            if (id == NULL_ID) {
+            usize id{ static_cast<usize>(static_cast<isize>(sprite_add(path, 1, false, false, 0, 0))) };
+            if (id == ID_NULL) {
                 throw Error::failed_to_add_sprite;
             }
 
             _ptr.reset(id);
         }
 
-        i32 id() const noexcept {
+        usize id() const noexcept {
             return _ptr.get().id;
         }
     };
@@ -88,37 +88,41 @@ namespace gm {
     private:
         u16 _height;
         i16 _top;
-        std::string _name;
+        std::u8string _name;
         Sprite _sprite;
-        std::unordered_map<i32, Glyph> _glyphs;
+        std::unordered_map<c32, Glyph> _glyphs;
 
     public:
         Font() noexcept = default;
 
-        Font(std::string_view font_name, std::string_view sprite_path)
+        Font(std::u8string_view name, std::u8string_view sprite_path)
         try:
-            _name{ font_name },
+            _name{ name },
             _sprite{ sprite_path } {
 
-            auto glyph_path{ std::string{ sprite_path.substr(0, sprite_path.find_last_of('.')) } + ".gly" };
-            std::ifstream file{ glyph_path, std::ios::binary };
+            std::ifstream file{ std::filesystem::path{ sprite_path }.replace_extension("gly"), std::ios::binary };
             if (!file.is_open()) {
                 throw Error::failed_to_open_file;
             }
 
             static constexpr char GLYPH_SIGN[]{ 'G', 'L', 'Y', 1, 0, 0 };
             char sign[sizeof(GLYPH_SIGN)];
-            file.read(sign, sizeof(sign));
-            if (!file || !std::ranges::equal(sign, GLYPH_SIGN)) {
+            if (!file.read(sign, sizeof(sign)) || !std::ranges::equal(sign, GLYPH_SIGN)) {
                 throw Error::invalid_header;
             }
 
-            file.read(reinterpret_cast<char*>(&_height), sizeof(_height));
-            file.read(reinterpret_cast<char*>(&_top), sizeof(_top));
-            while (file) {
-                u32 ch;
-                file.read(reinterpret_cast<char*>(&ch), sizeof(ch));
-                file.read(reinterpret_cast<char*>(&_glyphs[ch]), sizeof(_glyphs[ch]));
+            if (!file.read(reinterpret_cast<char*>(&_height), sizeof(_height))
+                || !file.read(reinterpret_cast<char*>(&_top), sizeof(_top))) {
+                throw Error::data_corrupted;
+            }
+
+            c32 ch;
+            Glyph glyph;
+            while (file.read(reinterpret_cast<char*>(&ch), sizeof(ch))) {
+                if (!file.read(reinterpret_cast<char*>(&glyph), sizeof(glyph))) {
+                    throw Error::data_corrupted;
+                }
+                _glyphs.emplace(ch, glyph);
             }
             if (!file.eof()) {
                 throw Error::data_corrupted;
@@ -129,27 +133,27 @@ namespace gm {
         }
 
         u16 height() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite.id() != Sprite::ID_NULL);
             return _height;
         }
 
         i16 top() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite.id() != Sprite::ID_NULL);
             return _top;
         }
 
-        const std::string& name() const noexcept {
-            assert(_sprite != nullptr);
+        std::u8string_view name() const noexcept {
+            assert(_sprite.id() != Sprite::ID_NULL);
             return _name;
         }
 
         const Sprite& sprite() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite.id() != Sprite::ID_NULL);
             return _sprite;
         }
 
         const auto& glyphs() const noexcept {
-            assert(_sprite != nullptr);
+            assert(_sprite.id() != Sprite::ID_NULL);
             return _glyphs;
         }
     };

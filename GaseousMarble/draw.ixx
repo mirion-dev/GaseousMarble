@@ -70,7 +70,7 @@ namespace gm {
 
         Setting setting;
 
-        Result<Text, Warning, Error> create_text(std::string_view text) const noexcept {
+        Result<Text, Warning, Error> create_text(std::u8string_view text) const noexcept {
             auto& glyphs{ setting.font->glyphs() };
 
             std::u16string utf16;
@@ -78,11 +78,11 @@ namespace gm {
             bool ok{};
             utf16.resize_and_overwrite(
                 text.size(),
-                [&](char16_t* ptr, u32) noexcept {
-                    u32 size{};
+                [&](c16* ptr, usize) noexcept {
+                    usize size{};
                     ok = unicode_for_each(
                         text,
-                        [&](i32 ch) noexcept {
+                        [&](c32 ch) noexcept {
                             if (glyphs.contains(ch) || is_line_break(ch)) {
                                 U16_APPEND_UNSAFE(ptr, size, ch);
                             }
@@ -104,13 +104,13 @@ namespace gm {
 
             TextLayout layout;
 
-            const char16_t* ptr{ utf16.data() };
-            u32 size{};
+            const c16* ptr{ utf16.data() };
+            usize size{};
             bool cont{};
 
             LineLayout line{ .height = line_height };
             f64 cursor{};
-            u32 justified_count{};
+            usize justified_count{};
 
             // update `line`, `justified_count` and reset `size`
             auto push_token{
@@ -149,8 +149,8 @@ namespace gm {
             ok = word_break_for_each(
                 utf16,
                 [&](std::u16string_view word, i32 type) noexcept {
-                    const char16_t* word_ptr{ word.data() };
-                    u32 word_size{ word.size() }, i{};
+                    const c16* word_ptr{ word.data() };
+                    usize word_size{ word.size() }, i{};
                     i32 ch;
                     U16_NEXT_UNSAFE(word_ptr, i, ch);
                     if (is_line_break(ch)) {
@@ -230,7 +230,7 @@ namespace gm {
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
             auto& glyphs{ setting.font->glyphs() };
-            i32 spr_id{ setting.font->sprite().id() };
+            usize spr_id{ setting.font->sprite().id() };
             u16 height{ setting.font->height() };
             f64 cos{ std::cos(setting.rotation) }, sin{ std::sin(setting.rotation) };
             for (auto& [tokens, line_width, line_height, justified_spacing] : layout.lines) {
@@ -243,9 +243,9 @@ namespace gm {
                 }
 
                 for (auto& [text, cont] : tokens) {
-                    const char16_t* ptr{ text.data() };
-                    i32 ch;
-                    for (u32 i{}, size{ text.size() }; i != size;) {
+                    const c16* ptr{ text.data() };
+                    c32 ch;
+                    for (usize i{}, size{ text.size() }; i != size;) {
                         U16_NEXT_UNSAFE(ptr, i, ch);
                         auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
 

@@ -14,15 +14,15 @@ namespace gm {
     struct StringHeader {
         u16 code_page;
         u16 char_size;
-        u32 ref_count;
-        u32 size;
+        usize ref_count;
+        usize size;
     };
 
-    export template <class Ch>
+    export template <class C>
     class BasicStringView {
-        static constexpr u32 HEADER_SIZE{ sizeof(StringHeader) / sizeof(Ch) };
+        static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
 
-        const Ch* _data{};
+        const C* _data{};
 
         auto _header() const noexcept {
             return reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE);
@@ -34,10 +34,10 @@ namespace gm {
         BasicStringView(std::nullptr_t) noexcept = delete;
 
         // `str` must point to a Delphi UnicodeString structure or accessing its header is undefined
-        BasicStringView(const std::convertible_to<std::basic_string_view<Ch>> auto& str) noexcept :
-            _data{ static_cast<std::basic_string_view<Ch>>(str).data() } {}
+        BasicStringView(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept :
+            _data{ static_cast<std::basic_string_view<C>>(str).data() } {}
 
-        operator std::basic_string_view<Ch>() const noexcept {
+        operator std::basic_string_view<C>() const noexcept {
             assert(_data != nullptr);
             return { _data, _header()->size };
         }
@@ -52,19 +52,19 @@ namespace gm {
             return _header()->ref_count;
         }
 
-        const Ch* data() const noexcept {
+        const C* data() const noexcept {
             return _data;
         }
     };
 
-    export template <class Ch>
+    export template <class C>
     class BasicString {
-        static constexpr u32 HEADER_SIZE{ sizeof(StringHeader) / sizeof(Ch) };
+        static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
         static constexpr u16 CP_UTF8{ 65001 };
         static constexpr u16 CP_UTF16{ 1200 };
         static constexpr u16 CP_UTF32{ 12000 };
 
-        Ch* _data;
+        C* _data;
 
         auto _header() noexcept {
             return reinterpret_cast<StringHeader*>(_data - HEADER_SIZE);
@@ -76,7 +76,7 @@ namespace gm {
 
     public:
         BasicString() noexcept {
-            static BasicString empty_str{ "" };
+            static BasicString empty_str{ u8"" };
             _data = empty_str._data;
 
             ++_header()->ref_count;
@@ -84,18 +84,18 @@ namespace gm {
 
         BasicString(std::nullptr_t) noexcept = delete;
 
-        BasicString(const std::convertible_to<std::basic_string_view<Ch>> auto& str) noexcept {
-            auto view{ static_cast<std::basic_string_view<Ch>>(str) };
+        BasicString(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept {
+            auto view{ static_cast<std::basic_string_view<C>>(str) };
 
-            _data = new Ch[HEADER_SIZE + view.size() + 1] + HEADER_SIZE;
+            _data = new C[HEADER_SIZE + view.size() + 1] + HEADER_SIZE;
 
             new(_header()) StringHeader{
-                sizeof(Ch) == 1 ? CP_UTF8 : sizeof(Ch) == 2 ? CP_UTF16 : CP_UTF32,
-                sizeof(Ch),
+                sizeof(C) == 1 ? CP_UTF8 : sizeof(C) == 2 ? CP_UTF16 : CP_UTF32,
+                sizeof(C),
                 1,
                 view.size()
             };
-            new(std::uninitialized_copy(view.begin(), view.end(), _data)) Ch{};
+            new(std::uninitialized_copy(view.begin(), view.end(), _data)) C{};
         }
 
         BasicString(const BasicString& other) noexcept :
@@ -116,7 +116,7 @@ namespace gm {
             return *this;
         }
 
-        operator std::basic_string_view<Ch>() const noexcept {
+        operator std::basic_string_view<C>() const noexcept {
             return { _data, _header()->size };
         }
 
@@ -128,7 +128,7 @@ namespace gm {
             return _header()->ref_count;
         }
 
-        const Ch* data() const noexcept {
+        const C* data() const noexcept {
             return _data;
         }
     };
@@ -137,8 +137,8 @@ namespace gm {
 
         using Real = f64;
 
-        using String = BasicString<char>;
-        using StringView = BasicStringView<char>;
+        using String = BasicString<c8>;
+        using StringView = BasicStringView<c8>;
 
     }
 
@@ -185,24 +185,24 @@ namespace gm {
 
     export class Function {
     public:
-        enum class Id {
+        enum class Id : u16 {
 #include "detail/FunctionId.inc"
         };
 
-        static constexpr i32 ARG_VARIABLE{ -1 };
+        static constexpr auto ARG_VARIABLE{ static_cast<usize>(-1) };
 
     private:
         struct Data {
             u8 name_size;
-            char name[67];
+            c8 name[67];
             void* address;
-            i32 arg_count;
+            usize arg_count;
             bool require_pro;
         };
 
         struct Resource {
             Data* data;
-            u32 count;
+            usize count;
         };
 
         static constexpr auto RESOURCE_PTR{ reinterpret_cast<Resource*>(0x00686b1c) };
@@ -213,11 +213,11 @@ namespace gm {
         Function() noexcept = default;
 
         Function(Id id) noexcept {
-            assert(static_cast<int>(id) < max_id());
-            _data = RESOURCE_PTR->data + static_cast<int>(id);
+            assert(static_cast<usize>(id) < max_id());
+            _data = RESOURCE_PTR->data + static_cast<usize>(id);
         }
 
-        static int max_id() noexcept {
+        static usize max_id() noexcept {
             return RESOURCE_PTR->count;
         }
 
@@ -225,12 +225,11 @@ namespace gm {
             assert(_data != nullptr);
 
             // this assertion may fail on game exit since GameMaker has already released function resources
-            static constexpr u32 ARGS_COUNT{ sizeof...(args) };
-            assert(_data->arg_count == -1 || _data->arg_count == ARGS_COUNT);
+            static constexpr usize ARGS_COUNT{ sizeof...(args) };
+            assert(_data->arg_count == ARG_VARIABLE || _data->arg_count == ARGS_COUNT);
 
             Value args_wrapped[]{ static_cast<Value>(args)... }, ret;
-            Value* args_ptr{ args_wrapped };
-            Value* ret_ptr{ &ret };
+            Value *args_ptr{ args_wrapped }, *ret_ptr{ &ret };
             void* fn_ptr{ _data->address };
 
             // @formatter:off
@@ -245,12 +244,12 @@ namespace gm {
             return ret;
         }
 
-        std::string_view name() const noexcept {
+        std::u8string_view name() const noexcept {
             assert(_data != nullptr);
             return { _data->name, _data->name_size };
         }
 
-        i32 arg_count() const noexcept {
+        usize arg_count() const noexcept {
             assert(_data != nullptr);
             return _data->arg_count;
         }

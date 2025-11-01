@@ -9,11 +9,11 @@ import gm;
 
 using namespace gm;
 
-std::unordered_map<std::string, Font> font_map;
+std::unordered_map<std::u8string, Font> font_map;
 Draw draw;
 
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
-    if (font_map.contains(std::string{ font_name })) {
+    if (font_map.contains(std::u8string{ font_name })) {
         return 1; // font already exists
     }
 
@@ -30,7 +30,7 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
 }
 
 API Real gm_free(StringView font_name) noexcept {
-    return font_map.erase(std::string{ font_name }) ? 0 : 1; // font not found
+    return font_map.erase(std::u8string{ font_name }) ? 0 : 1; // font not found
 }
 
 API Real gm_clear() noexcept {
@@ -71,7 +71,7 @@ API Real gm_height(StringView text) noexcept {
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
-    auto iter{ font_map.find(std::string{ font_name }) };
+    auto iter{ font_map.find(std::u8string{ font_name }) };
     if (iter == font_map.end()) {
         return -1; // font not found
     }
@@ -181,9 +181,8 @@ API Real gm_set_rotation(Real theta) noexcept {
     return 0;
 }
 
-// MSVC will unhappy if returning a String
-API const char* gm_get_font() noexcept {
-    return draw.setting.font->name().data();
+API StringView gm_get_font() noexcept {
+    return draw.setting.font->name();
 }
 
 API Real gm_get_halign() noexcept {

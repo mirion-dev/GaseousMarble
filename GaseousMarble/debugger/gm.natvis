@@ -32,11 +32,11 @@
     </Type>
 
     <Type Name="gm::Value">
-        <DisplayString Condition="_type == gm::Value::Type::real">{_real}</DisplayString>
-        <DisplayString Condition="_type == gm::Value::Type::string">{_string}</DisplayString>
+        <DisplayString Condition="_type == Type::real">{_real}</DisplayString>
+        <DisplayString Condition="_type == Type::string">{_string}</DisplayString>
         <Expand>
-            <ExpandedItem Condition="_type == gm::Value::Type::real">_real</ExpandedItem>
-            <ExpandedItem Condition="_type == gm::Value::Type::string">_string</ExpandedItem>
+            <ExpandedItem Condition="_type == Type::real">_real</ExpandedItem>
+            <ExpandedItem Condition="_type == Type::string">_string</ExpandedItem>
         </Expand>
     </Type>
 
@@ -44,10 +44,10 @@
         <Intrinsic Name="name" Expression="_data->name"/>
         <Intrinsic Name="address" Expression="_data->address"/>
         <Intrinsic Name="arg_count" Expression="_data->arg_count"/>
-        <DisplayString Condition="arg_count() == -1">{name(), sb}(...)</DisplayString>
         <DisplayString Condition="arg_count() == 0">{name(), sb}()</DisplayString>
         <DisplayString Condition="arg_count() == 1">{name(), sb}(&lt;1 arg&gt;)</DisplayString>
         <DisplayString Condition="arg_count() >= 2">{name(), sb}(&lt;{arg_count()} args&gt;)</DisplayString>
+		<DisplayString Condition="arg_count() == ARG_VARIABLE">{name(), sb}(...)</DisplayString>
         <Expand>
             <Item Name="[address]">address(), nvo</Item>
         </Expand>
