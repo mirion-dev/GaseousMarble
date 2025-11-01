@@ -13,7 +13,7 @@ namespace gm {
 
     export class Draw {
     public:
-        struct Setting {
+        struct Option {
             Font* font{};
             i8 halign{ -1 };
             i8 valign{ -1 };
@@ -68,10 +68,10 @@ namespace gm {
             font_unspecified   = -3
         };
 
-        Setting setting;
+        Option option;
 
         Result<Text, Warning, Error> create_text(std::u8string_view text) const noexcept {
-            auto& glyphs{ setting.font->glyphs() };
+            auto& glyphs{ option.font->glyphs() };
 
             std::u16string utf16;
             Warning warning{};
@@ -99,8 +99,8 @@ namespace gm {
                 return std::unexpected{ Error::invalid_encoding };
             }
 
-            f64 max_line_length{ setting.max_line_length / setting.scale_x };
-            f64 line_height{ setting.font->height() * setting.line_height };
+            f64 max_line_length{ option.max_line_length / option.scale_x };
+            f64 line_height{ option.font->height() * option.line_height };
 
             TextLayout layout;
 
@@ -131,7 +131,7 @@ namespace gm {
                 [&](bool auto_wrap = false) noexcept {
                     push_token();
 
-                    if (auto_wrap && setting.justified && max_line_length != 0 && justified_count > 1) {
+                    if (auto_wrap && option.justified && max_line_length != 0 && justified_count > 1) {
                         line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
                         line.width = max_line_length;
                     }
@@ -154,7 +154,7 @@ namespace gm {
                     i32 ch;
                     U16_NEXT_UNSAFE(word_ptr, i, ch);
                     if (is_line_break(ch)) {
-                        line.height += setting.paragraph_spacing;
+                        line.height += option.paragraph_spacing;
                         push_line();
                         ptr = word_ptr + word_size;
                         cont = false;
@@ -178,9 +178,9 @@ namespace gm {
                         }
 
                         next_line_width = next_cursor + left + width;
-                        next_cursor += advance + setting.letter_spacing;
+                        next_cursor += advance + option.letter_spacing;
                         if (is_white_space(ch)) {
-                            next_cursor += setting.word_spacing;
+                            next_cursor += option.word_spacing;
                         }
                         if (cont) {
                             ++justified_count;
@@ -211,34 +211,34 @@ namespace gm {
         }
 
         Error text(f64 x, f64 y, const Text& text) const noexcept {
-            if (setting.font == nullptr) {
+            if (option.font == nullptr) {
                 return Error::font_unspecified;
             }
 
             auto& [_, layout]{ text };
 
-            x += setting.offset_x / setting.scale_x;
-            y += setting.offset_y / setting.scale_y + setting.font->top();
+            x += option.offset_x / option.scale_x;
+            y += option.offset_y / option.scale_y + option.font->top();
             f64 origin_x{ x }, origin_y{ y };
 
-            if (setting.valign == 0) {
+            if (option.valign == 0) {
                 y -= layout.height / 2;
             }
-            else if (setting.valign > 0) {
+            else if (option.valign > 0) {
                 y -= layout.height;
             }
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
-            auto& glyphs{ setting.font->glyphs() };
-            usize spr_id{ setting.font->sprite().id() };
-            u16 height{ setting.font->height() };
-            f64 cos{ std::cos(setting.rotation) }, sin{ std::sin(setting.rotation) };
+            auto& glyphs{ option.font->glyphs() };
+            usize spr_id{ option.font->sprite().id() };
+            u16 height{ option.font->height() };
+            f64 cos{ std::cos(option.rotation) }, sin{ std::sin(option.rotation) };
             for (auto& [tokens, line_width, line_height, justified_spacing] : layout.lines) {
                 f64 cursor{ x };
-                if (setting.halign == 0) {
+                if (option.halign == 0) {
                     cursor -= line_width / 2;
                 }
-                else if (setting.halign > 0) {
+                else if (option.halign > 0) {
                     cursor -= line_width;
                 }
 
@@ -260,21 +260,21 @@ namespace gm {
                             spr_y,
                             width,
                             height,
-                            draw_x * setting.scale_x,
-                            draw_y * setting.scale_y,
-                            setting.scale_x,
-                            setting.scale_y,
-                            -setting.rotation / std::numbers::pi * 180,
-                            setting.color_top,
-                            setting.color_top,
-                            setting.color_bottom,
-                            setting.color_bottom,
-                            setting.alpha
+                            draw_x * option.scale_x,
+                            draw_y * option.scale_y,
+                            option.scale_x,
+                            option.scale_y,
+                            -option.rotation / std::numbers::pi * 180,
+                            option.color_top,
+                            option.color_top,
+                            option.color_bottom,
+                            option.color_bottom,
+                            option.alpha
                         );
 
-                        cursor += advance + setting.letter_spacing;
+                        cursor += advance + option.letter_spacing;
                         if (is_white_space(ch)) {
-                            cursor += setting.word_spacing;
+                            cursor += option.word_spacing;
                         }
                         if (cont) {
                             cursor += justified_spacing;
