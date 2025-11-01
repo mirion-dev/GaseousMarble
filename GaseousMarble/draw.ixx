@@ -34,7 +34,7 @@ namespace gm {
         };
 
         struct Token {
-            std::u16string_view text;
+            std::u16string_view str;
             bool continuous;
         };
 
@@ -52,7 +52,7 @@ namespace gm {
         };
 
         struct Text {
-            std::u16string text;
+            std::u16string str;
             TextLayout layout;
         };
 
@@ -70,18 +70,18 @@ namespace gm {
 
         Option option;
 
-        Result<Text, Warning, Error> create_text(std::u8string_view text) const noexcept {
+        Result<Text, Warning, Error> create_text(std::u8string_view str) const noexcept {
             auto& glyphs{ option.font->glyphs() };
 
-            std::u16string utf16;
+            std::u16string str16;
             Warning warning{};
             bool ok{};
-            utf16.resize_and_overwrite(
-                text.size(),
+            str16.resize_and_overwrite(
+                str.size(),
                 [&](c16* ptr, usize) noexcept {
                     usize size{};
                     ok = unicode_for_each(
-                        text,
+                        str,
                         [&](c32 ch) noexcept {
                             if (glyphs.contains(ch) || is_line_break(ch)) {
                                 U16_APPEND_UNSAFE(ptr, size, ch);
@@ -104,7 +104,7 @@ namespace gm {
 
             TextLayout layout;
 
-            const c16* ptr{ utf16.data() };
+            const c16* ptr{ str16.data() };
             usize size{};
             bool cont{};
 
@@ -147,7 +147,7 @@ namespace gm {
             };
 
             ok = word_break_for_each(
-                utf16,
+                str16,
                 [&](std::u16string_view word, i32 type) noexcept {
                     const c16* word_ptr{ word.data() };
                     usize word_size{ word.size() }, i{};
@@ -207,7 +207,7 @@ namespace gm {
             }
             push_line();
 
-            return Payload{ Text{ std::move(utf16), std::move(layout) }, warning };
+            return Payload{ Text{ std::move(str16), std::move(layout) }, warning };
         }
 
         Error text(f64 x, f64 y, const Text& text) const noexcept {

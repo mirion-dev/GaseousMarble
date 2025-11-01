@@ -17,15 +17,13 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         return 1; // font already exists
     }
 
-    Font font;
     try {
-        font = { font_name, sprite_path };
+        font_map.emplace(font_name, Font{ font_name, sprite_path });
     }
     catch (Font::Error error) {
         return static_cast<int>(error);
     }
 
-    font_map.emplace(font_name, std::move(font));
     return 0;
 }
 
@@ -38,8 +36,8 @@ API Real gm_clear() noexcept {
     return 0;
 }
 
-API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    auto res_payload{ draw.create_text(text) };
+API Real gm_draw(Real x, Real y, StringView str) noexcept {
+    auto res_payload{ draw.create_text(str) };
     if (!res_payload) {
         return static_cast<int>(res_payload.error());
     }
@@ -52,8 +50,8 @@ API Real gm_draw(Real x, Real y, StringView text) noexcept {
     return static_cast<int>(res_payload->warning);
 }
 
-API Real gm_width(StringView text) noexcept {
-    auto res_payload{ draw.create_text(text) };
+API Real gm_width(StringView str) noexcept {
+    auto res_payload{ draw.create_text(str) };
     if (!res_payload) {
         return static_cast<int>(res_payload.error());
     }
