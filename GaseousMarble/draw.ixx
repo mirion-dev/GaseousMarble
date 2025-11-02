@@ -14,7 +14,7 @@ namespace gm {
     export class Draw {
     public:
         struct Option {
-            Font* font{};
+            const Font* font{};
             i8 halign{ -1 };
             i8 valign{ -1 };
             bool justified{};
