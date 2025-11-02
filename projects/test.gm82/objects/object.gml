@@ -4,15 +4,23 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-var error{ error = gm_font("default", "./gm_fonts/default.png") }
+var dll_path{ dll_path = parameter_string(1) }
+global.gm_font = external_define(dll_path, "gm_font", dll_cdecl, ty_real, 2, ty_string, ty_string)
+global.gm_draw = external_define(dll_path, "gm_draw", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
+global.gm_set_font = external_define(dll_path, "gm_set_font", dll_cdecl, ty_real, 1, ty_string)
+global.gm_set_letter_spacing = external_define(dll_path, "gm_set_letter_spacing", dll_cdecl, ty_real, 1, ty_real)
+global.gm_set_line_height = external_define(dll_path, "gm_set_line_height", dll_cdecl, ty_real, 1, ty_real)
+global.gm_set_max_line_length = external_define(dll_path, "gm_set_max_line_length", dll_cdecl, ty_real, 1, ty_real)
+
+var error{ error = external_call(global.gm_font, "default", "gm_fonts/default.png") }
 if (error < 0) {
     show_error("gm_font error code: " + string(error), true)
 }
 
-gm_set_font("default")
-gm_set_letter_spacing(-1)
-gm_set_max_line_length(room_width)
-gm_set_line_height(.86)
+external_call(global.gm_set_font, "default")
+external_call(global.gm_set_letter_spacing, -1)
+external_call(global.gm_set_max_line_length, room_width)
+external_call(global.gm_set_line_height, .86)
 #define Keyboard_82
 /*"/*'/**//* YYD ACTION
 lib_id=1
@@ -29,7 +37,7 @@ applies_to=self
 draw_set_color(c_white)
 draw_text(0, 0, fps)
 
-var error{ error = gm_draw(0, 0, "
+var error{ error = external_call(global.gm_draw, 0, 0, "
 在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源创建（不管是在 GM 设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平及垂直坐标。
 
 文本的绘制涉及以下函数：

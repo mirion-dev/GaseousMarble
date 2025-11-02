@@ -363,9 +363,9 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # User Ignored
-cache/
-third_party/
-/tests/*.gm82/gm_fonts/
+**/*.gm82/cache/
+**/*.gm82/gm_fonts/
+!**/example.gm82/gm_fonts/
 *.exe
 *.gex
 *.ttf
