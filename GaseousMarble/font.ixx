@@ -82,7 +82,7 @@ namespace gm {
             failed_to_open_file  = -1,
             invalid_header       = -2,
             data_corrupted       = -3,
-            failed_to_add_sprite = -4
+            failed_to_load_sprite = -4
         };
 
     private:
@@ -129,7 +129,7 @@ namespace gm {
             }
         }
         catch (Sprite::Error) {
-            throw Error::failed_to_add_sprite;
+            throw Error::failed_to_load_sprite;
         }
 
         u16 height() const noexcept {
