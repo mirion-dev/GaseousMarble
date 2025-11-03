@@ -101,6 +101,19 @@ namespace gm {
         return true;
     }
 
+    export bool unicode_for_each(std::u16string_view str, auto func) noexcept {
+        const c16* ptr{ str.data() };
+        usize size{ str.size() };
+        for (usize i{}; i != size;) {
+            i32 ch;
+            U16_NEXT(ptr, i, size, ch);
+            if (ch < 0 || !func(static_cast<c32>(ch))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     export bool word_break_for_each(std::u16string_view str, auto func) noexcept {
         const c16* ptr{ str.data() };
         usize size{ str.size() };

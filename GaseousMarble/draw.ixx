@@ -156,55 +156,58 @@ namespace gm {
             auto push{
                 [&](std::u16string_view word, i32 type) noexcept {
                     const c16* word_ptr{ word.data() };
-                    usize word_size{ word.size() }, i{};
-                    c32 ch;
-                    U16_NEXT_UNSAFE(word_ptr, i, ch);
-                    if (is_line_break(ch)) {
-                        line.height += paragraph_spacing;
-                        push_line();
-                        ptr = word_ptr + word_size;
-                        cont = false;
-                        return true;
-                    }
-
-                    bool word_cont{ type >= UBRK_WORD_KANA || type == UBRK_WORD_NONE && is_wide(ch) };
-                    if (cont != word_cont) {
-                        push_token();
-                        ptr = word_ptr;
-                        cont = word_cont;
-                    }
-
+                    usize word_size{ word.size() };
                     f64 next_cursor{ cursor }, next_line_width;
-                    while (true) {
-                        auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
-                        if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
-                            next_cursor -= cursor;
-                            push_line(true);
-                            ptr = word_ptr;
-                        }
+                    bool first{ true };
+                    if (unicode_for_each(
+                        word,
+                        [&](c32 ch) noexcept {
+                            if (first) {
+                                first = false;
 
-                        next_line_width = next_cursor + left + width;
-                        next_cursor += advance + letter_spacing;
-                        if (is_white_space(ch)) {
-                            next_cursor += word_spacing;
-                        }
-                        if (cont) {
-                            ++justified_count;
-                        }
+                                if (is_line_break(ch)) {
+                                    line.height += paragraph_spacing;
+                                    push_line();
+                                    ptr = word_ptr + word_size;
+                                    cont = false;
+                                    return false;
+                                }
 
-                        if (i == word_size) {
-                            break;
+                                bool word_cont{ type >= UBRK_WORD_KANA || type == UBRK_WORD_NONE && is_wide(ch) };
+                                if (cont != word_cont) {
+                                    push_token();
+                                    ptr = word_ptr;
+                                    cont = word_cont;
+                                }
+                            }
+
+                            auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
+                            if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
+                                next_cursor -= cursor;
+                                push_line(true);
+                                ptr = word_ptr;
+                            }
+
+                            next_line_width = next_cursor + left + width;
+                            next_cursor += advance + letter_spacing;
+                            if (is_white_space(ch)) {
+                                next_cursor += word_spacing;
+                            }
+                            if (cont) {
+                                ++justified_count;
+                            }
+                            return true;
                         }
-                        U16_NEXT_UNSAFE(word_ptr, i, ch);
+                    )) {
+                        size += word_size;
+                        cursor = next_cursor;
+                        line.width = next_line_width;
+                        if (next_line_width > max_line_length) {
+                            push_line();
+                            ptr = word_ptr + word_size;
+                        }
                     }
 
-                    size += word_size;
-                    cursor = next_cursor;
-                    line.width = next_line_width;
-                    if (next_line_width > max_line_length) {
-                        push_line();
-                        ptr = word_ptr + word_size;
-                    }
                     return true;
                 }
             };
@@ -248,44 +251,45 @@ namespace gm {
                     cursor -= line_width;
                 }
 
-                for (auto& [text, cont] : tokens) {
-                    const c16* ptr{ text.data() };
-                    c32 ch;
-                    for (usize i{}, size{ text.size() }; i != size;) {
-                        U16_NEXT_UNSAFE(ptr, i, ch);
-                        auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
+                for (auto& [str, cont] : tokens) {
+                    unicode_for_each(
+                        str,
+                        [&](c32 ch) noexcept {
+                            auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
 
-                        f64 delta_x{ cursor + left - origin_x };
-                        f64 delta_y{ y - origin_y };
-                        f64 draw_x{ origin_x + delta_x * cos - delta_y * sin };
-                        f64 draw_y{ origin_y + delta_y * cos + delta_x * sin };
-                        draw_sprite_general(
-                            spr_id,
-                            0,
-                            spr_x,
-                            spr_y,
-                            width,
-                            height,
-                            draw_x * option.scale_x,
-                            draw_y * option.scale_y,
-                            option.scale_x,
-                            option.scale_y,
-                            -option.rotation / std::numbers::pi * 180,
-                            option.color_top,
-                            option.color_top,
-                            option.color_bottom,
-                            option.color_bottom,
-                            option.alpha
-                        );
+                            f64 delta_x{ cursor + left - origin_x };
+                            f64 delta_y{ y - origin_y };
+                            f64 draw_x{ origin_x + delta_x * cos - delta_y * sin };
+                            f64 draw_y{ origin_y + delta_y * cos + delta_x * sin };
+                            draw_sprite_general(
+                                spr_id,
+                                0,
+                                spr_x,
+                                spr_y,
+                                width,
+                                height,
+                                draw_x * option.scale_x,
+                                draw_y * option.scale_y,
+                                option.scale_x,
+                                option.scale_y,
+                                -option.rotation / std::numbers::pi * 180,
+                                option.color_top,
+                                option.color_top,
+                                option.color_bottom,
+                                option.color_bottom,
+                                option.alpha
+                            );
 
-                        cursor += advance + option.letter_spacing;
-                        if (is_white_space(ch)) {
-                            cursor += option.word_spacing;
+                            cursor += advance + option.letter_spacing;
+                            if (is_white_space(ch)) {
+                                cursor += option.word_spacing;
+                            }
+                            if (cont) {
+                                cursor += justified_spacing;
+                            }
+                            return true;
                         }
-                        if (cont) {
-                            cursor += justified_spacing;
-                        }
-                    }
+                    );
                     if (!cont) {
                         cursor += justified_spacing;
                     }
