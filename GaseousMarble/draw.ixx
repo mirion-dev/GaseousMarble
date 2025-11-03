@@ -150,8 +150,7 @@ namespace gm {
                 }
             };
 
-            ok = word_break_for_each(
-                str16,
+            auto push{
                 [&](std::u16string_view word, i32 type) noexcept {
                     const c16* word_ptr{ word.data() };
                     usize word_size{ word.size() }, i{};
@@ -205,8 +204,9 @@ namespace gm {
                     }
                     return true;
                 }
-            );
-            if (!ok) {
+            };
+
+            if (!word_break_for_each(str16, push)) {
                 return std::unexpected{ Error::failed_to_tokenize };
             }
             push_line();
