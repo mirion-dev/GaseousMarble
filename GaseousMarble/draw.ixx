@@ -11,6 +11,29 @@ import :font;
 
 namespace gm {
 
+    export struct Text {
+        struct Token {
+            std::u16string_view str;
+            bool continuous;
+        };
+
+        struct Line {
+            std::vector<Token> tokens;
+            f64 width;
+            f64 height;
+            f64 justified_spacing;
+        };
+
+        struct Layout {
+            std::vector<Line> lines;
+            f64 width;
+            f64 height;
+        };
+
+        std::u16string str;
+        Layout layout;
+    };
+
     export class Draw {
     public:
         struct Option {
@@ -31,29 +54,6 @@ namespace gm {
             f64 scale_x{ 1 };
             f64 scale_y{ 1 };
             f64 rotation{};
-        };
-
-        struct Token {
-            std::u16string_view str;
-            bool continuous;
-        };
-
-        struct LineLayout {
-            std::vector<Token> tokens;
-            f64 width;
-            f64 height;
-            f64 justified_spacing;
-        };
-
-        struct TextLayout {
-            std::vector<LineLayout> lines;
-            f64 width;
-            f64 height;
-        };
-
-        struct Text {
-            std::u16string str;
-            TextLayout layout;
         };
 
         enum class Warning {
@@ -106,13 +106,13 @@ namespace gm {
             f64 max_line_length{ option.max_line_length / option.scale_x };
             f64 line_height{ option.font->height() * option.line_height };
 
-            TextLayout layout;
+            Text::Layout layout;
 
             const c16* ptr{ str16.data() };
             usize size{};
             bool cont{};
 
-            LineLayout line{ .height = line_height };
+            Text::Line line{ .height = line_height };
             f64 cursor{};
             usize justified_count{};
 
