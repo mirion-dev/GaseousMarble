@@ -76,6 +76,12 @@ namespace gm {
             }
 
             auto& glyphs{ option.font->glyphs() };
+            bool justified{ option.justified };
+            f64 letter_spacing{ option.letter_spacing };
+            f64 word_spacing{ option.word_spacing };
+            f64 paragraph_spacing{ option.paragraph_spacing };
+            f64 line_spacing{ option.font->height() * option.line_height };
+            f64 max_line_length{ option.max_line_length / option.scale_x };
 
             std::u16string str16;
             Warning warning{};
@@ -103,18 +109,15 @@ namespace gm {
                 return std::unexpected{ Error::invalid_encoding };
             }
 
-            f64 max_line_length{ option.max_line_length / option.scale_x };
-            f64 line_height{ option.font->height() * option.line_height };
-
-            Text::Layout layout;
-
             const c16* ptr{ str16.data() };
             usize size{};
             bool cont{};
 
-            Text::Line line{ .height = line_height };
+            Text::Line line{ .height = line_spacing };
             f64 cursor{};
             usize justified_count{};
+
+            Text::Layout layout;
 
             // update `line`, `justified_count` and reset `size`
             auto push_token{
@@ -135,7 +138,7 @@ namespace gm {
                 [&](bool auto_wrap = false) noexcept {
                     push_token();
 
-                    if (auto_wrap && option.justified && max_line_length != 0 && justified_count > 1) {
+                    if (auto_wrap && justified && max_line_length != 0 && justified_count > 1) {
                         line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
                         line.width = max_line_length;
                     }
@@ -144,7 +147,7 @@ namespace gm {
                     layout.width = std::max(layout.width, line.width);
                     layout.height += line.height;
 
-                    line = { .height = line_height };
+                    line = { .height = line_spacing };
                     cursor = 0;
                     justified_count = 0;
                 }
@@ -157,7 +160,7 @@ namespace gm {
                     c32 ch;
                     U16_NEXT_UNSAFE(word_ptr, i, ch);
                     if (is_line_break(ch)) {
-                        line.height += option.paragraph_spacing;
+                        line.height += paragraph_spacing;
                         push_line();
                         ptr = word_ptr + word_size;
                         cont = false;
@@ -181,9 +184,9 @@ namespace gm {
                         }
 
                         next_line_width = next_cursor + left + width;
-                        next_cursor += advance + option.letter_spacing;
+                        next_cursor += advance + letter_spacing;
                         if (is_white_space(ch)) {
-                            next_cursor += option.word_spacing;
+                            next_cursor += word_spacing;
                         }
                         if (cont) {
                             ++justified_count;
