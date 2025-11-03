@@ -222,12 +222,11 @@ namespace gm {
                 return Error::font_unspecified;
             }
 
-            auto& layout{ text.layout };
-
             x += option.offset_x / option.scale_x;
             y += option.offset_y / option.scale_y + option.font->top();
             f64 origin_x{ x }, origin_y{ y };
 
+            auto& layout{ text.layout };
             if (option.valign == 0) {
                 y -= layout.height / 2;
             }
