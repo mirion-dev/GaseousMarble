@@ -225,11 +225,12 @@ namespace gm {
                 return Error::font_unspecified;
             }
 
+            auto& layout{ text.layout };
+
             x += option.offset_x / option.scale_x;
             y += option.offset_y / option.scale_y + option.font->top();
             f64 origin_x{ x }, origin_y{ y };
 
-            auto& layout{ text.layout };
             if (option.valign == 0) {
                 y -= layout.height / 2;
             }
@@ -238,10 +239,12 @@ namespace gm {
             }
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
-            auto& glyphs{ option.font->glyphs() };
-            usize spr_id{ option.font->sprite().id() };
             u16 height{ option.font->height() };
-            f64 cos{ std::cos(option.rotation) }, sin{ std::sin(option.rotation) };
+            usize spr_id{ option.font->sprite().id() };
+            auto& glyphs{ option.font->glyphs() };
+            f64 cos{ std::cos(option.rotation) };
+            f64 sin{ std::sin(option.rotation) };
+            f64 angle{ -option.rotation / std::numbers::pi * 180 };
             for (auto& [tokens, line_width, line_height, justified_spacing] : layout.lines) {
                 f64 cursor{ x };
                 if (option.halign == 0) {
@@ -256,7 +259,6 @@ namespace gm {
                         str,
                         [&](c32 ch) noexcept {
                             auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
-
                             f64 delta_x{ cursor + left - origin_x };
                             f64 delta_y{ y - origin_y };
                             f64 draw_x{ origin_x + delta_x * cos - delta_y * sin };
@@ -272,7 +274,7 @@ namespace gm {
                                 draw_y * option.scale_y,
                                 option.scale_x,
                                 option.scale_y,
-                                -option.rotation / std::numbers::pi * 180,
+                                angle,
                                 option.color_top,
                                 option.color_top,
                                 option.color_bottom,
