@@ -109,36 +109,32 @@ namespace gm {
                 return std::unexpected{ Error::invalid_encoding };
             }
 
-            const c16* ptr{ str16.data() };
-            usize size{};
+            auto first{ std::u16string_view{ str16 }.begin() }, last{ first };
             bool cont{};
 
             Text::Line line{ .height = line_spacing };
             f64 cursor{};
             usize justified_count{};
 
-            Text::Layout layout;
+            Text::Layout layout{};
 
-            // update `line`, `justified_count` and reset `size`
             auto push_token{
                 [&] noexcept {
-                    if (size == 0) {
+                    if (first == last) {
                         return;
                     }
                     if (!cont) {
                         ++justified_count;
                     }
-                    line.tokens.emplace_back(std::u16string_view{ ptr, size }, cont);
-                    size = 0;
+                    line.tokens.emplace_back(std::u16string_view{ first, last }, cont);
                 }
             };
 
-            // update `metrics` and reset `size`, `line`, `x`, `justified_count`
             auto push_line{
                 [&](bool auto_wrap = false) noexcept {
                     push_token();
 
-                    if (auto_wrap && justified && max_line_length != 0 && justified_count > 1) {
+                    if (auto_wrap && justified && justified_count > 1) {
                         line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
                         line.width = max_line_length;
                     }
@@ -153,22 +149,21 @@ namespace gm {
                 }
             };
 
-            auto push{
+            auto push_word{
                 [&](std::u16string_view word, i32 type) noexcept {
-                    const c16* word_ptr{ word.data() };
-                    usize word_size{ word.size() };
-                    f64 next_cursor{ cursor }, next_line_width;
-                    bool first{ true };
+                    auto word_begin{ word.begin() }, word_end{ word.end() };
+                    f64 next_cursor{ cursor };
+                    bool first_ch{ true };
                     if (unicode_for_each(
                         word,
                         [&](c32 ch) noexcept {
-                            if (first) {
-                                first = false;
+                            if (first_ch) {
+                                first_ch = false;
 
                                 if (is_line_break(ch)) {
                                     line.height += paragraph_spacing;
                                     push_line();
-                                    ptr = word_ptr + word_size;
+                                    first = last = word_end;
                                     cont = false;
                                     return false;
                                 }
@@ -176,19 +171,19 @@ namespace gm {
                                 bool word_cont{ type >= UBRK_WORD_KANA || type == UBRK_WORD_NONE && is_wide(ch) };
                                 if (cont != word_cont) {
                                     push_token();
-                                    ptr = word_ptr;
+                                    first = last = word_begin;
                                     cont = word_cont;
                                 }
                             }
 
                             auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
-                            if (max_line_length != 0 && next_cursor + left + width > max_line_length && cursor != 0) {
+                            if (max_line_length != 0 && cursor != 0 && next_cursor + left + width > max_line_length) {
                                 next_cursor -= cursor;
                                 push_line(true);
-                                ptr = word_ptr;
+                                first = last = word_begin;
                             }
 
-                            next_line_width = next_cursor + left + width;
+                            line.width = next_cursor + left + width;
                             next_cursor += advance + letter_spacing;
                             if (is_white_space(ch)) {
                                 next_cursor += word_spacing;
@@ -199,12 +194,11 @@ namespace gm {
                             return true;
                         }
                     )) {
-                        size += word_size;
+                        last = word_end;
                         cursor = next_cursor;
-                        line.width = next_line_width;
-                        if (next_line_width > max_line_length) {
+                        if (line.width > max_line_length) {
                             push_line();
-                            ptr = word_ptr + word_size;
+                            first = word_end;
                         }
                     }
 
@@ -212,7 +206,7 @@ namespace gm {
                 }
             };
 
-            if (!word_break_for_each(str16, push)) {
+            if (!word_break_for_each(str16, push_word)) {
                 return std::unexpected{ Error::failed_to_tokenize };
             }
             push_line();
@@ -254,7 +248,7 @@ namespace gm {
                     cursor -= line_width;
                 }
 
-                for (auto& [str, cont] : tokens) {
+                for (auto& [str, continuous] : tokens) {
                     unicode_for_each(
                         str,
                         [&](c32 ch) noexcept {
@@ -286,13 +280,13 @@ namespace gm {
                             if (is_white_space(ch)) {
                                 cursor += option.word_spacing;
                             }
-                            if (cont) {
+                            if (continuous) {
                                 cursor += justified_spacing;
                             }
                             return true;
                         }
                     );
-                    if (!cont) {
+                    if (!continuous) {
                         cursor += justified_spacing;
                     }
                 }
