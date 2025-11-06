@@ -221,7 +221,7 @@ namespace gm {
             return RESOURCE_PTR->count;
         }
 
-        Value operator()(const auto&... args) const noexcept {
+        Value operator()(auto&&... args) const noexcept {
             assert(_data != nullptr);
 
             // this assertion may fail on game exit since GameMaker has already released function resources
