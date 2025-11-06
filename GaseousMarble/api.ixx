@@ -127,12 +127,8 @@ API Real gm_set_color(Real color) noexcept {
 }
 
 API Real gm_set_alpha(Real alpha) noexcept {
-    if (alpha < 0 || alpha > 1) {
-        return -1; // invalid argument
-    }
-
     auto option{ draw.option() };
-    option.alpha = alpha;
+    option.alpha = std::clamp(alpha, 0., 1.);
     draw.set_option(option);
     return 0;
 }
