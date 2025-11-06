@@ -141,7 +141,7 @@ namespace gm {
                 return Payload{ *ptr_text, Warning::no_warning };
             }
 
-            Text text;
+            Text text{};
             Warning warning{};
 
             if (_option.font == nullptr) {
