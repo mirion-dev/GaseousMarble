@@ -166,12 +166,8 @@ API Real gm_set_line_height(Real height) noexcept {
 }
 
 API Real gm_set_max_line_length(Real length) noexcept {
-    if (length < 0) {
-        return -1; // invalid argument
-    }
-
     auto option{ draw.option() };
-    option.max_line_length = length;
+    option.max_line_length = std::max(length, 0.);
     draw.set_option(option);
     return 0;
 }
