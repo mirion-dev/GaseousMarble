@@ -129,7 +129,8 @@ namespace gm {
                 || _option.word_spacing != option.word_spacing
                 || _option.paragraph_spacing != option.paragraph_spacing
                 || _option.line_height != option.line_height
-                || _option.max_line_length != option.max_line_length) {
+                || _option.max_line_length != option.max_line_length
+                || _option.scale_x != option.scale_x) {
                 _cache.clear();
             }
             _option = option;
