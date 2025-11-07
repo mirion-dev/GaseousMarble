@@ -205,12 +205,12 @@ namespace gm {
                 [&](bool auto_wrap = false, bool last = false) noexcept {
                     push_token();
 
-                    line.height = glyph_height;
                     if (auto_wrap && justified && justified_count > 1) {
                         line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
                         line.width = max_line_length;
                     }
 
+                    line.height = glyph_height;
                     if (!last) {
                         line.height *= line_height;
                     }
