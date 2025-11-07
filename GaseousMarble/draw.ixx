@@ -155,7 +155,7 @@ namespace gm {
             f64 word_spacing{ _option.word_spacing };
             f64 paragraph_spacing{ _option.paragraph_spacing };
             f64 line_height{ _option.line_height };
-            f64 max_line_length{ _option.max_line_length / _option.scale_x };
+            f64 max_line_length{ std::max(_option.max_line_length, 0.) / _option.scale_x };
 
             bool ok{};
             text.str.resize_and_overwrite(

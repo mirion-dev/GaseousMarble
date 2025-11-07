@@ -104,14 +104,14 @@ API Real gm_set_font(StringView font_name) noexcept {
 
 API Real gm_set_halign(Real align) noexcept {
     auto option{ draw.option() };
-    option.halign = align == 0 ? 0 : align < 0 ? -1 : 1;
+    option.halign = align;
     draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_valign(Real align) noexcept {
     auto option{ draw.option() };
-    option.valign = align == 0 ? 0 : align < 0 ? -1 : 1;
+    option.valign = align;
     draw.set_option(option);
     return 0;
 }
@@ -124,14 +124,19 @@ API Real gm_set_justified(Real justified) noexcept {
 }
 
 API Real gm_set_align(Real halign, Real valign) noexcept {
-    gm_set_halign(halign);
-    gm_set_valign(valign);
+    auto option{ draw.option() };
+    option.halign = halign;
+    option.valign = valign;
+    draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
-    gm_set_align(halign, valign);
-    gm_set_justified(justified);
+    auto option{ draw.option() };
+    option.halign = halign;
+    option.valign = valign;
+    option.justified = justified;
+    draw.set_option(option);
     return 0;
 }
 
@@ -150,7 +155,7 @@ API Real gm_set_color(Real color) noexcept {
 
 API Real gm_set_alpha(Real alpha) noexcept {
     auto option{ draw.option() };
-    option.alpha = std::clamp(alpha, 0., 1.);
+    option.alpha = alpha;
     draw.set_option(option);
     return 0;
 }
@@ -185,7 +190,7 @@ API Real gm_set_line_height(Real height) noexcept {
 
 API Real gm_set_max_line_length(Real length) noexcept {
     auto option{ draw.option() };
-    option.max_line_length = std::max(length, 0.);
+    option.max_line_length = length;
     draw.set_option(option);
     return 0;
 }
