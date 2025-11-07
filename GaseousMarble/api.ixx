@@ -177,10 +177,6 @@ API Real gm_set_paragraph_spacing(Real spacing) noexcept {
 }
 
 API Real gm_set_line_height(Real height) noexcept {
-    if (height <= 0) {
-        return -1; // invalid argument
-    }
-
     auto option{ draw.option() };
     option.line_height = height;
     draw.set_option(option);

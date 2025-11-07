@@ -29,7 +29,7 @@ as well as the setters and getters for configuring the drawing settings:
 | `gm_set_letter_spacing(spacing)` | `gm_get_letter_spacing()` | Always OK |
 | `gm_set_word_spacing(spacing)` | `gm_get_word_spacing()` | Always OK |
 | `gm_set_paragraph_spacing(spacing)` | `gm_get_paragraph_spacing()` | Always OK |
-| `gm_set_line_height(height)` | `gm_get_line_height()` | **Setter**<br>`0` - OK<br>`-1` - Invalid argument<br>**Getter**<br>Always OK |
+| `gm_set_line_height(height)` | `gm_get_line_height()` | Always OK |
 | `gm_set_max_line_length(length)` | `gm_get_max_line_length()` | Always OK |
 | `gm_set_offset(x, y)` | `gm_get_offset_x()`<br>`gm_get_offset_y()` | Always OK |
 | `gm_set_scale(x, y)` | `gm_get_scale_x()`<br>`gm_get_scale_y()` | **Setter**<br>`0` - OK<br>`-1` - Invalid argument(s)<br>**Getter**<br>Always OK |
