@@ -294,12 +294,11 @@ namespace gm {
                 return Error::font_unspecified;
             }
 
-            auto& layout{ text.layout };
-
             x += _option.offset_x / _option.scale_x;
             y += _option.offset_y / _option.scale_y + _option.font->top();
             f64 origin_x{ x }, origin_y{ y };
 
+            auto& layout{ text.layout };
             if (_option.valign == 0) {
                 y -= layout.height / 2;
             }
