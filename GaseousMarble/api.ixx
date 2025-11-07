@@ -77,7 +77,7 @@ API Real gm_width(StringView str) noexcept {
         return static_cast<int>(res_text.error());
     }
 
-    return res_text->result.layout.width;
+    return std::abs(res_text->result.layout.width);
 }
 
 API Real gm_height(StringView text) noexcept {
@@ -86,7 +86,7 @@ API Real gm_height(StringView text) noexcept {
         return static_cast<int>(res_text.error());
     }
 
-    return res_text->result.layout.height;
+    return std::abs(res_text->result.layout.height);
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
