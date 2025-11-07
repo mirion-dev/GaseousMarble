@@ -311,9 +311,9 @@ namespace gm {
             u16 height{ _option.font->height() };
             usize spr_id{ _option.font->sprite().id() };
             auto& glyphs{ _option.font->glyphs() };
-            f64 cos{ std::cos(_option.rotation) };
-            f64 sin{ std::sin(_option.rotation) };
-            f64 angle{ -_option.rotation / std::numbers::pi * 180 };
+            f64 radian{ -_option.rotation / 180 * std::numbers::pi };
+            f64 cos{ std::cos(radian) };
+            f64 sin{ std::sin(radian) };
             for (auto& [tokens, line_width, line_height, justified_spacing] : layout.lines) {
                 f64 cursor{ x };
                 if (_option.halign == 0) {
@@ -343,7 +343,7 @@ namespace gm {
                                 draw_y * _option.scale_y,
                                 _option.scale_x,
                                 _option.scale_y,
-                                angle,
+                                _option.rotation,
                                 _option.color_top,
                                 _option.color_top,
                                 _option.color_bottom,
