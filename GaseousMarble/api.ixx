@@ -13,17 +13,22 @@ std::unordered_map<std::u8string, Font> font_map;
 Draw draw;
 
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
-    if (font_map.contains(std::u8string{ font_name })) {
+    std::u8string name{ font_name };
+    if (name.empty()) {
+        return -100; // invalid argument
+    }
+
+    auto iter{ font_map.find(name) };
+    if (iter != font_map.end()) {
         return 1; // font already exists
     }
 
     try {
-        font_map.emplace(font_name, Font{ font_name, sprite_path });
+        font_map.emplace_hint(iter, name, Font{ name, sprite_path });
     }
     catch (Font::Error error) {
         return static_cast<int>(error);
     }
-
     return 0;
 }
 
@@ -200,6 +205,10 @@ API Real gm_set_rotation(Real theta) noexcept {
 }
 
 API StringView gm_get_font() noexcept {
+    if (draw.option().font == nullptr) {
+        return u8""; // font unspecified
+    }
+
     return draw.option().font->name();
 }
 
