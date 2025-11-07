@@ -33,10 +33,26 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
 }
 
 API Real gm_free(StringView font_name) noexcept {
-    return font_map.erase(std::u8string{ font_name }) ? 0 : 1; // font not found
+    std::u8string name{ font_name };
+    auto iter{ font_map.find(name) };
+    if (iter == font_map.end()) {
+        return 1; // font not found
+    }
+
+    auto option{ draw.option() };
+    if (option.font->name() == name) {
+        option.font = {};
+        draw.set_option(option);
+    }
+
+    font_map.erase(iter);
+    return 0;
 }
 
 API Real gm_clear() noexcept {
+    auto option{ draw.option() };
+    option.font = {};
+    draw.set_option(option);
     font_map.clear();
     return 0;
 }
@@ -74,7 +90,8 @@ API Real gm_height(StringView text) noexcept {
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
-    auto iter{ font_map.find(std::u8string{ font_name }) };
+    std::u8string name{ font_name };
+    auto iter{ font_map.find(name) };
     if (iter == font_map.end()) {
         return -1; // font not found
     }
