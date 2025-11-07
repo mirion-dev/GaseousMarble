@@ -149,11 +149,12 @@ namespace gm {
             }
 
             auto& glyphs{ _option.font->glyphs() };
+            auto glyph_height{ static_cast<f64>(_option.font->height()) };
             bool justified{ _option.justified };
             f64 letter_spacing{ _option.letter_spacing };
             f64 word_spacing{ _option.word_spacing };
             f64 paragraph_spacing{ _option.paragraph_spacing };
-            f64 line_spacing{ _option.font->height() * _option.line_height };
+            f64 line_height{ _option.line_height };
             f64 max_line_length{ _option.max_line_length / _option.scale_x };
 
             bool ok{};
@@ -184,7 +185,7 @@ namespace gm {
             const c16* last{ first };
             bool cont{};
 
-            Text::Line line{ .height = line_spacing };
+            Text::Line line{};
             f64 cursor{};
             usize justified_count{};
 
@@ -201,19 +202,24 @@ namespace gm {
             };
 
             auto push_line{
-                [&](bool auto_wrap = false) noexcept {
+                [&](bool auto_wrap = false, bool last = false) noexcept {
                     push_token();
 
+                    line.height = glyph_height;
                     if (auto_wrap && justified && justified_count > 1) {
                         line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
                         line.width = max_line_length;
+                    }
+
+                    if (!last) {
+                        line.height *= line_height;
                     }
 
                     text.layout.lines.emplace_back(std::move(line));
                     text.layout.width = std::max(text.layout.width, line.width);
                     text.layout.height += line.height;
 
-                    line = { .height = line_spacing };
+                    line = {};
                     cursor = 0;
                     justified_count = 0;
                 }
@@ -277,7 +283,7 @@ namespace gm {
             if (!word_break_for_each(text.str, push_word)) {
                 return std::unexpected{ Error::failed_to_tokenize };
             }
-            push_line();
+            push_line(false, true);
 
             return Payload{ *_cache.emplace(str, std::move(text)), warning };
         }
