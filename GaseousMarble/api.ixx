@@ -104,14 +104,14 @@ API Real gm_set_font(StringView font_name) noexcept {
 
 API Real gm_set_halign(Real align) noexcept {
     auto option{ draw.option() };
-    option.halign = align;
+    option.halign = static_cast<i8>(align);
     draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_valign(Real align) noexcept {
     auto option{ draw.option() };
-    option.valign = align;
+    option.valign = static_cast<i8>(align);
     draw.set_option(option);
     return 0;
 }
@@ -125,16 +125,16 @@ API Real gm_set_justified(Real justified) noexcept {
 
 API Real gm_set_align(Real halign, Real valign) noexcept {
     auto option{ draw.option() };
-    option.halign = halign;
-    option.valign = valign;
+    option.halign = static_cast<i8>(halign);
+    option.valign = static_cast<i8>(valign);
     draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
     auto option{ draw.option() };
-    option.halign = halign;
-    option.valign = valign;
+    option.halign = static_cast<i8>(halign);
+    option.valign = static_cast<i8>(valign);
     option.justified = justified;
     draw.set_option(option);
     return 0;
