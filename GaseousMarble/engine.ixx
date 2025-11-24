@@ -228,8 +228,10 @@ namespace gm {
             static constexpr usize ARGS_COUNT{ sizeof...(args) };
             assert(_data->arg_count == ARG_VARIABLE || _data->arg_count == ARGS_COUNT);
 
-            Value args_wrapped[]{ static_cast<Value>(args)... }, ret;
-            Value *args_ptr{ args_wrapped }, *ret_ptr{ &ret };
+            std::array<Value, ARGS_COUNT> arr{ static_cast<Value>(args)... };
+            Value ret;
+            Value* args_ptr{ arr.data() };
+            Value* ret_ptr{ &ret };
             void* fn_ptr{ _data->address };
 
             // @formatter:off
