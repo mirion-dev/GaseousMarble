@@ -184,14 +184,6 @@ namespace gm {
     };
 
     export class Function {
-    public:
-        enum class Id : u16 {
-#include "detail/FunctionId.inc"
-        };
-
-        static constexpr auto ARG_VARIABLE{ static_cast<usize>(-1) };
-
-    private:
         struct Data {
             u8 name_size;
             c8 name[67];
@@ -207,6 +199,14 @@ namespace gm {
 
         static constexpr auto RESOURCE_PTR{ reinterpret_cast<Resource*>(0x00686b1c) };
 
+    public:
+        enum class Id : u16 {
+#include "detail/FunctionId.inc"
+        };
+
+        static constexpr auto ARG_VARIABLE{ static_cast<usize>(-1) };
+
+    private:
         Data* _data{};
 
     public:
