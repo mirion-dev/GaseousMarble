@@ -170,19 +170,19 @@ struct std::hash<gm::Wrapper<K>> {
 
 namespace gm {
 
-    export template <class K, class T, usize N>
+    export template <class K, class V, usize N>
         requires (N > 0)
     class Cache {
         // workaround for the compiler bug DevCom-10969873
-        static constexpr std::hash<Wrapper<K>> _dummy;
+        static constexpr std::hash<Wrapper<K>> DUMMY;
 
-        std::list<std::pair<K, T>> _list;
+        std::list<std::pair<K, V>> _list;
         std::unordered_map<Wrapper<K>, typename decltype(_list)::iterator> _map;
 
     public:
         Cache() noexcept = default;
 
-        T* operator[](const K& key) noexcept {
+        V* operator[](const K& key) noexcept {
             auto map_iter{ _map.find(key) };
             if (map_iter == _map.end()) {
                 return {};
@@ -194,7 +194,7 @@ namespace gm {
         }
 
         template <class... Args>
-        T* emplace(const K& key, Args&&... args) noexcept {
+        V* emplace(const K& key, Args&&... args) noexcept {
             auto map_iter{ _map.find(key) };
             if (map_iter != _map.end()) {
                 return {};
@@ -205,7 +205,7 @@ namespace gm {
                 _list.pop_front();
             }
 
-            auto list_iter{ _list.emplace(_list.end(), key, T{ std::forward<Args>(args)... }) };
+            auto list_iter{ _list.emplace(_list.end(), key, V{ std::forward<Args>(args)... }) };
             _map.emplace_hint(map_iter, list_iter->first, list_iter);
             return &list_iter->second;
         }
