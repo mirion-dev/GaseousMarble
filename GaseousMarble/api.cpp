@@ -13,18 +13,18 @@ std::unordered_map<std::u8string, Font> font_map;
 Draw draw;
 
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
-    std::u8string name{ font_name };
-    if (name.empty()) {
+    std::u8string key{ font_name };
+    if (key.empty()) {
         return -100; // invalid argument
     }
 
-    auto iter{ font_map.find(name) };
+    auto iter{ font_map.find(key) };
     if (iter != font_map.end()) {
         return 1; // font already exists
     }
 
     try {
-        font_map.emplace_hint(iter, name, Font{ name, sprite_path });
+        font_map.emplace_hint(iter, key, Font{ key, sprite_path });
     }
     catch (Font::Error error) {
         return static_cast<int>(error);
@@ -33,14 +33,14 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
 }
 
 API Real gm_free(StringView font_name) noexcept {
-    std::u8string name{ font_name };
-    auto iter{ font_map.find(name) };
+    std::u8string key{ font_name };
+    auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
         return 1; // font not found
     }
 
     auto option{ draw.option() };
-    if (option.font->name() == name) {
+    if (option.font->name() == key) {
         option.font = {};
         draw.set_option(option);
     }
@@ -90,8 +90,8 @@ API Real gm_height(StringView text) noexcept {
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
-    std::u8string name{ font_name };
-    auto iter{ font_map.find(name) };
+    std::u8string key{ font_name };
+    auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
         return -1; // font not found
     }

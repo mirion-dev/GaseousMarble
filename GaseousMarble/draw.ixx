@@ -34,49 +34,6 @@ namespace gm {
         Layout layout;
     };
 
-    template <usize N>
-        requires (N > 0)
-    class Cache {
-        std::list<std::pair<std::u8string, Text>> _list;
-        std::unordered_map<std::u8string_view, typename decltype(_list)::iterator> _map;
-
-    public:
-        Cache() noexcept = default;
-
-        Text* at(std::u8string_view str) noexcept {
-            auto map_iter{ _map.find(str) };
-            if (map_iter == _map.end()) {
-                return {};
-            }
-
-            auto list_iter{ map_iter->second };
-            _list.splice(_list.end(), _list, list_iter);
-            return &list_iter->second;
-        }
-
-        template <class... Args>
-        Text* emplace(std::u8string_view str, Args&&... args) noexcept {
-            auto map_iter{ _map.find(str) };
-            if (map_iter != _map.end()) {
-                return {};
-            }
-
-            if (_map.size() == N) {
-                _map.erase(_list.front().first);
-                _list.pop_front();
-            }
-
-            auto list_iter{ _list.emplace(_list.end(), str, Text{ std::forward<Args>(args)... }) };
-            _map.emplace_hint(map_iter, list_iter->first, list_iter);
-            return &list_iter->second;
-        }
-
-        void clear() noexcept {
-            _map.clear();
-            _list.clear();
-        }
-    };
-
     export class Draw {
     public:
         struct Option {
@@ -115,7 +72,7 @@ namespace gm {
         static constexpr usize CACHE_SIZE{ 1024 };
 
         Option _option;
-        Cache<CACHE_SIZE> _cache;
+        Cache<std::u8string, Text, CACHE_SIZE> _cache;
 
     public:
         const Option& option() const noexcept {
@@ -137,7 +94,8 @@ namespace gm {
         }
 
         Result<Text, Warning, Error> create_text(std::u8string_view str) noexcept {
-            auto ptr_text{ _cache.at(str) };
+            std::u8string key{ str };
+            auto ptr_text{ _cache[key] };
             if (ptr_text != nullptr) {
                 return Payload{ *ptr_text, Warning::no_warning };
             }
@@ -160,11 +118,11 @@ namespace gm {
 
             bool ok{};
             text.str.resize_and_overwrite(
-                str.size(),
+                key.size(),
                 [&](c16* ptr, usize) noexcept {
                     usize size{};
                     ok = unicode_for_each(
-                        str,
+                        key,
                         [&](c32 ch) noexcept {
                             if (glyphs.contains(ch) || is_line_break(ch)) {
                                 U16_APPEND_UNSAFE(ptr, size, ch);
@@ -286,7 +244,7 @@ namespace gm {
             }
             push_line(false, true);
 
-            return Payload{ *_cache.emplace(str, std::move(text)), warning };
+            return Payload{ *_cache.emplace(key, std::move(text)), warning };
         }
 
         Error text(f64 x, f64 y, const Text& text) const noexcept {
