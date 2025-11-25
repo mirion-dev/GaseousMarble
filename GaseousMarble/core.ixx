@@ -173,7 +173,7 @@ namespace gm {
     export template <class K, class V, usize N>
         requires (N > 0)
     class Cache {
-        // workaround for the compiler bug DevCom-10969873
+        // workaround for DevCom-10969873
         static constexpr std::hash<Wrapper<K>> DUMMY;
 
         std::list<std::pair<K, V>> _list;
