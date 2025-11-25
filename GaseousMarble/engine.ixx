@@ -54,7 +54,7 @@ namespace gm {
 
         BasicStringView(std::nullptr_t) noexcept = delete;
 
-        // `str` must point to a Delphi UnicodeString structure
+        // `str` must represent a Delphi UnicodeString
         BasicStringView(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept :
             _data{ static_cast<std::basic_string_view<C>>(str).data() } {}
 
@@ -111,6 +111,10 @@ namespace gm {
             ++_header()->ref_count;
         }
 
+        BasicString(BasicString&& other) noexcept {
+            swap(other);
+        }
+
         ~BasicString() noexcept {
             if (--_header()->ref_count == 0) {
                 delete[](_data - HEADER_SIZE);
@@ -119,8 +123,21 @@ namespace gm {
 
         BasicString& operator=(const BasicString& other) noexcept {
             BasicString temp{ other };
-            std::swap(_data, temp._data);
+            swap(temp);
             return *this;
+        }
+
+        BasicString& operator=(BasicString&& other) noexcept {
+            swap(other);
+            return *this;
+        }
+
+        void swap(BasicString& other) noexcept {
+            std::swap(_data, other._data);
+        }
+
+        friend void swap(BasicString& left, BasicString& right) noexcept {
+            left.swap(right);
         }
 
         operator std::basic_string_view<C>() const noexcept {
@@ -207,7 +224,7 @@ namespace gm {
         static constexpr auto RESOURCE_PTR{ reinterpret_cast<Resource*>(0x00686b1c) };
 
     public:
-        enum class Id : u16 {
+        enum class Id {
 #include "detail/FunctionId.inc"
         };
 
