@@ -63,6 +63,10 @@ namespace gm {
             _ptr.reset(id);
         }
 
+        bool empty() const noexcept {
+            return _ptr == nullptr;
+        }
+
         usize id() const noexcept {
             return _ptr.get().id;
         }
@@ -78,10 +82,10 @@ namespace gm {
         };
 
         enum class Error {
-            no_error             = 0,
-            failed_to_open_file  = -1,
-            invalid_header       = -2,
-            data_corrupted       = -3,
+            no_error              = 0,
+            failed_to_open_file   = -1,
+            invalid_header        = -2,
+            data_corrupted        = -3,
             failed_to_load_sprite = -4
         };
 
@@ -132,28 +136,32 @@ namespace gm {
             throw Error::failed_to_load_sprite;
         }
 
+        bool empty() const noexcept {
+            return _sprite.empty();
+        }
+
         u16 height() const noexcept {
-            assert(_sprite.id() != Sprite::ID_NULL);
+            assert(!empty());
             return _height;
         }
 
         i16 top() const noexcept {
-            assert(_sprite.id() != Sprite::ID_NULL);
+            assert(!empty());
             return _top;
         }
 
         std::u8string_view name() const noexcept {
-            assert(_sprite.id() != Sprite::ID_NULL);
+            assert(!empty());
             return _name;
         }
 
         const Sprite& sprite() const noexcept {
-            assert(_sprite.id() != Sprite::ID_NULL);
+            assert(!empty());
             return _sprite;
         }
 
         const auto& glyphs() const noexcept {
-            assert(_sprite.id() != Sprite::ID_NULL);
+            assert(!empty());
             return _glyphs;
         }
     };

@@ -59,7 +59,11 @@ namespace gm {
             _data{ static_cast<std::basic_string_view<C>>(str).data() } {}
 
         operator std::basic_string_view<C>() const noexcept {
-            return { _data, _header()->size };
+            return { _data, size() };
+        }
+
+        bool empty() const noexcept {
+            return size() == 0;
         }
 
         usize size() const noexcept {
@@ -141,7 +145,11 @@ namespace gm {
         }
 
         operator std::basic_string_view<C>() const noexcept {
-            return { _data, _header()->size };
+            return { _data, size() };
+        }
+
+        bool empty() const noexcept {
+            return size() == 0;
         }
 
         usize size() const noexcept {
@@ -245,18 +253,37 @@ namespace gm {
             return RESOURCE_PTR->count;
         }
 
+        bool empty() const noexcept {
+            return _data == nullptr;
+        }
+
+        std::u8string_view name() const noexcept {
+            assert(!empty());
+            return { _data->name, _data->name_size };
+        }
+
+        usize arg_count() const noexcept {
+            assert(!empty());
+            return _data->arg_count;
+        }
+
+        void* address() const noexcept {
+            assert(!empty());
+            return _data->address;
+        }
+
         Value operator()(auto&&... args) const noexcept {
-            assert(_data != nullptr);
+            assert(!empty());
 
             // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr usize ARGS_COUNT{ sizeof...(args) };
-            assert(_data->arg_count == ARG_VARIABLE || _data->arg_count == ARGS_COUNT);
+            assert(arg_count() == ARG_VARIABLE || arg_count() == ARGS_COUNT);
 
             std::array<Value, ARGS_COUNT> args_arr{ static_cast<Value>(args)... };
             Value res;
             Value* args_ptr{ args_arr.data() };
             Value* res_ptr{ &res };
-            void* func_ptr{ _data->address };
+            void* func_ptr{ address() };
 
             // @formatter:off
             __asm {
@@ -268,21 +295,6 @@ namespace gm {
             // @formatter:on
 
             return res;
-        }
-
-        std::u8string_view name() const noexcept {
-            assert(_data != nullptr);
-            return { _data->name, _data->name_size };
-        }
-
-        usize arg_count() const noexcept {
-            assert(_data != nullptr);
-            return _data->arg_count;
-        }
-
-        void* address() const noexcept {
-            assert(_data != nullptr);
-            return _data->address;
         }
     };
 
