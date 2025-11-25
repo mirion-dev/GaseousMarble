@@ -18,14 +18,35 @@ namespace gm {
         usize size;
     };
 
+    template <class C>
+    static constexpr u16 CODE_PAGE{ sizeof(C) == 1 ? 65001 : sizeof(C) == 2 ? 1200 : 12000 };
+
+    template <class C>
+    class EmptyString {
+        StringHeader _header{ CODE_PAGE<C>, sizeof(C), 1, 0 };
+        C _data[1]{};
+
+    public:
+        C* data() noexcept {
+            return _data;
+        }
+
+        const C* data() const noexcept {
+            return _data;
+        }
+    };
+
+    template <class C>
+    EmptyString<C> empty_string;
+
     export template <class C>
     class BasicStringView {
         static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
 
-        const C* _data{};
+        const C* _data{ empty_string<C>.data() };
 
         auto _header() const noexcept {
-            return reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE);
+            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE));
         }
 
     public:
@@ -33,22 +54,19 @@ namespace gm {
 
         BasicStringView(std::nullptr_t) noexcept = delete;
 
-        // `str` must point to a Delphi UnicodeString structure or accessing its header is undefined
+        // `str` must point to a Delphi UnicodeString structure
         BasicStringView(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept :
             _data{ static_cast<std::basic_string_view<C>>(str).data() } {}
 
         operator std::basic_string_view<C>() const noexcept {
-            assert(_data != nullptr);
             return { _data, _header()->size };
         }
 
         u32 size() const noexcept {
-            assert(_data != nullptr);
             return _header()->size;
         }
 
         u32 ref_count() const noexcept {
-            assert(_data != nullptr);
             return _header()->ref_count;
         }
 
@@ -60,25 +78,19 @@ namespace gm {
     export template <class C>
     class BasicString {
         static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
-        static constexpr u16 CP_UTF8{ 65001 };
-        static constexpr u16 CP_UTF16{ 1200 };
-        static constexpr u16 CP_UTF32{ 12000 };
 
-        C* _data;
+        C* _data{ empty_string<C>.data() };
 
         auto _header() noexcept {
-            return reinterpret_cast<StringHeader*>(_data - HEADER_SIZE);
+            return std::launder(reinterpret_cast<StringHeader*>(_data - HEADER_SIZE));
         }
 
         auto _header() const noexcept {
-            return reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE);
+            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE));
         }
 
     public:
         BasicString() noexcept {
-            static BasicString empty_str{ u8"" };
-            _data = empty_str._data;
-
             ++_header()->ref_count;
         }
 
@@ -87,14 +99,9 @@ namespace gm {
         BasicString(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept {
             auto view{ static_cast<std::basic_string_view<C>>(str) };
 
-            _data = new C[HEADER_SIZE + view.size() + 1] + HEADER_SIZE;
-
-            new(_header()) StringHeader{
-                sizeof(C) == 1 ? CP_UTF8 : sizeof(C) == 2 ? CP_UTF16 : CP_UTF32,
-                sizeof(C),
-                1,
-                view.size()
-            };
+            _data = new C[HEADER_SIZE + view.size() + 1];
+            new(_data) StringHeader{ CODE_PAGE<C>, sizeof(C), 1, view.size() };
+            _data += HEADER_SIZE;
             new(std::uninitialized_copy(view.begin(), view.end(), _data)) C{};
         }
 
@@ -154,18 +161,18 @@ namespace gm {
         };
 
     private:
-        Type _type;
-        Real _real;
+        Type _type{ Type::real };
+        Real _real{};
         String _string;
 
     public:
-        Value(Real real = {}) noexcept :
-            _type{ Type::real },
+        Value() noexcept = default;
+
+        Value(Real real) noexcept :
             _real{ real } {}
 
         Value(StringView string) noexcept :
             _type{ Type::string },
-            _real{},
             _string{ string } {}
 
         operator Real() const noexcept {
