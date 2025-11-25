@@ -62,11 +62,11 @@ namespace gm {
             return { _data, _header()->size };
         }
 
-        u32 size() const noexcept {
+        usize size() const noexcept {
             return _header()->size;
         }
 
-        u32 ref_count() const noexcept {
+        usize ref_count() const noexcept {
             return _header()->ref_count;
         }
 
@@ -144,11 +144,11 @@ namespace gm {
             return { _data, _header()->size };
         }
 
-        u32 size() const noexcept {
+        usize size() const noexcept {
             return _header()->size;
         }
 
-        u32 ref_count() const noexcept {
+        usize ref_count() const noexcept {
             return _header()->ref_count;
         }
 
@@ -178,7 +178,7 @@ namespace gm {
         };
 
     private:
-        Type _type{ Type::real };
+        Type _type{};
         Real _real{};
         String _string;
 
@@ -252,22 +252,22 @@ namespace gm {
             static constexpr usize ARGS_COUNT{ sizeof...(args) };
             assert(_data->arg_count == ARG_VARIABLE || _data->arg_count == ARGS_COUNT);
 
-            std::array<Value, ARGS_COUNT> arr{ static_cast<Value>(args)... };
-            Value ret;
-            Value* args_ptr{ arr.data() };
-            Value* ret_ptr{ &ret };
-            void* fn_ptr{ _data->address };
+            std::array<Value, ARGS_COUNT> args_arr{ static_cast<Value>(args)... };
+            Value res;
+            Value* args_ptr{ args_arr.data() };
+            Value* res_ptr{ &res };
+            void* func_ptr{ _data->address };
 
             // @formatter:off
             __asm {
                 push args_ptr;
                 push ARGS_COUNT;
-                push ret_ptr;
-                call fn_ptr;
+                push res_ptr;
+                call func_ptr;
             }
             // @formatter:on
 
-            return ret;
+            return res;
         }
 
         std::u8string_view name() const noexcept {
