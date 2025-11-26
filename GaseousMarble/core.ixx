@@ -1,4 +1,4 @@
-﻿module;
+module;
 
 #include <icu.h>
 
@@ -114,30 +114,6 @@ namespace gm {
         }
         return true;
     }
-
-#pragma endregion
-
-#pragma region error handling
-
-    export template <class R, class W>
-    struct Payload {
-        R result;
-        W warning;
-    };
-
-    export template <class W>
-    struct Payload<void, W> {
-        W warning;
-    };
-
-    template <class R, class W>
-    Payload(R, W) -> Payload<R, W>;
-
-    template <class W>
-    Payload(W) -> Payload<void, W>;
-
-    export template <class R, class W, class E>
-    using Result = std::expected<Payload<R, W>, E>;
 
 #pragma endregion
 

@@ -1,4 +1,4 @@
-﻿#ifdef GASEOUSMARBLE_EXPORTS
+#ifdef GASEOUSMARBLE_EXPORTS
 #define API extern "C" __declspec(dllexport)
 #else
 #define API extern "C" __declspec(dllimport)
@@ -13,27 +13,27 @@ std::unordered_map<std::u8string, Font> font_map;
 Text::Option option;
 Cache<std::u8string, Text, 1024> cache;
 
-Result<Text, Text::Warning, Text::Error> create_text(std::u8string_view str) noexcept {
+std::expected<Text, Text::Error> create_text(std::u8string_view str) noexcept {
     std::u8string key{ str };
     auto ptr{ cache[key] };
     if (ptr != nullptr) {
-        return Payload{ *ptr, Text::Warning::no_warning };
+        return *ptr;
     }
 
-    auto res{ Text::create(str, option) };
-    if (!res) {
-        return std::unexpected{ res.error() };
+    try {
+        return *cache.emplace(key, Text{ str, option });
     }
-
-    return Payload{ *cache.emplace(key, std::move(res->result)), res->warning };
+    catch (Text::Error error) {
+        return std::unexpected{ error };
+    }
 }
 
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
-    std::u8string key{ font_name };
-    if (key.empty()) {
+    if (font_name.empty()) {
         return -100; // invalid argument
     }
 
+    std::u8string key{ font_name };
     auto iter{ font_map.find(key) };
     if (iter != font_map.end()) {
         return 1; // font already exists
@@ -57,6 +57,7 @@ API Real gm_free(StringView font_name) noexcept {
 
     if (option.font->name() == key) {
         option.font = {};
+        cache.clear();
     }
 
     font_map.erase(iter);
@@ -65,40 +66,40 @@ API Real gm_free(StringView font_name) noexcept {
 
 API Real gm_clear() noexcept {
     option.font = {};
+    cache.clear();
     font_map.clear();
     return 0;
 }
 
 API Real gm_draw(Real x, Real y, StringView str) noexcept {
-    auto res_text{ create_text(str) };
-    if (!res_text) {
-        return static_cast<int>(res_text.error());
+    auto exp{
+        create_text(str).and_then([&](const Text& text) noexcept {
+            return text.draw(x, y, option);
+        })
+    };
+    if (!exp) {
+        return static_cast<int>(exp.error());
     }
 
-    auto error{ res_text->result.draw(x, y, option) };
-    if (error != Text::Error::no_error) {
-        return static_cast<int>(error);
-    }
-
-    return static_cast<int>(res_text->warning);
+    return 0;
 }
 
 API Real gm_width(StringView str) noexcept {
-    auto res_text{ create_text(str) };
-    if (!res_text) {
-        return static_cast<int>(res_text.error());
+    auto exp{ create_text(str) };
+    if (!exp) {
+        return static_cast<int>(exp.error());
     }
 
-    return res_text->result.width();
+    return exp->width();
 }
 
 API Real gm_height(StringView text) noexcept {
-    auto res_text{ create_text(text) };
-    if (!res_text) {
-        return static_cast<int>(res_text.error());
+    auto exp{ create_text(text) };
+    if (!exp) {
+        return static_cast<int>(exp.error());
     }
 
-    return res_text->result.height();
+    return exp->height();
 }
 
 API Real gm_set_font(StringView font_name) noexcept {

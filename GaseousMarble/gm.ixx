@@ -1,4 +1,4 @@
-﻿export module gm;
+export module gm;
 
 export import :core;
 export import :engine;

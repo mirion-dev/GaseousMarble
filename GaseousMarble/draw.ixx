@@ -1,4 +1,4 @@
-﻿module;
+module;
 
 #include <icu.h>
 
@@ -33,11 +33,6 @@ namespace gm {
             f64 rotation{};
         };
 
-        enum class Warning {
-            no_warning     = 0,
-            missing_glyphs = 1
-        };
-
         enum class Error {
             no_error           = 0,
             invalid_encoding   = -1,
@@ -67,15 +62,12 @@ namespace gm {
         std::u16string _str;
         Layout _layout{};
 
+    public:
         Text() noexcept = default;
 
-    public:
-        static Result<Text, Warning, Error> create(std::u8string_view str, const Option& option) noexcept {
-            Text text;
-            Warning warning{};
-
+        Text(std::u8string_view str, const Option& option) {
             if (option.font == nullptr) {
-                return std::unexpected{ Error::font_unspecified };
+                throw Error::font_unspecified;
             }
 
             auto& glyphs{ option.font->glyphs() };
@@ -88,7 +80,7 @@ namespace gm {
             f64 max_line_length{ std::max(option.max_line_length, 0.) / option.scale_x };
 
             bool ok{};
-            text._str.resize_and_overwrite(
+            _str.resize_and_overwrite(
                 str.size(),
                 [&](c16* ptr, usize) noexcept {
                     usize size{};
@@ -98,9 +90,6 @@ namespace gm {
                             if (glyphs.contains(ch) || is_line_break(ch)) {
                                 U16_APPEND_UNSAFE(ptr, size, ch);
                             }
-                            else {
-                                warning = Warning::missing_glyphs;
-                            }
                             return true;
                         }
                     );
@@ -108,10 +97,10 @@ namespace gm {
                 }
             );
             if (!ok) {
-                return std::unexpected{ Error::invalid_encoding };
+                throw Error::invalid_encoding;
             }
 
-            const c16* first{ text._str.data() };
+            const c16* first{ _str.data() };
             const c16* last{ first };
             bool cont{};
 
@@ -145,9 +134,9 @@ namespace gm {
                         line.height *= line_height;
                     }
 
-                    text._layout.lines.emplace_back(std::move(line));
-                    text._layout.width = std::max(text._layout.width, line.width);
-                    text._layout.height += line.height;
+                    _layout.lines.emplace_back(std::move(line));
+                    _layout.width = std::max(_layout.width, line.width);
+                    _layout.height += line.height;
 
                     line = {};
                     cursor = 0;
@@ -210,17 +199,15 @@ namespace gm {
                 }
             };
 
-            if (!word_break_for_each(text._str, push_word)) {
-                return std::unexpected{ Error::failed_to_tokenize };
+            if (!word_break_for_each(_str, push_word)) {
+                throw Error::failed_to_tokenize;
             }
             push_line(false, true);
-
-            return Payload{ std::move(text), warning };
         }
 
-        Error draw(f64 x, f64 y, const Option& option) const noexcept {
+        std::expected<void, Error> draw(f64 x, f64 y, const Option& option) const noexcept {
             if (option.font == nullptr) {
-                return Error::font_unspecified;
+                return std::unexpected{ Error::font_unspecified };
             }
 
             x += option.offset_x / option.scale_x;

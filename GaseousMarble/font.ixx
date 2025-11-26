@@ -108,7 +108,7 @@ namespace gm {
             if (!file.is_open()) {
                 throw Error::failed_to_open_file;
             }
-
+            
             static constexpr char GLYPH_SIGN[]{ 'G', 'L', 'Y', 1, 0, 0 };
             char sign[sizeof(GLYPH_SIGN)];
             if (!file.read(sign, sizeof(sign)) || !std::ranges::equal(sign, GLYPH_SIGN)) {

@@ -1,4 +1,4 @@
-﻿from generate_font import *
+from generate_font import *
 import shutil
 
 FONT_PATH = 'simsun.ttf'
