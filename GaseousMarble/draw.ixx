@@ -11,30 +11,7 @@ import :font;
 
 namespace gm {
 
-    export struct Text {
-        struct Token {
-            std::u16string_view str;
-            bool continuous;
-        };
-
-        struct Line {
-            std::vector<Token> tokens;
-            f64 width;
-            f64 height;
-            f64 justified_spacing;
-        };
-
-        struct Layout {
-            std::vector<Line> lines;
-            f64 width;
-            f64 height;
-        };
-
-        std::u16string str;
-        Layout layout;
-    };
-
-    export class Draw {
+    export class Text {
     public:
         struct Option {
             const Font* font{};
@@ -69,60 +46,54 @@ namespace gm {
         };
 
     private:
-        static constexpr usize CACHE_SIZE{ 1024 };
+        struct Token {
+            std::u16string_view str;
+            bool continuous;
+        };
 
-        Option _option;
-        Cache<std::u8string, Text, CACHE_SIZE> _cache;
+        struct Line {
+            std::vector<Token> tokens;
+            f64 width;
+            f64 height;
+            f64 justified_spacing;
+        };
+
+        struct Layout {
+            std::vector<Line> lines;
+            f64 width;
+            f64 height;
+        };
+
+        std::u16string _str;
+        Layout _layout{};
+
+        Text() noexcept = default;
 
     public:
-        const Option& option() const noexcept {
-            return _option;
-        }
-
-        void set_option(const Option& option) noexcept {
-            if (_option.font != option.font
-                || _option.justified != option.justified
-                || _option.letter_spacing != option.letter_spacing
-                || _option.word_spacing != option.word_spacing
-                || _option.paragraph_spacing != option.paragraph_spacing
-                || _option.line_height != option.line_height
-                || _option.max_line_length != option.max_line_length
-                || _option.scale_x != option.scale_x) {
-                _cache.clear();
-            }
-            _option = option;
-        }
-
-        Result<Text, Warning, Error> create_text(std::u8string_view str) noexcept {
-            std::u8string key{ str };
-            auto ptr_text{ _cache[key] };
-            if (ptr_text != nullptr) {
-                return Payload{ *ptr_text, Warning::no_warning };
-            }
-
-            Text text{};
+        static Result<Text, Warning, Error> create(std::u8string_view str, const Option& option) noexcept {
+            Text text;
             Warning warning{};
 
-            if (_option.font == nullptr) {
+            if (option.font == nullptr) {
                 return std::unexpected{ Error::font_unspecified };
             }
 
-            auto& glyphs{ _option.font->glyphs() };
-            auto glyph_height{ static_cast<f64>(_option.font->height()) };
-            bool justified{ _option.justified };
-            f64 letter_spacing{ _option.letter_spacing };
-            f64 word_spacing{ _option.word_spacing };
-            f64 paragraph_spacing{ _option.paragraph_spacing };
-            f64 line_height{ _option.line_height };
-            f64 max_line_length{ std::max(_option.max_line_length, 0.) / _option.scale_x };
+            auto& glyphs{ option.font->glyphs() };
+            auto glyph_height{ static_cast<f64>(option.font->height()) };
+            bool justified{ option.justified };
+            f64 letter_spacing{ option.letter_spacing };
+            f64 word_spacing{ option.word_spacing };
+            f64 paragraph_spacing{ option.paragraph_spacing };
+            f64 line_height{ option.line_height };
+            f64 max_line_length{ std::max(option.max_line_length, 0.) / option.scale_x };
 
             bool ok{};
-            text.str.resize_and_overwrite(
-                key.size(),
+            text._str.resize_and_overwrite(
+                str.size(),
                 [&](c16* ptr, usize) noexcept {
                     usize size{};
                     ok = unicode_for_each(
-                        key,
+                        str,
                         [&](c32 ch) noexcept {
                             if (glyphs.contains(ch) || is_line_break(ch)) {
                                 U16_APPEND_UNSAFE(ptr, size, ch);
@@ -140,11 +111,11 @@ namespace gm {
                 return std::unexpected{ Error::invalid_encoding };
             }
 
-            const c16* first{ text.str.data() };
+            const c16* first{ text._str.data() };
             const c16* last{ first };
             bool cont{};
 
-            Text::Line line{};
+            Line line{};
             f64 cursor{};
             usize justified_count{};
 
@@ -174,9 +145,9 @@ namespace gm {
                         line.height *= line_height;
                     }
 
-                    text.layout.lines.emplace_back(std::move(line));
-                    text.layout.width = std::max(text.layout.width, line.width);
-                    text.layout.height += line.height;
+                    text._layout.lines.emplace_back(std::move(line));
+                    text._layout.width = std::max(text._layout.width, line.width);
+                    text._layout.height += line.height;
 
                     line = {};
                     cursor = 0;
@@ -239,44 +210,43 @@ namespace gm {
                 }
             };
 
-            if (!word_break_for_each(text.str, push_word)) {
+            if (!word_break_for_each(text._str, push_word)) {
                 return std::unexpected{ Error::failed_to_tokenize };
             }
             push_line(false, true);
 
-            return Payload{ *_cache.emplace(key, std::move(text)), warning };
+            return Payload{ std::move(text), warning };
         }
 
-        Error text(f64 x, f64 y, const Text& text) const noexcept {
-            if (_option.font == nullptr) {
+        Error draw(f64 x, f64 y, const Option& option) const noexcept {
+            if (option.font == nullptr) {
                 return Error::font_unspecified;
             }
 
-            x += _option.offset_x / _option.scale_x;
-            y += _option.offset_y / _option.scale_y + _option.font->top();
+            x += option.offset_x / option.scale_x;
+            y += option.offset_y / option.scale_y + option.font->top();
             f64 origin_x{ x }, origin_y{ y };
 
-            auto& layout{ text.layout };
-            if (_option.valign == 0) {
-                y -= layout.height / 2;
+            if (option.valign == 0) {
+                y -= _layout.height / 2;
             }
-            else if (_option.valign > 0) {
-                y -= layout.height;
+            else if (option.valign > 0) {
+                y -= _layout.height;
             }
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
-            u16 height{ _option.font->height() };
-            usize spr_id{ _option.font->sprite().id() };
-            auto& glyphs{ _option.font->glyphs() };
-            f64 radian{ -_option.rotation / 180 * std::numbers::pi };
+            u16 height{ option.font->height() };
+            usize spr_id{ option.font->sprite().id() };
+            auto& glyphs{ option.font->glyphs() };
+            f64 radian{ -option.rotation / 180 * std::numbers::pi };
             f64 cos{ std::cos(radian) };
             f64 sin{ std::sin(radian) };
-            for (auto& [tokens, line_width, line_height, justified_spacing] : layout.lines) {
+            for (auto& [tokens, line_width, line_height, justified_spacing] : _layout.lines) {
                 f64 cursor{ x };
-                if (_option.halign == 0) {
+                if (option.halign == 0) {
                     cursor -= line_width / 2;
                 }
-                else if (_option.halign > 0) {
+                else if (option.halign > 0) {
                     cursor -= line_width;
                 }
 
@@ -296,21 +266,21 @@ namespace gm {
                                 spr_y,
                                 width,
                                 height,
-                                draw_x * _option.scale_x,
-                                draw_y * _option.scale_y,
-                                _option.scale_x,
-                                _option.scale_y,
-                                _option.rotation,
-                                _option.color_top,
-                                _option.color_top,
-                                _option.color_bottom,
-                                _option.color_bottom,
-                                _option.alpha
+                                draw_x * option.scale_x,
+                                draw_y * option.scale_y,
+                                option.scale_x,
+                                option.scale_y,
+                                option.rotation,
+                                option.color_top,
+                                option.color_top,
+                                option.color_bottom,
+                                option.color_bottom,
+                                option.alpha
                             );
 
-                            cursor += advance + _option.letter_spacing;
+                            cursor += advance + option.letter_spacing;
                             if (is_white_space(ch)) {
-                                cursor += _option.word_spacing;
+                                cursor += option.word_spacing;
                             }
                             if (continuous) {
                                 cursor += justified_spacing;
@@ -327,6 +297,14 @@ namespace gm {
             }
 
             return {};
+        }
+
+        f64 width() const noexcept {
+            return std::abs(_layout.width);
+        }
+
+        f64 height() const noexcept {
+            return std::abs(_layout.height);
         }
     };
 

@@ -10,7 +10,23 @@ import gm;
 using namespace gm;
 
 std::unordered_map<std::u8string, Font> font_map;
-Draw draw;
+Text::Option option;
+Cache<std::u8string, Text, 1024> cache;
+
+Result<Text, Text::Warning, Text::Error> create_text(std::u8string_view str) noexcept {
+    std::u8string key{ str };
+    auto ptr{ cache[key] };
+    if (ptr != nullptr) {
+        return Payload{ *ptr, Text::Warning::no_warning };
+    }
+
+    auto res{ Text::create(str, option) };
+    if (!res) {
+        return std::unexpected{ res.error() };
+    }
+
+    return Payload{ *cache.emplace(key, std::move(res->result)), res->warning };
+}
 
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
     std::u8string key{ font_name };
@@ -39,10 +55,8 @@ API Real gm_free(StringView font_name) noexcept {
         return 1; // font not found
     }
 
-    auto option{ draw.option() };
     if (option.font->name() == key) {
         option.font = {};
-        draw.set_option(option);
     }
 
     font_map.erase(iter);
@@ -50,21 +64,19 @@ API Real gm_free(StringView font_name) noexcept {
 }
 
 API Real gm_clear() noexcept {
-    auto option{ draw.option() };
     option.font = {};
-    draw.set_option(option);
     font_map.clear();
     return 0;
 }
 
 API Real gm_draw(Real x, Real y, StringView str) noexcept {
-    auto res_text{ draw.create_text(str) };
+    auto res_text{ create_text(str) };
     if (!res_text) {
         return static_cast<int>(res_text.error());
     }
 
-    auto error{ draw.text(x, y, res_text->result) };
-    if (error != Draw::Error::no_error) {
+    auto error{ res_text->result.draw(x, y, option) };
+    if (error != Text::Error::no_error) {
         return static_cast<int>(error);
     }
 
@@ -72,21 +84,21 @@ API Real gm_draw(Real x, Real y, StringView str) noexcept {
 }
 
 API Real gm_width(StringView str) noexcept {
-    auto res_text{ draw.create_text(str) };
+    auto res_text{ create_text(str) };
     if (!res_text) {
         return static_cast<int>(res_text.error());
     }
 
-    return std::abs(res_text->result.layout.width);
+    return res_text->result.width();
 }
 
 API Real gm_height(StringView text) noexcept {
-    auto res_text{ draw.create_text(text) };
+    auto res_text{ create_text(text) };
     if (!res_text) {
         return static_cast<int>(res_text.error());
     }
 
-    return std::abs(res_text->result.layout.height);
+    return res_text->result.height();
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
@@ -96,55 +108,47 @@ API Real gm_set_font(StringView font_name) noexcept {
         return -1; // font not found
     }
 
-    auto option{ draw.option() };
-    option.font = &iter->second;
-    draw.set_option(option);
+    Font* new_font{ &iter->second };
+    if (option.font != new_font) {
+        option.font = new_font;
+        cache.clear();
+    }
     return 0;
 }
 
 API Real gm_set_halign(Real align) noexcept {
-    auto option{ draw.option() };
     option.halign = static_cast<i8>(align);
-    draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_valign(Real align) noexcept {
-    auto option{ draw.option() };
     option.valign = static_cast<i8>(align);
-    draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_justified(Real justified) noexcept {
-    auto option{ draw.option() };
-    option.justified = justified;
-    draw.set_option(option);
+    if (option.justified != static_cast<bool>(justified)) {
+        option.justified = justified;
+        cache.clear();
+    }
     return 0;
 }
 
 API Real gm_set_align(Real halign, Real valign) noexcept {
-    auto option{ draw.option() };
-    option.halign = static_cast<i8>(halign);
-    option.valign = static_cast<i8>(valign);
-    draw.set_option(option);
+    gm_set_halign(halign);
+    gm_set_valign(valign);
     return 0;
 }
 
 API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
-    auto option{ draw.option() };
-    option.halign = static_cast<i8>(halign);
-    option.valign = static_cast<i8>(valign);
-    option.justified = justified;
-    draw.set_option(option);
+    gm_set_align(halign, valign);
+    gm_set_justified(justified);
     return 0;
 }
 
 API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
-    auto option{ draw.option() };
     option.color_top = static_cast<u32>(color_top);
     option.color_bottom = static_cast<u32>(color_bottom);
-    draw.set_option(option);
     return 0;
 }
 
@@ -154,52 +158,53 @@ API Real gm_set_color(Real color) noexcept {
 }
 
 API Real gm_set_alpha(Real alpha) noexcept {
-    auto option{ draw.option() };
     option.alpha = alpha;
-    draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_letter_spacing(Real spacing) noexcept {
-    auto option{ draw.option() };
-    option.letter_spacing = spacing;
-    draw.set_option(option);
+    if (option.letter_spacing != spacing) {
+        option.letter_spacing = spacing;
+        cache.clear();
+    }
     return 0;
 }
 
 API Real gm_set_word_spacing(Real spacing) noexcept {
-    auto option{ draw.option() };
-    option.word_spacing = spacing;
-    draw.set_option(option);
+    if (option.word_spacing != spacing) {
+        option.word_spacing = spacing;
+        cache.clear();
+    }
     return 0;
 }
 
 API Real gm_set_paragraph_spacing(Real spacing) noexcept {
-    auto option{ draw.option() };
-    option.paragraph_spacing = spacing;
-    draw.set_option(option);
+    if (option.paragraph_spacing != spacing) {
+        option.paragraph_spacing = spacing;
+        cache.clear();
+    }
     return 0;
 }
 
 API Real gm_set_line_height(Real height) noexcept {
-    auto option{ draw.option() };
-    option.line_height = height;
-    draw.set_option(option);
+    if (option.line_height != height) {
+        option.line_height = height;
+        cache.clear();
+    }
     return 0;
 }
 
 API Real gm_set_max_line_length(Real length) noexcept {
-    auto option{ draw.option() };
-    option.max_line_length = length;
-    draw.set_option(option);
+    if (option.max_line_length != length) {
+        option.max_line_length = length;
+        cache.clear();
+    }
     return 0;
 }
 
 API Real gm_set_offset(Real x, Real y) noexcept {
-    auto option{ draw.option() };
     option.offset_x = x;
     option.offset_y = y;
-    draw.set_option(option);
     return 0;
 }
 
@@ -208,88 +213,87 @@ API Real gm_set_scale(Real x, Real y) noexcept {
         return -1; // invalid argument(s)
     }
 
-    auto option{ draw.option() };
-    option.scale_x = x;
+    if (option.scale_x != x) {
+        option.scale_x = x;
+        cache.clear();
+    }
     option.scale_y = y;
-    draw.set_option(option);
     return 0;
 }
 
 API Real gm_set_rotation(Real theta) noexcept {
-    auto option{ draw.option() };
     option.rotation = theta;
-    draw.set_option(option);
     return 0;
 }
 
 API StringView gm_get_font() noexcept {
-    if (draw.option().font == nullptr) {
+    if (option.font == nullptr) {
         return u8""; // font unspecified
     }
 
-    return draw.option().font->name();
+    return option.font->name();
 }
 
 API Real gm_get_halign() noexcept {
-    return draw.option().halign;
+    return option.halign;
 }
 
 API Real gm_get_valign() noexcept {
-    return draw.option().valign;
+    return option.valign;
 }
 
 API Real gm_is_justified() noexcept {
-    return draw.option().justified;
+    return option.justified;
 }
 
 API Real gm_get_color_top() noexcept {
-    return draw.option().color_top;
+    return option.color_top;
 }
 
 API Real gm_get_color_bottom() noexcept {
-    return draw.option().color_bottom;
+    return option.color_bottom;
 }
 
 API Real gm_get_alpha() noexcept {
-    return draw.option().alpha;
+    return option.alpha;
 }
 
 API Real gm_get_letter_spacing() noexcept {
-    return draw.option().letter_spacing;
+    return option.letter_spacing;
 }
 
 API Real gm_get_word_spacing() noexcept {
-    return draw.option().word_spacing;
+    return option.word_spacing;
 }
 
 API Real gm_get_paragraph_spacing() noexcept {
-    return draw.option().paragraph_spacing;
+    return option.paragraph_spacing;
 }
 
 API Real gm_get_line_height() noexcept {
-    return draw.option().line_height;
+    return option.line_height;
 }
 
 API Real gm_get_max_line_length() noexcept {
-    return draw.option().max_line_length;
+    return option.max_line_length;
 }
 
 API Real gm_get_offset_x() noexcept {
-    return draw.option().offset_x;
+    return option.offset_x;
 }
 
 API Real gm_get_offset_y() noexcept {
-    return draw.option().offset_y;
+    return option.offset_y;
 }
 
 API Real gm_get_scale_x() noexcept {
-    return draw.option().scale_x;
+    return option.scale_x;
 }
 
 API Real gm_get_scale_y() noexcept {
-    return draw.option().scale_y;
+    return option.scale_y;
 }
 
 API Real gm_get_rotation() noexcept {
-    return draw.option().rotation;
+    return option.rotation;
 }
