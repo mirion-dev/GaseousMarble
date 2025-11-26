@@ -13,7 +13,6 @@ namespace gm {
     export class Sprite {
     public:
         enum class Error {
-            no_error             = 0,
             failed_to_add_sprite = -1
         };
 
@@ -82,7 +81,6 @@ namespace gm {
         };
 
         enum class Error {
-            no_error              = 0,
             failed_to_open_file   = -1,
             invalid_header        = -2,
             data_corrupted        = -3,

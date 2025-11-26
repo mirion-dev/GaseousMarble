@@ -34,7 +34,6 @@ namespace gm {
         };
 
         enum class Error {
-            no_error           = 0,
             invalid_encoding   = -1,
             failed_to_tokenize = -2,
             font_unspecified   = -3
