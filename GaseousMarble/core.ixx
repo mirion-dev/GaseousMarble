@@ -158,7 +158,7 @@ namespace gm {
     public:
         Cache() noexcept = default;
 
-        const V* operator[](const K& key) noexcept {
+        V* operator[](const K& key) noexcept {
             auto map_iter{ _map.find(key) };
             if (map_iter == _map.end()) {
                 return {};
@@ -170,7 +170,7 @@ namespace gm {
         }
 
         template <class... Args>
-        const V* emplace(const K& key, Args&&... args) noexcept {
+        V* emplace(const K& key, Args&&... args) noexcept {
             auto map_iter{ _map.find(key) };
             if (map_iter != _map.end()) {
                 return {};
