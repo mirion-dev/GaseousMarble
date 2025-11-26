@@ -229,7 +229,7 @@ namespace gm {
             usize count;
         };
 
-        static constexpr auto RESOURCE_PTR{ reinterpret_cast<Resource*>(0x00686b1c) };
+        static inline const auto _resource_ptr{ reinterpret_cast<Resource*>(0x00686b1c) };
 
     public:
         enum class Id {
@@ -246,11 +246,11 @@ namespace gm {
 
         Function(Id id) noexcept {
             assert(static_cast<usize>(id) < max_id());
-            _data = RESOURCE_PTR->data + static_cast<usize>(id);
+            _data = _resource_ptr->data + static_cast<usize>(id);
         }
 
         static usize max_id() noexcept {
-            return RESOURCE_PTR->count;
+            return _resource_ptr->count;
         }
 
         bool empty() const noexcept {
