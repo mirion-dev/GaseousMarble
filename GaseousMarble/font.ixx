@@ -106,22 +106,27 @@ namespace gm {
             if (!file.is_open()) {
                 throw Error::failed_to_open_file;
             }
-            
-            static constexpr char GLYPH_SIGN[]{ 'G', 'L', 'Y', 1, 0, 0 };
-            char sign[sizeof(GLYPH_SIGN)];
-            if (!file.read(sign, sizeof(sign)) || !std::ranges::equal(sign, GLYPH_SIGN)) {
+
+            auto read{
+                [&](auto& dest) noexcept {
+                    return static_cast<bool>(file.read(reinterpret_cast<char*>(&dest), sizeof(dest)));
+                }
+            };
+
+            static constexpr std::array GLYPH_SIGN{ 'G', 'L', 'Y', '\1', '\0', '\0' };
+            std::array<char, GLYPH_SIGN.size()> sign;
+            if (!read(sign) || sign != GLYPH_SIGN) {
                 throw Error::invalid_header;
             }
 
-            if (!file.read(reinterpret_cast<char*>(&_height), sizeof(_height))
-                || !file.read(reinterpret_cast<char*>(&_top), sizeof(_top))) {
+            if (!read(_height) || !read(_top)) {
                 throw Error::data_corrupted;
             }
 
             c32 ch;
             Glyph glyph;
-            while (file.read(reinterpret_cast<char*>(&ch), sizeof(ch))) {
-                if (!file.read(reinterpret_cast<char*>(&glyph), sizeof(glyph))) {
+            while (read(ch)) {
+                if (!read(glyph)) {
                     throw Error::data_corrupted;
                 }
                 _glyphs.emplace(ch, glyph);
