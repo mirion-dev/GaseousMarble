@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="api.cpp" />
+    <ClCompile Include="api.ixx" />
     <ClCompile Include="core.ixx" />
     <ClCompile Include="draw.ixx" />
     <ClCompile Include="engine.ixx" />
