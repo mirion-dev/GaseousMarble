@@ -2,6 +2,9 @@ module;
 
 #include <icu.h>
 
+#define STD_BEGIN } namespace std {
+#define STD_END } namespace gm {
+
 export module gm:core;
 
 import std;
@@ -117,11 +120,7 @@ namespace gm {
 
 #pragma endregion
 
-}
-
 #pragma region utilities
-
-namespace gm {
 
     template <class K>
     struct Wrapper {
@@ -135,16 +134,16 @@ namespace gm {
         }
     };
 
-}
+STD_BEGIN
 
-template <class K>
-struct std::hash<gm::Wrapper<K>> {
-    gm::usize operator()(gm::Wrapper<K> wrapper) const noexcept {
-        return std::hash<K>{}(*wrapper.ptr);
-    }
-};
+    template <class K>
+    struct hash<gm::Wrapper<K>> {
+        gm::usize operator()(gm::Wrapper<K> wrapper) const noexcept {
+            return hash<K>{}(*wrapper.ptr);
+        }
+    };
 
-namespace gm {
+STD_END
 
     export template <class K, class V, usize N>
         requires (N > 0)
@@ -156,34 +155,27 @@ namespace gm {
         std::unordered_map<Wrapper<K>, typename decltype(_list)::iterator> _map;
 
     public:
+        using iterator = decltype(_list)::iterator;
+
         Cache() noexcept = default;
 
-        V* operator[](const K& key) noexcept {
-            auto map_iter{ _map.find(key) };
-            if (map_iter == _map.end()) {
-                return {};
-            }
-
-            auto list_iter{ map_iter->second };
-            _list.splice(_list.end(), _list, list_iter);
-            return &list_iter->second;
-        }
-
-        template <class... Args>
-        V* emplace(const K& key, Args&&... args) noexcept {
+        template <class Key, class... Args>
+        std::pair<iterator, bool> try_emplace(Key&& key, Args&&... args) noexcept {
             auto map_iter{ _map.find(key) };
             if (map_iter != _map.end()) {
-                return {};
+                iterator iter{ map_iter->second };
+                _list.splice(_list.end(), _list, iter);
+                return { iter, false };
             }
 
-            if (_map.size() == N) {
+            if (_list.size() == N) {
                 _map.erase(_list.front().first);
                 _list.pop_front();
             }
 
-            auto list_iter{ _list.emplace(_list.end(), key, V{ std::forward<Args>(args)... }) };
-            _map.emplace_hint(map_iter, list_iter->first, list_iter);
-            return &list_iter->second;
+            iterator iter{ _list.emplace(_list.end(), std::forward<Key>(key), V(std::forward<Args>(args)...)) };
+            _map.emplace(iter->first, iter);
+            return { iter, true };
         }
 
         void clear() noexcept {
@@ -192,6 +184,6 @@ namespace gm {
         }
     };
 
-}
-
 #pragma endregion
+
+}

@@ -15,13 +15,8 @@ Cache<std::u8string, Text, 1024> cache;
 
 std::expected<Text, Text::Error> create_text(std::u8string_view str) noexcept {
     std::u8string key{ str };
-    auto ptr{ cache[key] };
-    if (ptr != nullptr) {
-        return *ptr;
-    }
-
     try {
-        return *cache.emplace(key, Text{ str, option });
+        return cache.try_emplace(key, key, option).first->second;
     }
     catch (Text::Error error) {
         return std::unexpected{ error };
@@ -34,16 +29,16 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
     }
 
     std::u8string key{ font_name };
-    auto iter{ font_map.find(key) };
-    if (iter != font_map.end()) {
-        return 1; // font already exists
-    }
-
+    bool inserted;
     try {
-        font_map.emplace_hint(iter, key, Font{ key, sprite_path });
+        inserted = font_map.try_emplace(key, key, sprite_path).second;
     }
     catch (Font::Error error) {
         return static_cast<int>(error);
+    }
+
+    if (!inserted) {
+        return 1; // font already exists
     }
     return 0;
 }
