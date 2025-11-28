@@ -31,12 +31,16 @@ namespace gm {
             f64 scale_x{ 1 };
             f64 scale_y{ 1 };
             f64 rotation{};
+
+            bool valid() const noexcept {
+                return font != nullptr && max_line_length >= 0 && scale_x > 0 && scale_y > 0;
+            }
         };
 
         enum class Error {
             invalid_encoding   = -1,
             failed_to_tokenize = -2,
-            font_unspecified   = -3
+            invalid_option     = -3
         };
 
     private:
@@ -65,8 +69,8 @@ namespace gm {
         Text() noexcept = default;
 
         Text(std::u8string_view str, const Option& option) {
-            if (option.font == nullptr) {
-                throw Error::font_unspecified;
+            if (!option.valid()) {
+                throw Error::invalid_option;
             }
 
             auto& glyphs{ option.font->glyphs() };
@@ -76,7 +80,7 @@ namespace gm {
             f64 word_spacing{ option.word_spacing };
             f64 paragraph_spacing{ option.paragraph_spacing };
             f64 line_height{ option.line_height };
-            f64 max_line_length{ std::max(option.max_line_length, 0.) / option.scale_x };
+            f64 max_line_length{ option.max_line_length / option.scale_x };
 
             bool ok{};
             _str.resize_and_overwrite(
@@ -205,8 +209,8 @@ namespace gm {
         }
 
         std::expected<void, Error> draw(f64 x, f64 y, const Option& option) const noexcept {
-            if (option.font == nullptr) {
-                return std::unexpected{ Error::font_unspecified };
+            if (!option.valid()) {
+                return std::unexpected{ Error::invalid_option };
             }
 
             x += option.offset_x / option.scale_x;
