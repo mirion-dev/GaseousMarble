@@ -14,8 +14,8 @@ Text::Option option;
 Cache<std::u8string, Text, 1024> cache;
 
 std::expected<Text, Text::Error> create_text(std::u8string_view str) noexcept {
-    std::u8string key{ str };
     try {
+        std::u8string key{ str };
         return cache.try_emplace(key, key, option).first->second;
     }
     catch (Text::Error error) {
@@ -28,9 +28,9 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
         return -100; // invalid argument
     }
 
-    std::u8string key{ font_name };
     bool inserted;
     try {
+        std::u8string key{ font_name };
         inserted = font_map.try_emplace(key, key, sprite_path).second;
     }
     catch (Font::Error error) {
@@ -50,7 +50,7 @@ API Real gm_free(StringView font_name) noexcept {
         return 1; // font not found
     }
 
-    if (option.font->name() == key) {
+    if (option.font == &iter->second) {
         option.font = {};
         cache.clear();
     }
@@ -75,7 +75,6 @@ API Real gm_draw(Real x, Real y, StringView str) noexcept {
     if (!exp) {
         return static_cast<int>(exp.error());
     }
-
     return 0;
 }
 
@@ -84,7 +83,6 @@ API Real gm_width(StringView str) noexcept {
     if (!exp) {
         return static_cast<int>(exp.error());
     }
-
     return exp->width();
 }
 
@@ -93,7 +91,6 @@ API Real gm_height(StringView text) noexcept {
     if (!exp) {
         return static_cast<int>(exp.error());
     }
-
     return exp->height();
 }
 
@@ -104,9 +101,8 @@ API Real gm_set_font(StringView font_name) noexcept {
         return -1; // font not found
     }
 
-    Font* new_font{ &iter->second };
-    if (option.font != new_font) {
-        option.font = new_font;
+    if (option.font != &iter->second) {
+        option.font = &iter->second;
         cache.clear();
     }
     return 0;
@@ -226,7 +222,6 @@ API StringView gm_get_font() noexcept {
     if (option.font == nullptr) {
         return u8""; // font unspecified
     }
-
     return option.font->name();
 }
 
