@@ -122,6 +122,15 @@ namespace gm {
 
 #pragma region utilities
 
+    export struct Hash {
+        using is_transparent = int;
+
+        template <class T>
+        usize operator()(const T& value) const noexcept {
+            return std::hash<T>{}(value);
+        }
+    };
+
     template <class K>
     struct Wrapper {
         const K* ptr;
