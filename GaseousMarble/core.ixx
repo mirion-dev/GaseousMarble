@@ -169,7 +169,7 @@ STD_END
         Cache() noexcept = default;
 
         template <class Key, class... Args>
-        std::pair<iterator, bool> try_emplace(Key&& key, Args&&... args) noexcept {
+        std::pair<iterator, bool> try_emplace(Key&& key, Args&&... args) {
             auto map_iter{ _map.find(key) };
             if (map_iter != _map.end()) {
                 iterator iter{ map_iter->second };
