@@ -16,46 +16,25 @@ namespace gm {
             failed_to_add_sprite = -1
         };
 
-        static constexpr auto ID_NULL{ static_cast<usize>(-1) };
-
     private:
-        struct Handle {
-            usize id{ ID_NULL };
-
-            Handle() noexcept = default;
-
-            Handle(std::nullptr_t) noexcept {};
-
-            Handle(usize id) noexcept :
-                id{ id } {}
-
-            operator bool() const noexcept {
-                return id != ID_NULL;
-            }
-
-            bool operator==(Handle other) const noexcept {
-                return id == other.id;
-            }
-        };
-
         struct Deleter {
-            using pointer = Handle;
+            using pointer = usize;
 
-            void operator()(pointer handle) const noexcept {
+            void operator()(pointer id) const noexcept {
                 static Function sprite_delete{ Function::Id::sprite_delete };
-                sprite_delete(handle.id);
+                sprite_delete(id);
             }
         };
 
-        std::unique_ptr<Handle, Deleter> _ptr;
+        std::unique_ptr<usize, Deleter> _ptr;
 
     public:
         Sprite() noexcept = default;
 
         Sprite(std::u8string_view path) {
             static Function sprite_add{ Function::Id::sprite_add };
-            usize id{ static_cast<usize>(static_cast<isize>(sprite_add(path, 1, false, false, 0, 0))) };
-            if (id == ID_NULL) {
+            usize id{ static_cast<usize>(static_cast<isize>(sprite_add(path, 1, false, false, 0, 0))) + 1 };
+            if (id == 0) {
                 throw Error::failed_to_add_sprite;
             }
 
@@ -67,7 +46,7 @@ namespace gm {
         }
 
         usize id() const noexcept {
-            return _ptr.get().id;
+            return _ptr.get() - 1;
         }
     };
 
