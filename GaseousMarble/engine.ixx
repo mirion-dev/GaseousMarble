@@ -37,7 +37,7 @@ namespace gm {
     };
 
     template <class C>
-    EmptyString<C> empty_string;
+    static EmptyString<C> empty_string;
 
     export template <class C>
     class BasicStringView {

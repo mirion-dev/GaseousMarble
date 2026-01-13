@@ -9,11 +9,11 @@ import gm;
 
 using namespace gm;
 
-std::unordered_map<std::u8string, Font, Hash, std::equal_to<>> font_map;
-Text::Option option;
-Cache<std::u8string, Text, 1024> cache;
+static std::unordered_map<std::u8string, Font, Hash, std::equal_to<>> font_map;
+static Text::Option option;
+static Cache<std::u8string, Text, 1024> cache;
 
-std::expected<Text, Text::Error> create_text(std::u8string_view str) noexcept {
+static std::expected<Text, Text::Error> create_text(std::u8string_view str) noexcept {
     try {
         return cache.try_emplace(std::u8string{ str }, str, option).first->second;
     }
