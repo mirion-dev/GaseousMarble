@@ -3,7 +3,7 @@
 
 # GaseousMarble
 
-Draw Unicode texts in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), 90% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting), with more options.
+Draw Unicode texts in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), 90% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting), with more features.
 
 ## Usage
 
@@ -37,7 +37,8 @@ as well as the setters and getters for configuring the drawing options:
 
 ## Development
 
-Install [Visual Studio 2026](https://visualstudio.microsoft.com/insiders/).
+1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) and [vcpkg](https://vcpkg.io/en/).
+1. `vcpkg install wil:x86-windows`.
 
 ## Credits
 
@@ -46,4 +47,3 @@ This project utilizes data from the reverse-engineering of the following project
 | **Project** | **Reference** |
 | -- | -- |
 | [GMAPI](https://github.com/snakedeveloper/gmapi) | Data structures |
-| [GMAPI 8.1](https://github.com/gm-archive/gmapi-8.1) | Magic numbers |

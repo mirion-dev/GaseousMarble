@@ -1,6 +1,7 @@
 module;
 
 #include <cassert>
+#include <wil/resource.h>
 
 export module gm:font;
 
@@ -17,36 +18,33 @@ namespace gm {
         };
 
     private:
-        struct Deleter {
-            using pointer = usize;
+        static void _deleter(isize id) noexcept {
+            static Function sprite_delete{ Function::Id::sprite_delete };
+            sprite_delete(id);
+        }
 
-            void operator()(pointer id) const noexcept {
-                static Function sprite_delete{ Function::Id::sprite_delete };
-                sprite_delete(id);
-            }
-        };
-
-        std::unique_ptr<usize, Deleter> _ptr;
+        wil::unique_any<
+            isize, decltype(&_deleter), _deleter,
+            wil::details::pointer_access_all, isize, isize, -1
+        > _ptr;
 
     public:
         Sprite() noexcept = default;
 
         Sprite(std::u8string_view path) {
             static Function sprite_add{ Function::Id::sprite_add };
-            usize id{ static_cast<usize>(static_cast<isize>(sprite_add(path, 1, false, false, 0, 0))) + 1 };
-            if (id == 0) {
+            _ptr.reset(static_cast<isize>(sprite_add(path, 1, false, false, 0, 0)));
+            if (!_ptr) {
                 throw Error::failed_to_add_sprite;
             }
-
-            _ptr.reset(id);
         }
 
         bool empty() const noexcept {
-            return _ptr == nullptr;
+            return !_ptr;
         }
 
         usize id() const noexcept {
-            return _ptr.get() - 1;
+            return _ptr.get();
         }
     };
 
