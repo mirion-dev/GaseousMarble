@@ -2,9 +2,6 @@ module;
 
 #include <icu.h>
 
-#define STD_BEGIN } namespace std {
-#define STD_END } namespace gm {
-
 export module gm:core;
 
 import std;
@@ -131,37 +128,28 @@ namespace gm {
         }
     };
 
-    template <class K>
-    struct Wrapper {
-        const K* ptr;
-
-        Wrapper(const K& key) noexcept :
-            ptr{ &key } {}
-
-        friend bool operator==(Wrapper left, Wrapper right) noexcept {
-            return *left.ptr == *right.ptr;
-        }
-    };
-
-STD_BEGIN
-
-    template <class K>
-    struct hash<gm::Wrapper<K>> {
-        gm::usize operator()(gm::Wrapper<K> wrapper) const noexcept {
-            return hash<K>{}(*wrapper.ptr);
-        }
-    };
-
-STD_END
-
     export template <class K, class V, usize N>
         requires (N > 0)
     class Cache {
-        // workaround for DevCom-10969873
-        static constexpr std::hash<Wrapper<K>> DUMMY;
+        struct Wrapper {
+            const K* ptr;
+
+            Wrapper(const K& key) noexcept :
+                ptr{ &key } {}
+
+            friend bool operator==(Wrapper left, Wrapper right) noexcept {
+                return *left.ptr == *right.ptr;
+            }
+        };
+
+        struct Hash {
+            usize operator()(Wrapper wrapper) const noexcept {
+                return std::hash<K>{}(*wrapper.ptr);
+            }
+        };
 
         std::list<std::pair<K, V>> _list;
-        std::unordered_map<Wrapper<K>, typename decltype(_list)::iterator> _map;
+        std::unordered_map<Wrapper, typename decltype(_list)::iterator, Hash> _map;
 
     public:
         using iterator = decltype(_list)::iterator;
