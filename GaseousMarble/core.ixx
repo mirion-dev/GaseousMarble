@@ -1,6 +1,7 @@
 module;
 
 #include <icu.h>
+#include <wil/resource.h>
 
 export module gm:core;
 
@@ -94,11 +95,10 @@ namespace gm {
         const c16* ptr{ str.data() };
         usize size{ str.size() };
         UErrorCode error{};
-        std::unique_ptr<UBreakIterator, decltype(&ubrk_close)> iter{
-            ubrk_open(UBRK_WORD, nullptr, ptr, size, &error),
-            ubrk_close
+        wil::unique_any<UBreakIterator*, decltype(&ubrk_close), ubrk_close> iter{
+            ubrk_open(UBRK_WORD, nullptr, ptr, size, &error)
         };
-        if (U_FAILURE(error)) {
+        if (!iter) {
             return false;
         }
 
