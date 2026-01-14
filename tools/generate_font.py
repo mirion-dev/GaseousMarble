@@ -68,6 +68,7 @@ def generate_font(
     line_length = 0
     min_top = 0
     max_bottom = 0
+    max_width = 0
     for (font, chars) in zip(fonts, chars_map.values()):
         draw0.font = font
         for ch in chars:
@@ -76,26 +77,24 @@ def generate_font(
             line_length += w + dense
             min_top = min(min_top, t)
             max_bottom = max(max_bottom, b + shadow_offset)
+            max_width = max(max_width, w)
 
     line_length = line_length - dense
     line_height = max_bottom - min_top + dense
 
     # calculate the sprite size to arrange glyphs into a roughly square
-    max_line_length = line_length
+    max_line_length = max(math.ceil((line_height + math.sqrt(line_height * (line_height + 4 * line_length))) / 2), max_width)  # x == h * (l / x + 1)
+    line_length = 0
     line_count = 1
-    if max_line_length > 1024:
-        # x == h * (l / x + 1)
-        max_line_length = math.ceil((line_height + math.sqrt(line_height * (line_height + 4 * line_length))) / 2)
-        line_length = 0
-        for (font, chars) in zip(fonts, chars_map.values()):
-            draw0.font = font
-            for ch in chars:
-                (l, t, r, b) = map(round, draw0.textbbox((0, 0), ch, stroke_width=stroke_width))
-                w = r - l + shadow_offset
-                if line_length + w > max_line_length:
-                    line_length = 0
-                    line_count += 1
-                line_length += w + dense
+    for (font, chars) in zip(fonts, chars_map.values()):
+        draw0.font = font
+        for ch in chars:
+            (l, t, r, b) = map(round, draw0.textbbox((0, 0), ch, stroke_width=stroke_width))
+            w = r - l + shadow_offset
+            if line_length + w > max_line_length:
+                line_length = 0
+                line_count += 1
+            line_length += w + dense
 
     # generates the font sprite and glyph data
     image = Image.new('RGBA', (max_line_length, line_height * line_count - dense))
