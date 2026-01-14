@@ -22,8 +22,6 @@ def generate_font(
 ):
     if font_size <= 0:
         raise ValueError('The `font_size` should be positive.')
-    if charset is not None and not charset:
-        raise ValueError('The `charset` should be non-empty.')
     if stroke_width < 0:
         raise ValueError('The `stroke_width` should be non-negative.')
     if shadow_offset < 0:
@@ -46,7 +44,10 @@ def generate_font(
 
     if charset is not None:
         needed_chars = set(filter(str.isprintable, charset))
-        for (path, chars) in chars_map.items():
+        if not needed_chars:
+            raise ValueError('The `charset` should be non-empty.')
+
+        for (path, chars) in list(chars_map.items()):
             chars &= needed_chars
             if chars:
                 needed_chars -= chars
