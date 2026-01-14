@@ -90,25 +90,26 @@ namespace gm {
                 }
             };
 
-            static constexpr std::array GLYPH_SIGN{ 'G', 'L', 'Y', '\1', '\0', '\0' };
+            static constexpr std::array GLYPH_SIGN{ 'G', 'L', 'Y', '\1', '\1', '\0' };
             std::array<char, GLYPH_SIGN.size()> sign;
             if (!read(sign) || sign != GLYPH_SIGN) {
                 throw Error::invalid_header;
             }
 
-            if (!read(_height) || !read(_top)) {
+            usize size;
+            if (!read(_height) || !read(_top) || !read(size)) {
                 throw Error::data_corrupted;
             }
 
-            c32 ch;
-            Glyph glyph;
-            while (read(ch)) {
-                if (!read(glyph)) {
+            _glyphs.reserve(size);
+            for (usize i{}; i != size; ++i) {
+                c32 ch;
+                Glyph glyph;
+                if (!read(ch) || !read(glyph) || !_glyphs.emplace(ch, glyph).second) {
                     throw Error::data_corrupted;
                 }
-                _glyphs.emplace(ch, glyph);
             }
-            if (!file.eof()) {
+            if (file.peek() != std::char_traits<char>::eof()) {
                 throw Error::data_corrupted;
             }
         }
