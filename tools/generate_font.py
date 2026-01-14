@@ -113,8 +113,8 @@ def generate_font(
 
     data_path = os.path.splitext(sprite_path)[0] + '.gly'
     os.makedirs(os.path.dirname(data_path), exist_ok=True)
-    with open(data_path, 'wb+') as file:
-        file.write(b'GLY\x01\x00\x00' + struct.pack('Hh', line_height, min_glyph_top))
+    with open(data_path, 'wb+') as data:
+        data.write(b'GLY\x01\x01\x00' + struct.pack('HhI', line_height, min_glyph_top, sum(map(len, chars_map.values()))))
 
         x = 0
         y = 0
@@ -122,13 +122,15 @@ def generate_font(
             draw.font = font
             for ch in chars:
                 (raw_l, raw_t, raw_r, raw_b) = bbox(draw, ch, 0, 0)
+                raw_w = raw_r - raw_l
+                raw_a = round(draw.textlength(ch))
                 (l, t, r, b) = bbox(draw, ch)
                 w = r - l
-                a = w + round(draw.textlength(ch) - (raw_r - raw_l))
+                a = w + raw_a - raw_w
                 if x + w > sprite_width:
                     x = 0
                     y += line_height + glyph_spacing
-                file.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, raw_l))
+                data.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, raw_l))
 
                 draw_x = x - l
                 draw_y = y - min_glyph_top
