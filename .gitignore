@@ -361,11 +361,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
-# User Ignored
-**/*.gm82/cache/
-**/*.gm82/gm_fonts/
-!**/example.gm82/gm_fonts/
-*.exe
-*.gex
-*.ttf
