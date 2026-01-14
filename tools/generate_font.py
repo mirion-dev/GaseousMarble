@@ -34,7 +34,8 @@ def generate_font(
     chars_map = dict[str, set[str]]()
     assigned_chars = set[str]()
     for path in font_path:
-        code_points = TTFont(path).getBestCmap()
+        with TTFont(path) as font:
+            code_points = font.getBestCmap()
         if code_points is None:
             continue
 
