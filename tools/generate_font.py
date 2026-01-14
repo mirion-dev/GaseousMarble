@@ -94,16 +94,20 @@ def generate_font(
     sprite_width = max(math.ceil((line_height + math.sqrt(line_height ** 2 + 4 * line_width * (line_height + glyph_spacing))) / 2), max_glyph_width)  # (w / x + 1) * h + w / x * s == x
     line_width = 0
     line_num = 1
+    max_line_width = 0
     for (font, chars) in zip(fonts, chars_map.values()):
         draw0.font = font
         for ch in chars:
             (l, t, r, b) = bbox(draw0, ch)
             w = r - l
             if line_width + w > sprite_width:
+                max_line_width = max(max_line_width, line_width - glyph_spacing)
                 line_width = 0
                 line_num += 1
             line_width += w + glyph_spacing
 
+    max_line_width = max(max_line_width, line_width - glyph_spacing)
+    sprite_width = max_line_width
     sprite_height = (line_height + glyph_spacing) * line_num - glyph_spacing
 
     # generate the font sprite and the glyph data
