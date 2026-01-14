@@ -1,5 +1,7 @@
-from generate_font import *
 import shutil
+from os.path import join
+
+from generate_font import generate_font
 
 FONT_PATH = 'simsun.ttf'
 TEST_DIR = '../projects/test.gm82/gm_fonts/'
@@ -27,7 +29,8 @@ draw_text_ext(x, y, string, sep, w) 基本与上面的函数作用相同，但�
 string_width(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。
 string_height(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。
 string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
-string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。'''
+string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
+'''
 
-generate_font(FONT_PATH, f'{TEST_DIR}default.png', font_size=18, charset=CHARSET, stroke_width=1)
+generate_font(FONT_PATH, join(TEST_DIR, 'default.png'), font_size=18, charset=CHARSET, stroke_width=1)
 shutil.copytree(TEST_DIR, EXAMPLE_DIR, dirs_exist_ok=True)

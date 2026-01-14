@@ -1,56 +1,65 @@
-from typing import cast
-from fontTools.ttLib import TTFont
-from PIL import Image, ImageFont, ImageDraw
-import os
 import math
+import os
 import struct
 
+from fontTools.ttLib import TTFont
+from PIL import Image, ImageDraw, ImageFont
 
-def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16, charset: str | None = None, dense=False, smoothing=True, fill='white', stroke_width=0, stroke_fill='black', shadow_offset=0, shadow_fill='black'):
+
+def generate_font(
+    font_path: str | list[str],
+    sprite_path: str,
+    *,
+    font_size=16,
+    charset: str | None = None,
+    dense=False,
+    smoothing=True,
+    fill='white',
+    stroke_width=0,
+    stroke_fill='black',
+    shadow_offset=0,
+    shadow_fill='black'
+):
     if font_size <= 0:
-        raise Exception('The `font_size` should be positive.')
-    if charset != None and len(charset) == 0:
-        raise Exception('The `charset` should be non-empty.')
+        raise ValueError('The `font_size` should be positive.')
+    if charset is not None and not charset:
+        raise ValueError('The `charset` should be non-empty.')
     if stroke_width < 0:
-        raise Exception('The `stroke_width` should be non-negative.')
+        raise ValueError('The `stroke_width` should be non-negative.')
     if shadow_offset < 0:
-        raise Exception('The `shadow_offset` should be non-negative.')
+        raise ValueError('The `shadow_offset` should be non-negative.')
 
     if isinstance(font_path, str):
         font_path = [font_path]
 
-    '''
-    assign font to every character in the charset
-    '''
+    # assign fonts to every character in the charset
     chars_map = dict[str, set[str]]()
     assigned_chars = set[str]()
     for path in font_path:
-        code_points = cast(dict[int, str] | None, TTFont(path).getBestCmap())
-        if code_points == None:
+        code_points = TTFont(path).getBestCmap()
+        if code_points is None:
             continue
 
-        chars = {chr(i) for i in code_points.keys() if chr(i).isprintable()}
+        chars = set(filter(str.isprintable, map(chr, code_points.keys())))
         chars_map[path] = chars - assigned_chars
         assigned_chars |= chars_map[path]
 
-    if charset != None:
+    if charset is not None:
         needed_chars = set(filter(str.isprintable, charset))
         for (path, chars) in chars_map.items():
             chars &= needed_chars
-            if len(chars) == 0:
-                chars_map.pop(path)
-            else:
+            if chars:
                 needed_chars -= chars
+            else:
+                chars_map.pop(path)
 
-        if len(needed_chars) != 0:
-            raise Exception(f'Unable to find a suitable font for following characters: {list(needed_chars)}')
+        if needed_chars:
+            raise ValueError(f'Unable to find a suitable font for following characters: {needed_chars}')
 
     chars_map = {path: ''.join(sorted(chars)) for (path, chars) in chars_map.items()}
     fonts = [ImageFont.truetype(path, font_size) for path in chars_map.keys()]
 
-    '''
-    calculate the sprite size when in a single line
-    '''
+    # calculate the sprite size when in a single line
     image0 = Image.new('RGBA', (1, 1))
     draw0 = ImageDraw.Draw(image0)
     if not smoothing:
@@ -71,9 +80,7 @@ def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16,
     line_length = line_length - dense
     line_height = max_bottom - min_top + dense
 
-    '''
-    calculate the sprite size to arrange glyphs into a roughly square
-    '''
+    # calculate the sprite size to arrange glyphs into a roughly square
     max_line_length = line_length
     line_count = 1
     if max_line_length > 1024:
@@ -90,9 +97,7 @@ def generate_font(font_path: str | list[str], sprite_path: str, *, font_size=16,
                     line_count += 1
                 line_length += w + dense
 
-    '''
-    generates the font sprite and glyph data
-    '''
+    # generates the font sprite and glyph data
     image = Image.new('RGBA', (max_line_length, line_height * line_count - dense))
     draw = ImageDraw.Draw(image)
     if not smoothing:
