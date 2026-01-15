@@ -33,7 +33,7 @@ namespace gm {
             f64 rotation{};
 
             bool valid() const noexcept {
-                return font != nullptr && max_line_length >= 0 && scale_x > 0 && scale_y > 0;
+                return font != nullptr && scale_x > 0 && scale_y > 0;
             }
         };
 
@@ -80,7 +80,7 @@ namespace gm {
             f64 word_spacing{ option.word_spacing };
             f64 paragraph_spacing{ option.paragraph_spacing };
             f64 line_height{ option.line_height };
-            f64 max_line_length{ option.max_line_length / option.scale_x };
+            f64 max_line_length{ std::max(option.max_line_length, 0.) / option.scale_x };
 
             bool ok{};
             _str.resize_and_overwrite(
