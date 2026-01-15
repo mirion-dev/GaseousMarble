@@ -27,7 +27,7 @@ namespace gm {
     public:
         Sprite() noexcept = default;
 
-        Sprite(std::u8string_view path) {
+        Sprite(std::string_view path) {
             static Function sprite_add{ Function::Id::sprite_add };
             _ptr.reset(static_cast<isize>(sprite_add(path, 1, false, false, 0, 0)));
             if (!_ptr) {
@@ -40,6 +40,7 @@ namespace gm {
         }
 
         usize id() const noexcept {
+            assert(!empty());
             return _ptr.get();
         }
     };
@@ -63,19 +64,24 @@ namespace gm {
     private:
         u16 _height;
         i16 _top;
-        std::u8string _name;
+        std::string _name;
         Sprite _sprite;
-        std::unordered_map<c32, Glyph> _glyphs;
+        std::unordered_map<u32, Glyph> _glyphs;
 
     public:
         Font() noexcept = default;
 
-        Font(std::u8string_view name, std::u8string_view sprite_path)
+        Font(std::string_view name, std::string_view sprite_path)
         try:
             _name{ name },
             _sprite{ sprite_path } {
 
-            std::ifstream file{ std::filesystem::path{ sprite_path }.replace_extension("gly"), std::ios::binary };
+            if (!sprite_path.ends_with(".png")) {
+                throw Error::failed_to_open_file;
+            }
+
+            sprite_path.remove_suffix(3);
+            std::ifstream file{ std::string{ sprite_path } + "gly", std::ios::binary };
             if (!file.is_open()) {
                 throw Error::failed_to_open_file;
             }
@@ -92,14 +98,14 @@ namespace gm {
                 throw Error::invalid_header;
             }
 
-            usize size;
+            u32 size;
             if (!read(_height) || !read(_top) || !read(size)) {
                 throw Error::data_corrupted;
             }
 
             _glyphs.reserve(size);
             for (usize i{}; i != size; ++i) {
-                c32 ch;
+                u32 ch;
                 Glyph glyph;
                 if (!read(ch) || !read(glyph) || !_glyphs.emplace(ch, glyph).second) {
                     throw Error::data_corrupted;
@@ -127,7 +133,7 @@ namespace gm {
             return _top;
         }
 
-        std::u8string_view name() const noexcept {
+        std::string_view name() const noexcept {
             assert(!empty());
             return _name;
         }

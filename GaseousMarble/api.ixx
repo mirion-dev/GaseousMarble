@@ -9,13 +9,13 @@ import gm;
 
 using namespace gm;
 
-static std::unordered_map<std::u8string, Font, Hash, std::equal_to<>> font_map;
+static std::unordered_map<std::string, Font, Hash, std::equal_to<>> font_map;
 static Text::Option option;
-static Cache<std::u8string, Text, 1024> cache;
+static Cache<std::string, Text, 1024> cache;
 
-static std::expected<Text, Text::Error> create_text(std::u8string_view str) noexcept {
+static std::expected<Text, Text::Error> create_text(std::string_view str) noexcept {
     try {
-        return cache.try_emplace(std::u8string{ str }, str, option).first->second;
+        return cache.try_emplace(std::string{ str }, str, option).first->second;
     }
     catch (Text::Error error) {
         return std::unexpected{ error };
@@ -29,7 +29,7 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
 
     bool inserted;
     try {
-        inserted = font_map.try_emplace(std::u8string{ font_name }, font_name, sprite_path).second;
+        inserted = font_map.try_emplace(std::string{ font_name }, font_name, sprite_path).second;
     }
     catch (Font::Error error) {
         return static_cast<int>(error);
@@ -42,7 +42,7 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
 }
 
 API Real gm_free(StringView font_name) noexcept {
-    auto iter{ font_map.find(std::u8string_view{ font_name }) };
+    auto iter{ font_map.find(std::string_view{ font_name }) };
     if (iter == font_map.end()) {
         return 1; // font not found
     }
@@ -92,7 +92,7 @@ API Real gm_height(StringView text) noexcept {
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
-    auto iter{ font_map.find(std::u8string_view{ font_name }) };
+    auto iter{ font_map.find(std::string_view{ font_name }) };
     if (iter == font_map.end()) {
         return -1; // font not found
     }
@@ -217,7 +217,7 @@ API Real gm_set_rotation(Real theta) noexcept {
 
 API StringView gm_get_font() noexcept {
     if (option.font == nullptr) {
-        return u8""; // font unspecified
+        return ""; // font unspecified
     }
     return option.font->name();
 }

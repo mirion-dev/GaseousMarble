@@ -45,7 +45,7 @@ namespace gm {
 
     private:
         struct Token {
-            std::u16string_view str;
+            std::wstring_view str;
             bool continuous;
         };
 
@@ -62,13 +62,13 @@ namespace gm {
             f64 height;
         };
 
-        std::u16string _str;
+        std::wstring _str;
         Layout _layout{};
 
     public:
         Text() noexcept = default;
 
-        Text(std::u8string_view str, const Option& option) {
+        Text(std::string_view str, const Option& option) {
             if (!option.valid()) {
                 throw Error::invalid_option;
             }
@@ -85,11 +85,11 @@ namespace gm {
             bool ok{};
             _str.resize_and_overwrite(
                 str.size(),
-                [&](c16* ptr, usize) noexcept {
+                [&](wchar_t* ptr, usize) noexcept {
                     usize size{};
                     ok = unicode_for_each(
                         str,
-                        [&](c32 ch) noexcept {
+                        [&](u32 ch) noexcept {
                             if (glyphs.contains(ch) || is_line_break(ch)) {
                                 U16_APPEND_UNSAFE(ptr, size, ch);
                             }
@@ -103,8 +103,8 @@ namespace gm {
                 throw Error::invalid_encoding;
             }
 
-            const c16* first{ _str.data() };
-            const c16* last{ first };
+            const wchar_t* first{ _str.data() };
+            const wchar_t* last{ first };
             bool cont{};
 
             Line line{};
@@ -119,7 +119,7 @@ namespace gm {
                     if (!cont) {
                         ++justified_count;
                     }
-                    line.tokens.emplace_back(std::u16string_view{ first, last }, cont);
+                    line.tokens.emplace_back(std::wstring_view{ first, last }, cont);
                 }
             };
 
@@ -148,14 +148,14 @@ namespace gm {
             };
 
             auto push_word{
-                [&](std::u16string_view word, i32 type) noexcept {
-                    const c16* word_begin{ word.data() };
-                    const c16* word_end{ word_begin + word.size() };
+                [&](std::wstring_view word, i32 type) noexcept {
+                    const wchar_t* word_begin{ word.data() };
+                    const wchar_t* word_end{ word_begin + word.size() };
                     f64 next_cursor{ cursor }, next_line_width;
                     bool first_ch{ true };
                     if (unicode_for_each(
                         word,
-                        [&](c32 ch) noexcept {
+                        [&](u32 ch) noexcept {
                             if (first_ch) {
                                 first_ch = false;
 
@@ -243,7 +243,7 @@ namespace gm {
                 for (auto& [str, continuous] : tokens) {
                     unicode_for_each(
                         str,
-                        [&](c32 ch) noexcept {
+                        [&](u32 ch) noexcept {
                             auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
                             f64 delta_x{ cursor + left - origin_x };
                             f64 delta_y{ y - origin_y };

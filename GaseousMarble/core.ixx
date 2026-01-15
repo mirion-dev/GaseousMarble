@@ -23,10 +23,6 @@ namespace gm {
         using u32 = std::uint32_t;
         using u64 = std::uint64_t;
 
-        using c8 = char8_t;
-        using c16 = char16_t;
-        using c32 = char32_t;
-
         using f32 = float;
         using f64 = double;
 
@@ -108,11 +104,11 @@ namespace gm {
 
 #pragma region text handling
 
-    export bool is_white_space(c32 ch) noexcept {
+    export bool is_white_space(u32 ch) noexcept {
         return u_isUWhiteSpace(ch);
     }
 
-    export bool is_line_break(c32 ch) noexcept {
+    export bool is_line_break(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
         case U_LB_MANDATORY_BREAK:
         case U_LB_CARRIAGE_RETURN:
@@ -124,7 +120,7 @@ namespace gm {
         }
     }
 
-    export bool is_wide(c32 ch) noexcept {
+    export bool is_wide(u32 ch) noexcept {
         switch (u_getIntPropertyValue(ch, UCHAR_EAST_ASIAN_WIDTH)) {
         case U_EA_FULLWIDTH:
         case U_EA_WIDE:
@@ -134,48 +130,50 @@ namespace gm {
         }
     }
 
-    export bool unicode_for_each(std::u8string_view str, auto func) noexcept {
-        const c8* ptr{ str.data() };
+    export bool unicode_for_each(std::string_view str, auto func) noexcept {
+        const char* ptr{ str.data() };
         usize size{ str.size() };
         for (usize i{}; i != size;) {
             i32 ch;
             U8_NEXT(ptr, i, size, ch);
-            if (ch < 0 || !func(static_cast<c32>(ch))) {
+            if (ch < 0 || !func(static_cast<u32>(ch))) {
                 return false;
             }
         }
         return true;
     }
 
-    export bool unicode_for_each(std::u16string_view str, auto func) noexcept {
-        const c16* ptr{ str.data() };
+    export bool unicode_for_each(std::wstring_view str, auto func) noexcept {
+        const wchar_t* ptr{ str.data() };
         usize size{ str.size() };
         for (usize i{}; i != size;) {
             i32 ch;
             U16_NEXT(ptr, i, size, ch);
-            if (ch < 0 || !func(static_cast<c32>(ch))) {
+            if (ch < 0 || !func(static_cast<u32>(ch))) {
                 return false;
             }
         }
         return true;
     }
 
-    export bool word_break_for_each(std::u16string_view str, auto func) noexcept {
-        const c16* ptr{ str.data() };
+    export bool word_break_for_each(std::wstring_view str, auto func) noexcept {
+        const wchar_t* ptr{ str.data() };
         usize size{ str.size() };
         UErrorCode error{};
-        Handle<UBreakIterator*, ubrk_close> iter{ ubrk_open(UBRK_WORD, nullptr, ptr, size, &error) };
+        Handle<UBreakIterator*, ubrk_close> iter{
+            ubrk_open(UBRK_WORD, nullptr, reinterpret_cast<const UChar*>(ptr), size, &error)
+        };
         if (!iter) {
             return false;
         }
 
-        for (i32 first{ ubrk_first(iter.get()) }, last; ; first = last) {
+        for (isize first{ ubrk_first(iter.get()) }, last; ; first = last) {
             last = ubrk_next(iter.get());
             if (last == UBRK_DONE) {
                 break;
             }
 
-            if (!func(std::u16string_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
+            if (!func(std::wstring_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
                 return false;
             }
         }

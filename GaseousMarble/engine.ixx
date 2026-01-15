@@ -14,12 +14,15 @@ namespace gm {
     struct StringHeader {
         u16 code_page;
         u16 char_size;
-        usize ref_count;
-        usize size;
+        u32 ref_count;
+        u32 size;
     };
 
     template <class C>
     static constexpr u16 CODE_PAGE{ sizeof(C) == 1 ? 65001 : sizeof(C) == 2 ? 1200 : 12000 };
+
+    template <class C>
+    static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
 
     template <class C>
     class EmptyString {
@@ -41,12 +44,10 @@ namespace gm {
 
     export template <class C>
     class BasicStringView {
-        static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
-
         const C* _data{ empty_string<C>.data() };
 
         auto _header() const noexcept {
-            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE));
+            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE<C>));
         }
 
     public:
@@ -81,16 +82,14 @@ namespace gm {
 
     export template <class C>
     class BasicString {
-        static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
-
         C* _data{ empty_string<C>.data() };
 
         auto _header() noexcept {
-            return std::launder(reinterpret_cast<StringHeader*>(_data - HEADER_SIZE));
+            return std::launder(reinterpret_cast<StringHeader*>(_data - HEADER_SIZE<C>));
         }
 
         auto _header() const noexcept {
-            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE));
+            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE<C>));
         }
 
     public:
@@ -103,9 +102,9 @@ namespace gm {
         BasicString(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept {
             auto view{ static_cast<std::basic_string_view<C>>(str) };
 
-            _data = new C[HEADER_SIZE + view.size() + 1];
+            _data = new C[HEADER_SIZE<C> + view.size() + 1];
             new(_data) StringHeader{ CODE_PAGE<C>, sizeof(C), 1, view.size() };
-            _data += HEADER_SIZE;
+            _data += HEADER_SIZE<C>;
             new(std::uninitialized_copy(view.begin(), view.end(), _data)) C{};
         }
 
@@ -121,7 +120,7 @@ namespace gm {
 
         ~BasicString() noexcept {
             if (--_header()->ref_count == 0) {
-                delete[](_data - HEADER_SIZE);
+                delete[](_data - HEADER_SIZE<C>);
             }
         }
 
@@ -169,8 +168,8 @@ namespace gm {
 
         using Real = f64;
 
-        using String = BasicString<c8>;
-        using StringView = BasicStringView<c8>;
+        using String = BasicString<char>;
+        using StringView = BasicStringView<char>;
 
     }
 
@@ -218,15 +217,15 @@ namespace gm {
     export class Function {
         struct Data {
             u8 name_size;
-            c8 name[67];
+            char name[67];
             void* address;
-            usize arg_count;
+            u32 arg_count;
             bool require_pro;
         };
 
         struct Resource {
             Data* data;
-            usize count;
+            u32 count;
         };
 
         static inline const auto _resource_ptr{ reinterpret_cast<Resource*>(0x00686b1c) };
@@ -257,7 +256,7 @@ namespace gm {
             return _data == nullptr;
         }
 
-        std::u8string_view name() const noexcept {
+        std::string_view name() const noexcept {
             assert(!empty());
             return { _data->name, _data->name_size };
         }
