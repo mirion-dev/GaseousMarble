@@ -1,7 +1,6 @@
 module;
 
 #include <cassert>
-#include <wil/resource.h>
 
 export module gm:font;
 
@@ -23,10 +22,7 @@ namespace gm {
             sprite_delete(id);
         }
 
-        wil::unique_any<
-            isize, decltype(&_deleter), _deleter,
-            wil::details::pointer_access_all, isize, isize, -1
-        > _ptr;
+        Handle<isize, _deleter, -1> _ptr;
 
     public:
         Sprite() noexcept = default;

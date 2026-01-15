@@ -37,87 +37,10 @@ namespace gm {
 
 #pragma endregion
 
-#pragma region text handling
-
-    export bool is_white_space(c32 ch) noexcept {
-        return u_isUWhiteSpace(ch);
-    }
-
-    export bool is_line_break(c32 ch) noexcept {
-        switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
-        case U_LB_MANDATORY_BREAK:
-        case U_LB_CARRIAGE_RETURN:
-        case U_LB_LINE_FEED:
-        case U_LB_NEXT_LINE:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    export bool is_wide(c32 ch) noexcept {
-        switch (u_getIntPropertyValue(ch, UCHAR_EAST_ASIAN_WIDTH)) {
-        case U_EA_FULLWIDTH:
-        case U_EA_WIDE:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    export bool unicode_for_each(std::u8string_view str, auto func) noexcept {
-        const c8* ptr{ str.data() };
-        usize size{ str.size() };
-        for (usize i{}; i != size;) {
-            i32 ch;
-            U8_NEXT(ptr, i, size, ch);
-            if (ch < 0 || !func(static_cast<c32>(ch))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    export bool unicode_for_each(std::u16string_view str, auto func) noexcept {
-        const c16* ptr{ str.data() };
-        usize size{ str.size() };
-        for (usize i{}; i != size;) {
-            i32 ch;
-            U16_NEXT(ptr, i, size, ch);
-            if (ch < 0 || !func(static_cast<c32>(ch))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    export bool word_break_for_each(std::u16string_view str, auto func) noexcept {
-        const c16* ptr{ str.data() };
-        usize size{ str.size() };
-        UErrorCode error{};
-        wil::unique_any<UBreakIterator*, decltype(&ubrk_close), ubrk_close> iter{
-            ubrk_open(UBRK_WORD, nullptr, ptr, size, &error)
-        };
-        if (!iter) {
-            return false;
-        }
-
-        for (i32 first{ ubrk_first(iter.get()) }, last; ; first = last) {
-            last = ubrk_next(iter.get());
-            if (last == UBRK_DONE) {
-                break;
-            }
-
-            if (!func(std::u16string_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-#pragma endregion
-
 #pragma region utilities
+
+    template <class T, auto Deleter, T Null = {}>
+    using Handle = wil::unique_any<T, decltype(Deleter), Deleter, wil::details::pointer_access_all, T, T, Null>;
 
     export struct Hash {
         using is_transparent = int;
@@ -180,6 +103,84 @@ namespace gm {
             _list.clear();
         }
     };
+
+#pragma endregion
+
+#pragma region text handling
+
+    export bool is_white_space(c32 ch) noexcept {
+        return u_isUWhiteSpace(ch);
+    }
+
+    export bool is_line_break(c32 ch) noexcept {
+        switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
+        case U_LB_MANDATORY_BREAK:
+        case U_LB_CARRIAGE_RETURN:
+        case U_LB_LINE_FEED:
+        case U_LB_NEXT_LINE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    export bool is_wide(c32 ch) noexcept {
+        switch (u_getIntPropertyValue(ch, UCHAR_EAST_ASIAN_WIDTH)) {
+        case U_EA_FULLWIDTH:
+        case U_EA_WIDE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    export bool unicode_for_each(std::u8string_view str, auto func) noexcept {
+        const c8* ptr{ str.data() };
+        usize size{ str.size() };
+        for (usize i{}; i != size;) {
+            i32 ch;
+            U8_NEXT(ptr, i, size, ch);
+            if (ch < 0 || !func(static_cast<c32>(ch))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    export bool unicode_for_each(std::u16string_view str, auto func) noexcept {
+        const c16* ptr{ str.data() };
+        usize size{ str.size() };
+        for (usize i{}; i != size;) {
+            i32 ch;
+            U16_NEXT(ptr, i, size, ch);
+            if (ch < 0 || !func(static_cast<c32>(ch))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    export bool word_break_for_each(std::u16string_view str, auto func) noexcept {
+        const c16* ptr{ str.data() };
+        usize size{ str.size() };
+        UErrorCode error{};
+        Handle<UBreakIterator*, ubrk_close> iter{ ubrk_open(UBRK_WORD, nullptr, ptr, size, &error) };
+        if (!iter) {
+            return false;
+        }
+
+        for (i32 first{ ubrk_first(iter.get()) }, last; ; first = last) {
+            last = ubrk_next(iter.get());
+            if (last == UBRK_DONE) {
+                break;
+            }
+
+            if (!func(std::u16string_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 #pragma endregion
 
