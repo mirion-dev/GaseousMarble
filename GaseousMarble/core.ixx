@@ -130,26 +130,27 @@ namespace gm {
         }
     }
 
-    export bool unicode_for_each(std::string_view str, auto func) noexcept {
-        const char* ptr{ str.data() };
-        usize size{ str.size() };
-        for (usize i{}; i != size;) {
-            i32 ch;
-            U8_NEXT(ptr, i, size, ch);
-            if (ch < 0 || !func(static_cast<u32>(ch))) {
-                return false;
-            }
+    export template <class C>
+    bool unicode_for_each(std::basic_string_view<C> str, auto func) noexcept {
+        UErrorCode error{};
+        Handle<UText*, utext_close> iter;
+        if constexpr (std::same_as<C, char>) {
+            iter.reset(utext_openUTF8(nullptr, str.data(), str.size(), &error));
         }
-        return true;
-    }
+        else {
+            iter.reset(utext_openUChars(nullptr, reinterpret_cast<const UChar*>(str.data()), str.size(), &error));
+        }
+        if (!iter) {
+            return false;
+        }
 
-    export bool unicode_for_each(std::wstring_view str, auto func) noexcept {
-        const wchar_t* ptr{ str.data() };
-        usize size{ str.size() };
-        for (usize i{}; i != size;) {
-            i32 ch;
-            U16_NEXT(ptr, i, size, ch);
-            if (ch < 0 || !func(static_cast<u32>(ch))) {
+        while (true) {
+            i32 ch{ utext_next32(iter.get()) };
+            if (ch == U_SENTINEL) {
+                break;
+            }
+
+            if (!func(static_cast<u32>(ch))) {
                 return false;
             }
         }
