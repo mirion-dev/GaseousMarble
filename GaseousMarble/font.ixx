@@ -76,12 +76,9 @@ namespace gm {
             _name{ name },
             _sprite{ sprite_path } {
 
-            if (!sprite_path.ends_with(".png")) {
-                throw Error::failed_to_open_file;
-            }
-
-            sprite_path.remove_suffix(3);
-            std::ifstream file{ std::string{ sprite_path } + "gly", std::ios::binary };
+            std::u8string u8(sprite_path.size(), '\0');
+            std::memcpy(u8.data(), sprite_path.data(), sprite_path.size());
+            std::ifstream file{ std::filesystem::path{ u8 }.replace_extension(u8"gly"), std::ios::binary };
             if (!file.is_open()) {
                 throw Error::failed_to_open_file;
             }

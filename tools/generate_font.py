@@ -10,15 +10,15 @@ def generate_font(
     font_path: str | list[str],
     sprite_path: str,
     *,
-    font_size=16,
+    font_size: int = 16,
     charset: str | None = None,
-    dense=False,
-    smoothing=True,
-    fill='white',
-    stroke_width=0,
-    stroke_fill='black',
-    shadow_offset=0,
-    shadow_fill='black'
+    dense: bool = False,
+    smoothing: bool = True,
+    fill: str = 'white',
+    stroke_width: int = 0,
+    stroke_fill: str = 'black',
+    shadow_offset: int = 0,
+    shadow_fill: str = 'black'
 ):
     if font_size <= 0:
         raise ValueError('The `font_size` should be positive.')
@@ -62,7 +62,7 @@ def generate_font(
     fonts = [ImageFont.truetype(path, font_size) for path in chars_map.keys()]
 
     # calculate the sprite size when in a single line
-    def bbox(draw: ImageDraw.ImageDraw, ch: str, stroke_width=stroke_width, shadow_offset=shadow_offset):
+    def bbox(draw: ImageDraw.ImageDraw, ch: str, stroke_width: int = stroke_width, shadow_offset: int = shadow_offset):
         (l, t, r, b) = map(round, draw.textbbox((0, 0), ch, stroke_width=stroke_width))
         r += shadow_offset
         b += shadow_offset
@@ -127,7 +127,7 @@ def generate_font(
         for (font, chars) in zip(fonts, chars_map.values()):
             draw.font = font
             for ch in chars:
-                (raw_l, raw_t, raw_r, raw_b) = bbox(draw, ch, 0, 0)
+                (raw_l, _, raw_r, _) = bbox(draw, ch, 0, 0)
                 raw_w = raw_r - raw_l
                 raw_a = round(draw.textlength(ch))
                 (l, t, r, b) = bbox(draw, ch)
@@ -148,4 +148,4 @@ def generate_font(
 
                 x += w + glyph_spacing
 
-    image.save(sprite_path)
+    image.save(sprite_path, 'PNG')
