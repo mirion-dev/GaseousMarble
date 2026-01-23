@@ -34,11 +34,7 @@ API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
     catch (Font::Error error) {
         return static_cast<int>(error);
     }
-
-    if (!inserted) {
-        return 1; // font already exists
-    }
-    return 0;
+    return inserted ? 0 : 1; // font already exists
 }
 
 API Real gm_free(StringView font_name) noexcept {
@@ -69,26 +65,17 @@ API Real gm_draw(Real x, Real y, StringView str) noexcept {
             return text.draw(x, y, option);
         })
     };
-    if (!exp) {
-        return static_cast<int>(exp.error());
-    }
-    return 0;
+    return exp ? 0 : static_cast<int>(exp.error());
 }
 
 API Real gm_width(StringView str) noexcept {
     auto exp{ create_text(str) };
-    if (!exp) {
-        return static_cast<int>(exp.error());
-    }
-    return exp->width();
+    return exp ? exp->width() : static_cast<int>(exp.error());
 }
 
 API Real gm_height(StringView text) noexcept {
     auto exp{ create_text(text) };
-    if (!exp) {
-        return static_cast<int>(exp.error());
-    }
-    return exp->height();
+    return exp ? exp->height() : static_cast<int>(exp.error());
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
@@ -216,10 +203,7 @@ API Real gm_set_rotation(Real theta) noexcept {
 }
 
 API StringView gm_get_font() noexcept {
-    if (option.font == nullptr) {
-        return ""; // font unspecified
-    }
-    return option.font->name();
+    return option.font != nullptr ? option.font->name() : ""; // font unspecified
 }
 
 API Real gm_get_halign() noexcept {
