@@ -35,7 +35,7 @@ namespace gm {
 
 #pragma region utilities
 
-    template <class T, auto Deleter, T Null = {}>
+    export template <class T, auto Deleter, T Null = {}>
     using Handle = wil::unique_any<T, decltype(Deleter), Deleter, wil::details::pointer_access_all, T, T, Null>;
 
     export struct Hash {
@@ -50,25 +50,39 @@ namespace gm {
     export template <class K, class V, usize N>
         requires (N > 0)
     class Cache {
-        struct Wrapper {
+        struct Ref {
             const K* ptr;
 
-            Wrapper(const K& key) noexcept :
+            Ref(const K& key) noexcept :
                 ptr{ &key } {}
 
-            friend bool operator==(Wrapper left, Wrapper right) noexcept {
+            template <class T>
+            friend bool operator==(Ref left, const T& right) noexcept {
+                if constexpr (std::same_as<T, Ref>) {
                 return *left.ptr == *right.ptr;
+            }
+                else {
+                    return *left.ptr == right;
+                }
             }
         };
 
         struct Hash {
-            usize operator()(Wrapper wrapper) const noexcept {
-                return std::hash<K>{}(*wrapper.ptr);
+            using is_transparent = int;
+
+            template <class T>
+            usize operator()(const T& value) const noexcept {
+                if constexpr (std::same_as<T, Ref>) {
+                    return std::hash<K>{}(*value.ptr);
+            }
+                else {
+                    return std::hash<T>{}(value);
+                }
             }
         };
 
         std::list<std::pair<K, V>> _list;
-        std::unordered_map<Wrapper, typename decltype(_list)::iterator, Hash> _map;
+        std::unordered_map<Ref, typename decltype(_list)::iterator, Hash, std::equal_to<>> _map;
 
     public:
         using iterator = decltype(_list)::iterator;
