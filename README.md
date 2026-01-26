@@ -5,9 +5,7 @@
 
 Draw Unicode texts in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), 90% faster than [FoxWriting](https://github.com/Noisyfox/FoxWriting), with more features.
 
-## Usage
-
-GaseousMarble provides the following functions for drawing texts:
+## Functions
 
 | **Function** | **Description** | **Returned Value** |
 | -- | -- | -- |
@@ -17,8 +15,6 @@ GaseousMarble provides the following functions for drawing texts:
 | `gm_draw(x, y, str)` | Draw a UTF-8 string. | ~~`1` - Missing glyphs~~<br>`0` - OK<br>`-1` - Invalid encoding<br>`-2` - Failed to tokenize<br>`-3` - Invalid option |
 | `gm_width(str)` | Return the width of the text. | `>= 0` - Width<br>`-1` - Invalid encoding<br>`-2` - Failed to tokenize<br>`-3` - Invalid option |
 | `gm_height(str)` | Return the height of the text. | `>= 0` - Height<br>`-1` - Invalid encoding<br>`-2` - Failed to tokenize<br>`-3` - Invalid option |
-
-as well as the setters and getters for configuring the drawing options:
 
 | **Setter** | **Getter** | **Returned Value** |
 | -- | -- | -- |
@@ -41,8 +37,6 @@ as well as the setters and getters for configuring the drawing options:
 1. `vcpkg install wil:x86-windows`.
 
 ## Credits
-
-This project utilizes data from the reverse-engineering of the following projects. Thanks to the authors for their work.
 
 | **Project** | **Reference** |
 | -- | -- |

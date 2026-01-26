@@ -13,28 +13,18 @@ static std::unordered_map<std::string, Font, Hash, std::equal_to<>> font_map;
 static Text::Option option;
 static Cache<std::string, Text, 1024> cache;
 
-static std::expected<Text, Text::Error> create_text(std::string_view str) noexcept {
-    try {
-        return cache.try_emplace(std::string{ str }, str, option).first->second;
-    }
-    catch (Text::Error error) {
-        return std::unexpected{ error };
-    }
-}
-
 API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
     if (font_name.empty()) {
         return -100; // invalid argument
     }
 
-    bool inserted;
     try {
-        inserted = font_map.try_emplace(std::string{ font_name }, font_name, sprite_path).second;
+        // font already exists
+        return font_map.try_emplace(std::string{ font_name }, font_name, sprite_path).second ? 0 : 1;
     }
     catch (Font::Error error) {
         return static_cast<int>(error);
     }
-    return inserted ? 0 : 1; // font already exists
 }
 
 API Real gm_free(StringView font_name) noexcept {
@@ -60,22 +50,31 @@ API Real gm_clear() noexcept {
 }
 
 API Real gm_draw(Real x, Real y, StringView str) noexcept {
-    auto exp{
-        create_text(str).and_then([&](const Text& text) noexcept {
-            return text.draw(x, y, option);
-        })
-    };
-    return exp ? 0 : static_cast<int>(exp.error());
+    try {
+        cache.try_emplace(std::string{ str }, str, option).first->second.draw(x, y, option);
+        return 0;
+    }
+    catch (Text::Error error) {
+        return static_cast<int>(error);
+    }
 }
 
 API Real gm_width(StringView str) noexcept {
-    auto exp{ create_text(str) };
-    return exp ? exp->width() : static_cast<int>(exp.error());
+    try {
+        return cache.try_emplace(std::string{ str }, str, option).first->second.width();
+    }
+    catch (Text::Error error) {
+        return static_cast<int>(error);
+    }
 }
 
-API Real gm_height(StringView text) noexcept {
-    auto exp{ create_text(text) };
-    return exp ? exp->height() : static_cast<int>(exp.error());
+API Real gm_height(StringView str) noexcept {
+    try {
+        return cache.try_emplace(std::string{ str }, str, option).first->second.height();
+    }
+    catch (Text::Error error) {
+        return static_cast<int>(error);
+    }
 }
 
 API Real gm_set_font(StringView font_name) noexcept {
