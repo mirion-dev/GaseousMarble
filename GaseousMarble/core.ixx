@@ -144,7 +144,7 @@ namespace gm {
         }
     }
 
-    bool unicode_for_each(std::string_view str, const auto& func) noexcept {
+    export bool unicode_for_each(std::string_view str, const auto& func) noexcept {
         UErrorCode error{};
         Handle<UText*, utext_close> iter{ utext_openUTF8(nullptr, str.data(), str.size(), &error) };
         if (!iter) {

@@ -151,12 +151,12 @@ namespace gm {
                                 }
                             }
 
-                            auto iter{ glyphs.find(ch) };
-                            if (iter == glyphs.end()) {
+                            auto glyph_iter{ glyphs.find(ch) };
+                            if (glyph_iter == glyphs.end()) {
                                 return true;
                             }
 
-                            auto& [spr_x, spr_y, width, advance, left]{ iter->second };
+                            auto& [spr_x, spr_y, width, advance, left]{ glyph_iter->second };
                             if (_option.max_line_length != 0 && cursor != 0
                                 && next_cursor + left + width > _option.max_line_length) {
                                 next_cursor -= cursor;
@@ -212,9 +212,9 @@ namespace gm {
             u16 height{ _option.font->height() };
             usize spr_id{ _option.font->sprite().id() };
             auto& glyphs{ _option.font->glyphs() };
-            f32 radian{ -draw_option.rotation / 180 * std::numbers::pi_v<f32> };
-            f32 cos{ std::cos(radian) };
-            f32 sin{ std::sin(radian) };
+            f32 rotation{ -draw_option.rotation / 180 * std::numbers::pi_v<f32> };
+            f32 cos{ std::cos(rotation) };
+            f32 sin{ std::sin(rotation) };
             for (auto& [tokens, line_width, line_height, justified_spacing] : _layout.lines) {
                 f32 cursor{ x };
                 if (draw_option.halign == 0) {
@@ -228,12 +228,12 @@ namespace gm {
                     if (!unicode_for_each(
                         str,
                         [&](u32 ch) noexcept {
-                            auto iter{ glyphs.find(ch) };
-                            if (iter == glyphs.end()) {
+                            auto glyph_iter{ glyphs.find(ch) };
+                            if (glyph_iter == glyphs.end()) {
                                 return true;
                             }
 
-                            auto& [spr_x, spr_y, width, advance, left]{ iter->second };
+                            auto& [spr_x, spr_y, width, advance, left]{ glyph_iter->second };
                             f32 delta_x{ cursor + left - origin_x };
                             f32 delta_y{ y - origin_y };
                             f32 draw_x{ origin_x + delta_x * cos - delta_y * sin };
