@@ -59,8 +59,8 @@ namespace gm {
             template <class T>
             friend bool operator==(Ref left, const T& right) noexcept {
                 if constexpr (std::same_as<T, Ref>) {
-                return *left.ptr == *right.ptr;
-            }
+                    return *left.ptr == *right.ptr;
+                }
                 else {
                     return *left.ptr == right;
                 }
@@ -74,7 +74,7 @@ namespace gm {
             usize operator()(const T& value) const noexcept {
                 if constexpr (std::same_as<T, Ref>) {
                     return std::hash<K>{}(*value.ptr);
-            }
+                }
                 else {
                     return std::hash<T>{}(value);
                 }
@@ -160,39 +160,30 @@ namespace gm {
 
         while (true) {
             i32 ch{ utext_next32(iter.get()) };
-            if (ch == U_SENTINEL) {
-                break;
-            }
-
-            if (!func(static_cast<u32>(ch))) {
-                return false;
+            if (ch == -1 || !func(static_cast<u32>(ch))) {
+                return true;
             }
         }
-        return true;
     }
 
     export bool word_break_for_each(std::wstring_view str, auto func) noexcept {
-        const wchar_t* ptr{ str.data() };
-        usize size{ str.size() };
         UErrorCode error{};
         Handle<UBreakIterator*, ubrk_close> iter{
-            ubrk_open(UBRK_WORD, nullptr, reinterpret_cast<const UChar*>(ptr), size, &error)
+            ubrk_open(UBRK_WORD, nullptr, reinterpret_cast<const UChar*>(str.data()), str.size(), &error)
         };
         if (!iter) {
             return false;
         }
 
-        for (isize first{ ubrk_first(iter.get()) }, last; ; first = last) {
-            last = ubrk_next(iter.get());
-            if (last == UBRK_DONE) {
-                break;
+        const wchar_t* ptr{ str.data() };
+        isize first{};
+        while (true) {
+            isize last{ ubrk_next(iter.get()) };
+            if (last == -1 || !func(std::wstring_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
+                return true;
             }
-
-            if (!func(std::wstring_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
-                return false;
-            }
+            first = last;
         }
-        return true;
     }
 
 #pragma endregion

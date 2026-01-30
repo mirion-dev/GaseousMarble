@@ -15,32 +15,31 @@ namespace gm {
     public:
         struct Option {
             const Font* font{};
+            f32 letter_spacing{};
+            f32 word_spacing{};
+            f32 paragraph_spacing{};
+            f32 line_height{ 1 };
+            f32 max_line_length{};
+        };
+
+        struct DrawOption {
             i8 halign{ -1 };
             i8 valign{ -1 };
             bool justified{};
             u32 color_top{ 0xffffff };
             u32 color_bottom{ 0xffffff };
-            f64 alpha{ 1 };
-            f64 letter_spacing{};
-            f64 word_spacing{};
-            f64 paragraph_spacing{};
-            f64 line_height{ 1 };
-            f64 max_line_length{};
-            f64 offset_x{};
-            f64 offset_y{};
-            f64 scale_x{ 1 };
-            f64 scale_y{ 1 };
-            f64 rotation{};
-
-            bool valid() const noexcept {
-                return font != nullptr && scale_x > 0 && scale_y > 0;
-            }
+            f32 alpha{ 1 };
+            f32 offset_x{};
+            f32 offset_y{};
+            f32 scale_x{ 1 };
+            f32 scale_y{ 1 };
+            f32 rotation{};
         };
 
         enum class Error {
-            invalid_encoding   = -1,
-            failed_to_tokenize = -2,
-            invalid_option     = -3
+            failed_to_decode     = -1,
+            failed_to_word_break = -2,
+            invalid_option       = -3
         };
 
     private:
@@ -51,43 +50,40 @@ namespace gm {
 
         struct Line {
             std::vector<Token> tokens;
-            f64 width;
-            f64 height;
-            f64 justified_spacing;
+            f32 width;
+            f32 height;
+            f32 justified_spacing;
         };
 
         struct Layout {
             std::vector<Line> lines;
-            f64 width;
-            f64 height;
+            f32 width;
+            f32 height;
         };
 
         std::wstring _str;
+        Option _option;
         Layout _layout{};
 
     public:
         Text() noexcept = default;
 
-        Text(std::string_view str, const Option& option) {
-            if (!option.valid()) {
+        Text(std::string_view str, const Option& option) :
+            _option{ option } {
+
+            _option.max_line_length = std::max(_option.max_line_length, 0.f);
+            if (_option.font == nullptr) {
                 throw Error::invalid_option;
             }
 
-            auto& glyphs{ option.font->glyphs() };
-            auto glyph_height{ static_cast<f64>(option.font->height()) };
-            bool justified{ option.justified };
-            f64 letter_spacing{ option.letter_spacing };
-            f64 word_spacing{ option.word_spacing };
-            f64 paragraph_spacing{ option.paragraph_spacing };
-            f64 line_height{ option.line_height };
-            f64 max_line_length{ std::max(option.max_line_length, 0.) / option.scale_x };
+            auto height{ static_cast<f32>(_option.font->height()) };
+            auto& glyphs{ _option.font->glyphs() };
 
-            bool ok{};
             _str.resize_and_overwrite(
                 str.size(),
-                [&](wchar_t* ptr, usize) noexcept {
+                [&](wchar_t* ptr, usize) {
                     usize size{};
-                    ok = unicode_for_each(
+                    if (!unicode_for_each(
                         str,
                         [&](u32 ch) noexcept {
                             if (glyphs.contains(ch) || is_line_break(ch)) {
@@ -95,20 +91,19 @@ namespace gm {
                             }
                             return true;
                         }
-                    );
+                    )) {
+                        throw Error::failed_to_decode;
+                    }
                     return size;
                 }
             );
-            if (!ok) {
-                throw Error::invalid_encoding;
-            }
 
             const wchar_t* first{ _str.data() };
             const wchar_t* last{ first };
             bool cont{};
 
-            Line line{};
-            f64 cursor{};
+            Line line{ .height = height };
+            f32 cursor{};
             usize justified_count{};
 
             auto push_token{
@@ -124,46 +119,47 @@ namespace gm {
             };
 
             auto push_line{
-                [&](bool auto_wrap = false, bool last = false) noexcept {
+                [&](bool hard = false, bool last = false) noexcept {
                     push_token();
 
-                    if (auto_wrap && justified && justified_count > 1) {
-                        line.justified_spacing = (max_line_length - line.width) / (justified_count - 1);
-                        line.width = max_line_length;
+                    if (!hard && justified_count > 1) {
+                        line.justified_spacing = (_option.max_line_length - line.width) / (justified_count - 1);
+                        line.width = _option.max_line_length;
                     }
 
-                    line.height = glyph_height;
                     if (!last) {
-                        line.height *= line_height;
+                        line.height *= _option.line_height;
                     }
 
                     _layout.lines.emplace_back(std::move(line));
                     _layout.width = std::max(_layout.width, line.width);
                     _layout.height += line.height;
 
-                    line = {};
+                    line = { .height = height };
                     cursor = 0;
                     justified_count = 0;
                 }
             };
 
             auto push_word{
-                [&](std::wstring_view word, i32 type) noexcept {
+                [&](std::wstring_view word, i32 type) {
                     const wchar_t* word_begin{ word.data() };
                     const wchar_t* word_end{ word_begin + word.size() };
-                    f64 next_cursor{ cursor }, next_line_width;
+                    f32 next_cursor{ cursor }, next_line_width;
                     bool first_ch{ true };
-                    if (unicode_for_each(
+                    bool breaked{};
+                    if (!unicode_for_each(
                         word,
                         [&](u32 ch) noexcept {
                             if (first_ch) {
                                 first_ch = false;
 
                                 if (is_line_break(ch)) {
-                                    line.height += paragraph_spacing;
-                                    push_line();
+                                    line.height += _option.paragraph_spacing;
+                                    push_line(true);
                                     first = word_end;
                                     cont = false;
+                                    breaked = true;
                                     return false;
                                 }
 
@@ -176,16 +172,17 @@ namespace gm {
                             }
 
                             auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
-                            if (max_line_length != 0 && cursor != 0 && next_cursor + left + width > max_line_length) {
+                            if (_option.max_line_length != 0 && cursor != 0
+                                && next_cursor + left + width > _option.max_line_length) {
                                 next_cursor -= cursor;
-                                push_line(true);
+                                push_line();
                                 first = word_begin;
                             }
 
                             next_line_width = next_cursor + left + width;
-                            next_cursor += advance + letter_spacing;
+                            next_cursor += advance + _option.letter_spacing;
                             if (is_white_space(ch)) {
-                                next_cursor += word_spacing;
+                                next_cursor += _option.word_spacing;
                             }
                             if (cont) {
                                 ++justified_count;
@@ -193,62 +190,64 @@ namespace gm {
                             return true;
                         }
                     )) {
+                        throw Error::failed_to_decode;
+                    }
+                    if (!breaked) {
                         cursor = next_cursor;
                         line.width = next_line_width;
                     }
                     last = word_end;
-
                     return true;
                 }
             };
 
             if (!word_break_for_each(_str, push_word)) {
-                throw Error::failed_to_tokenize;
+                throw Error::failed_to_word_break;
             }
-            push_line(false, true);
+            push_line(true, true);
         }
 
-        std::expected<void, Error> draw(f64 x, f64 y, const Option& option) const noexcept {
-            if (!option.valid()) {
-                return std::unexpected{ Error::invalid_option };
+        void draw(f32 x, f32 y, const DrawOption& draw_option) const {
+            if (draw_option.scale_x <= 0 || draw_option.scale_y <= 0) {
+                throw Error::invalid_option;
             }
 
-            x += option.offset_x / option.scale_x;
-            y += option.offset_y / option.scale_y + option.font->top();
-            f64 origin_x{ x }, origin_y{ y };
+            x += draw_option.offset_x;
+            y += draw_option.offset_y + _option.font->top();
+            f32 origin_x{ x }, origin_y{ y };
 
-            if (option.valign == 0) {
+            if (draw_option.valign == 0) {
                 y -= _layout.height / 2;
             }
-            else if (option.valign > 0) {
+            else if (draw_option.valign > 0) {
                 y -= _layout.height;
             }
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
-            u16 height{ option.font->height() };
-            usize spr_id{ option.font->sprite().id() };
-            auto& glyphs{ option.font->glyphs() };
-            f64 radian{ -option.rotation / 180 * std::numbers::pi };
-            f64 cos{ std::cos(radian) };
-            f64 sin{ std::sin(radian) };
+            u16 height{ _option.font->height() };
+            usize spr_id{ _option.font->sprite().id() };
+            auto& glyphs{ _option.font->glyphs() };
+            f32 radian{ -draw_option.rotation / 180 * std::numbers::pi_v<f32> };
+            f32 cos{ std::cos(radian) };
+            f32 sin{ std::sin(radian) };
             for (auto& [tokens, line_width, line_height, justified_spacing] : _layout.lines) {
-                f64 cursor{ x };
-                if (option.halign == 0) {
+                f32 cursor{ x };
+                if (draw_option.halign == 0) {
                     cursor -= line_width / 2;
                 }
-                else if (option.halign > 0) {
+                else if (draw_option.halign > 0) {
                     cursor -= line_width;
                 }
 
                 for (auto& [str, continuous] : tokens) {
-                    unicode_for_each(
+                    if (!unicode_for_each(
                         str,
                         [&](u32 ch) noexcept {
                             auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
-                            f64 delta_x{ cursor + left - origin_x };
-                            f64 delta_y{ y - origin_y };
-                            f64 draw_x{ origin_x + delta_x * cos - delta_y * sin };
-                            f64 draw_y{ origin_y + delta_y * cos + delta_x * sin };
+                            f32 delta_x{ cursor + left - origin_x };
+                            f32 delta_y{ y - origin_y };
+                            f32 draw_x{ origin_x + delta_x * cos - delta_y * sin };
+                            f32 draw_y{ origin_y + delta_y * cos + delta_x * sin };
                             draw_sprite_general(
                                 spr_id,
                                 0,
@@ -256,44 +255,44 @@ namespace gm {
                                 spr_y,
                                 width,
                                 height,
-                                draw_x * option.scale_x,
-                                draw_y * option.scale_y,
-                                option.scale_x,
-                                option.scale_y,
-                                option.rotation,
-                                option.color_top,
-                                option.color_top,
-                                option.color_bottom,
-                                option.color_bottom,
-                                option.alpha
+                                draw_x * draw_option.scale_x,
+                                draw_y * draw_option.scale_y,
+                                draw_option.scale_x,
+                                draw_option.scale_y,
+                                draw_option.rotation,
+                                draw_option.color_top,
+                                draw_option.color_top,
+                                draw_option.color_bottom,
+                                draw_option.color_bottom,
+                                draw_option.alpha
                             );
 
-                            cursor += advance + option.letter_spacing;
+                            cursor += advance + _option.letter_spacing;
                             if (is_white_space(ch)) {
-                                cursor += option.word_spacing;
+                                cursor += _option.word_spacing;
                             }
-                            if (continuous) {
+                            if (draw_option.justified && continuous) {
                                 cursor += justified_spacing;
                             }
                             return true;
                         }
-                    );
-                    if (!continuous) {
+                    )) {
+                        throw Error::failed_to_decode;
+                    }
+                    if (draw_option.justified && !continuous) {
                         cursor += justified_spacing;
                     }
                 }
 
                 y += line_height;
             }
-
-            return {};
         }
 
-        f64 width() const noexcept {
+        f32 width() const noexcept {
             return std::abs(_layout.width);
         }
 
-        f64 height() const noexcept {
+        f32 height() const noexcept {
             return std::abs(_layout.height);
         }
     };
