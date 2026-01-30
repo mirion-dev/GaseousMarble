@@ -44,7 +44,7 @@ namespace gm {
 
     private:
         struct Token {
-            std::string_view str;
+            std::string str;
             bool continuous;
         };
 
@@ -61,7 +61,6 @@ namespace gm {
             f32 height;
         };
 
-        std::string _str;
         Option _option;
         Layout _layout{};
 
@@ -69,7 +68,6 @@ namespace gm {
         Text() noexcept = default;
 
         Text(std::string_view str, const Option& option) :
-            _str{ str },
             _option{ option } {
 
             _option.max_line_length = std::max(_option.max_line_length, 0.f);
@@ -80,7 +78,7 @@ namespace gm {
             auto height{ static_cast<f32>(_option.font->height()) };
             auto& glyphs{ _option.font->glyphs() };
 
-            const char* first{ _str.data() };
+            const char* first{ str.data() };
             const char* last{ first };
             bool cont{};
 
@@ -96,7 +94,7 @@ namespace gm {
                     if (!cont) {
                         ++justified_count;
                     }
-                    line.tokens.emplace_back(std::string_view{ first, last }, cont);
+                    line.tokens.emplace_back(std::string{ first, last }, cont);
                 }
             };
 
@@ -188,7 +186,7 @@ namespace gm {
                 }
             };
 
-            if (!word_break_for_each(_str, push_word)) {
+            if (!word_break_for_each(str, push_word)) {
                 throw Error::failed_to_word_break;
             }
             push_line(true, true);
