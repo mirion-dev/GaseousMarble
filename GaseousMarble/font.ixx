@@ -50,9 +50,8 @@ namespace gm {
                 throw Error::failed_to_load_sprite;
             }
 
-            std::u8string u8(sprite_path.size(), '\0');
-            std::memcpy(u8.data(), sprite_path.data(), sprite_path.size());
-            std::ifstream file{ std::filesystem::path{ u8 }.replace_extension(u8"gly"), std::ios::binary };
+            std::filesystem::path path{ std::u8string{ sprite_path.begin(), sprite_path.end() } };
+            std::ifstream file{ path.replace_extension(u8"gly"), std::ios::binary };
             if (!file.is_open()) {
                 throw Error::failed_to_open_file;
             }
