@@ -122,7 +122,7 @@ namespace gm {
             };
 
             auto push_word{
-                [&](std::string_view word, i32 type) {
+                [&](std::string_view word, u32 type) {
                     const char* word_begin{ word.data() };
                     const char* word_end{ word_begin + word.size() };
                     f32 next_cursor{ cursor }, next_line_width;
@@ -156,7 +156,7 @@ namespace gm {
                                 return true;
                             }
 
-                            auto& [spr_x, spr_y, width, advance, left]{ glyph_iter->second };
+                            auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
                             if (_option.max_line_length != 0 && cursor != 0
                                 && next_cursor + left + width > _option.max_line_length) {
                                 next_cursor -= cursor;
@@ -212,7 +212,7 @@ namespace gm {
 
             static Function draw_sprite_general{ Function::Id::draw_sprite_general };
             u16 height{ _option.font->height() };
-            usize spr_id{ _option.font->sprite().id() };
+            usize sprite{ _option.font->sprite() };
             auto& glyphs{ _option.font->glyphs() };
             f32 rotation{ -draw_option.rotation / 180 * std::numbers::pi_v<f32> };
             f32 cos{ std::cos(rotation) };
@@ -235,16 +235,16 @@ namespace gm {
                                 return true;
                             }
 
-                            auto& [spr_x, spr_y, width, advance, left]{ glyph_iter->second };
+                            auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
                             f32 delta_x{ cursor + left - origin_x };
                             f32 delta_y{ y - origin_y };
                             f32 draw_x{ origin_x + delta_x * cos - delta_y * sin };
                             f32 draw_y{ origin_y + delta_y * cos + delta_x * sin };
                             draw_sprite_general(
-                                spr_id,
+                                sprite,
                                 0,
-                                spr_x,
-                                spr_y,
+                                sprite_x,
+                                sprite_y,
                                 width,
                                 height,
                                 draw_x * draw_option.scale_x,

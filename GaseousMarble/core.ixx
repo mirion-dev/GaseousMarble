@@ -152,8 +152,8 @@ namespace gm {
         }
 
         while (true) {
-            i32 ch{ utext_next32(iter.get()) };
-            if (ch == -1 || !func(static_cast<u32>(ch))) {
+            auto ch{ static_cast<u32>(utext_next32(iter.get())) };
+            if (ch == -1 || !func(ch)) {
                 return true;
             }
         }
@@ -177,10 +177,13 @@ namespace gm {
         }
 
         const char* ptr{ str.data() };
-        isize first{};
+        usize first{};
         while (true) {
-            isize last{ ubrk_next(breaker.get()) };
-            if (last == -1 || !func(std::string_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(breaker.get()))) {
+            auto last{ static_cast<usize>(ubrk_next(breaker.get())) };
+            if (last == -1 || !func(
+                std::string_view{ ptr + first, ptr + last },
+                static_cast<u32>(ubrk_getRuleStatus(breaker.get()))
+            )) {
                 return true;
             }
             first = last;

@@ -10,41 +10,6 @@ import :engine;
 
 namespace gm {
 
-    export class Sprite {
-    public:
-        enum class Error {
-            failed_to_add_sprite = -1
-        };
-
-    private:
-        static void _deleter(isize id) noexcept {
-            static Function sprite_delete{ Function::Id::sprite_delete };
-            sprite_delete(id);
-        }
-
-        Handle<isize, _deleter, -1> _ptr;
-
-    public:
-        Sprite() noexcept = default;
-
-        Sprite(std::string_view path) {
-            static Function sprite_add{ Function::Id::sprite_add };
-            _ptr.reset(static_cast<isize>(sprite_add(path, 1, false, false, 0, 0)));
-            if (!_ptr) {
-                throw Error::failed_to_add_sprite;
-            }
-        }
-
-        bool empty() const noexcept {
-            return !_ptr;
-        }
-
-        usize id() const noexcept {
-            assert(!empty());
-            return _ptr.get();
-        }
-    };
-
     export class Font {
     public:
         struct Glyph {
@@ -62,19 +27,28 @@ namespace gm {
         };
 
     private:
+        static void _deleter(usize id) noexcept {
+            static Function sprite_delete{ Function::Id::sprite_delete };
+            sprite_delete(id);
+        }
+
+        std::string _name;
+        Handle<usize, _deleter, -1> _sprite;
         u16 _height;
         i16 _top;
-        std::string _name;
-        Sprite _sprite;
         std::unordered_map<u32, Glyph> _glyphs;
 
     public:
         Font() noexcept = default;
 
-        Font(std::string_view name, std::string_view sprite_path)
-        try:
-            _name{ name },
-            _sprite{ sprite_path } {
+        Font(std::string_view name, std::string_view sprite_path) :
+            _name{ name } {
+
+            static Function sprite_add{ Function::Id::sprite_add };
+            _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
+            if (!_sprite) {
+                throw Error::failed_to_load_sprite;
+            }
 
             std::u8string u8(sprite_path.size(), '\0');
             std::memcpy(u8.data(), sprite_path.data(), sprite_path.size());
@@ -112,12 +86,9 @@ namespace gm {
                 throw Error::data_corrupted;
             }
         }
-        catch (Sprite::Error) {
-            throw Error::failed_to_load_sprite;
-        }
 
         bool empty() const noexcept {
-            return _sprite.empty();
+            return !_sprite;
         }
 
         u16 height() const noexcept {
@@ -135,9 +106,9 @@ namespace gm {
             return _name;
         }
 
-        const Sprite& sprite() const noexcept {
+        usize sprite() const noexcept {
             assert(!empty());
-            return _sprite;
+            return _sprite.get();
         }
 
         const auto& glyphs() const noexcept {
