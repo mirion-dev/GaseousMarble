@@ -144,16 +144,9 @@ namespace gm {
         }
     }
 
-    export template <class C>
-    bool unicode_for_each(std::basic_string_view<C> str, auto func) noexcept {
+    bool unicode_for_each(std::string_view str, const auto& func) noexcept {
         UErrorCode error{};
-        Handle<UText*, utext_close> iter;
-        if constexpr (std::same_as<C, char>) {
-            iter.reset(utext_openUTF8(nullptr, str.data(), str.size(), &error));
-        }
-        else {
-            iter.reset(utext_openUChars(nullptr, reinterpret_cast<const UChar*>(str.data()), str.size(), &error));
-        }
+        Handle<UText*, utext_close> iter{ utext_openUTF8(nullptr, str.data(), str.size(), &error) };
         if (!iter) {
             return false;
         }
@@ -166,20 +159,28 @@ namespace gm {
         }
     }
 
-    export bool word_break_for_each(std::wstring_view str, auto func) noexcept {
+    export bool word_break_for_each(std::string_view str, const auto& func) noexcept {
         UErrorCode error{};
-        Handle<UBreakIterator*, ubrk_close> iter{
-            ubrk_open(UBRK_WORD, nullptr, reinterpret_cast<const UChar*>(str.data()), str.size(), &error)
-        };
+        Handle<UText*, utext_close> iter{ utext_openUTF8(nullptr, str.data(), str.size(), &error) };
         if (!iter) {
             return false;
         }
 
-        const wchar_t* ptr{ str.data() };
+        Handle<UBreakIterator*, ubrk_close> breaker{ ubrk_open(UBRK_WORD, nullptr, nullptr, 0, &error) };
+        if (!breaker) {
+            return false;
+        }
+
+        ubrk_setUText(breaker.get(), iter.get(), &error);
+        if (error > 0) {
+            return false;
+        }
+
+        const char* ptr{ str.data() };
         isize first{};
         while (true) {
-            isize last{ ubrk_next(iter.get()) };
-            if (last == -1 || !func(std::wstring_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(iter.get()))) {
+            isize last{ ubrk_next(breaker.get()) };
+            if (last == -1 || !func(std::string_view{ ptr + first, ptr + last }, ubrk_getRuleStatus(breaker.get()))) {
                 return true;
             }
             first = last;

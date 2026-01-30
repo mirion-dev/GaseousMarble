@@ -44,7 +44,7 @@ namespace gm {
 
     private:
         struct Token {
-            std::wstring_view str;
+            std::string_view str;
             bool continuous;
         };
 
@@ -61,7 +61,7 @@ namespace gm {
             f32 height;
         };
 
-        std::wstring _str;
+        std::string _str;
         Option _option;
         Layout _layout{};
 
@@ -69,6 +69,7 @@ namespace gm {
         Text() noexcept = default;
 
         Text(std::string_view str, const Option& option) :
+            _str{ str },
             _option{ option } {
 
             _option.max_line_length = std::max(_option.max_line_length, 0.f);
@@ -79,27 +80,8 @@ namespace gm {
             auto height{ static_cast<f32>(_option.font->height()) };
             auto& glyphs{ _option.font->glyphs() };
 
-            _str.resize_and_overwrite(
-                str.size(),
-                [&](wchar_t* ptr, usize) {
-                    usize size{};
-                    if (!unicode_for_each(
-                        str,
-                        [&](u32 ch) noexcept {
-                            if (glyphs.contains(ch) || is_line_break(ch)) {
-                                U16_APPEND_UNSAFE(ptr, size, ch);
-                            }
-                            return true;
-                        }
-                    )) {
-                        throw Error::failed_to_decode;
-                    }
-                    return size;
-                }
-            );
-
-            const wchar_t* first{ _str.data() };
-            const wchar_t* last{ first };
+            const char* first{ _str.data() };
+            const char* last{ first };
             bool cont{};
 
             Line line{ .height = height };
@@ -114,7 +96,7 @@ namespace gm {
                     if (!cont) {
                         ++justified_count;
                     }
-                    line.tokens.emplace_back(std::wstring_view{ first, last }, cont);
+                    line.tokens.emplace_back(std::string_view{ first, last }, cont);
                 }
             };
 
@@ -142,9 +124,9 @@ namespace gm {
             };
 
             auto push_word{
-                [&](std::wstring_view word, i32 type) {
-                    const wchar_t* word_begin{ word.data() };
-                    const wchar_t* word_end{ word_begin + word.size() };
+                [&](std::string_view word, i32 type) {
+                    const char* word_begin{ word.data() };
+                    const char* word_end{ word_begin + word.size() };
                     f32 next_cursor{ cursor }, next_line_width;
                     bool first_ch{ true };
                     bool breaked{};
@@ -171,7 +153,12 @@ namespace gm {
                                 }
                             }
 
-                            auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
+                            auto iter{ glyphs.find(ch) };
+                            if (iter == glyphs.end()) {
+                                return true;
+                            }
+
+                            auto& [spr_x, spr_y, width, advance, left]{ iter->second };
                             if (_option.max_line_length != 0 && cursor != 0
                                 && next_cursor + left + width > _option.max_line_length) {
                                 next_cursor -= cursor;
@@ -243,7 +230,12 @@ namespace gm {
                     if (!unicode_for_each(
                         str,
                         [&](u32 ch) noexcept {
-                            auto& [spr_x, spr_y, width, advance, left]{ glyphs.at(ch) };
+                            auto iter{ glyphs.find(ch) };
+                            if (iter == glyphs.end()) {
+                                return true;
+                            }
+
+                            auto& [spr_x, spr_y, width, advance, left]{ iter->second };
                             f32 delta_x{ cursor + left - origin_x };
                             f32 delta_y{ y - origin_y };
                             f32 draw_x{ origin_x + delta_x * cos - delta_y * sin };
