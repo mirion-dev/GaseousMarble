@@ -127,7 +127,7 @@ namespace gm {
                     const char* word_end{ word_begin + word.size() };
                     f32 next_cursor{ cursor }, next_line_width;
                     bool first_ch{ true };
-                    bool breaked{};
+                    bool line_break{};
                     if (!unicode_for_each(
                         word,
                         [&](u32 ch) noexcept {
@@ -139,7 +139,7 @@ namespace gm {
                                     push_line(true);
                                     first = word_end;
                                     cont = false;
-                                    breaked = true;
+                                    line_break = true;
                                     return false;
                                 }
 
@@ -177,10 +177,12 @@ namespace gm {
                     )) {
                         throw Error::failed_to_decode;
                     }
-                    if (!breaked) {
+
+                    if (!line_break) {
                         cursor = next_cursor;
                         line.width = next_line_width;
                     }
+
                     last = word_end;
                     return true;
                 }
