@@ -1,9 +1,9 @@
 {
 	"name": "GaseousMarble",
 	"folder": "GaseousMarble",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"author": "Mirion",
-	"date": "8/28/2025",
+	"date": "1/30/2026",
 	"license": "MIT",
 	"description": "Draw Unicode texts in GameMaker 8.2.",
 	"helpfile": "",
