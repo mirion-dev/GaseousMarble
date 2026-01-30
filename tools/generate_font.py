@@ -18,7 +18,8 @@ def generate_font(
     stroke_width: int = 0,
     stroke_fill: str = 'black',
     shadow_offset: int = 0,
-    shadow_fill: str = 'black'
+    shadow_fill: str = 'black',
+    debug: bool = False
 ):
     if font_size <= 0:
         raise ValueError('The `font_size` should be positive.')
@@ -140,7 +141,8 @@ def generate_font(
 
                 draw_x = x - l
                 draw_y = y - min_glyph_top
-                # draw.rectangle(((draw_x + l - 1, draw_y + t - 1), (draw_x + r, draw_y + b)), outline='red')
+                if debug:
+                    draw.rectangle(((draw_x + l - 1, draw_y + t - 1), (draw_x + r, draw_y + b)), outline='#f007', fill='#0f07')
                 if shadow_offset != 0:
                     draw.text((draw_x + shadow_offset, draw_y + shadow_offset), ch, fill=shadow_fill, stroke_width=stroke_width, stroke_fill=shadow_fill)
                 draw.text((draw_x, draw_y), ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
