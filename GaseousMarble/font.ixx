@@ -44,17 +44,24 @@ namespace gm {
         Font(std::string_view name, std::string_view sprite_path) :
             _name{ name } {
 
+            Error error;
+            auto throw_if_failed{
+                [&](bool expr) {
+                    if (!expr) {
+                        throw error;
+                    }
+                }
+            };
+
+            error = Error::failed_to_load_sprite;
             static Function sprite_add{ Function::Id::sprite_add };
             _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
-            if (!_sprite) {
-                throw Error::failed_to_load_sprite;
-            }
+            throw_if_failed(_sprite.is_valid());
 
+            error = Error::failed_to_open_file;
             std::filesystem::path path{ std::u8string{ sprite_path.begin(), sprite_path.end() } };
             std::ifstream file{ path.replace_extension(u8"gly"), std::ios::binary };
-            if (!file.is_open()) {
-                throw Error::failed_to_open_file;
-            }
+            throw_if_failed(file.is_open());
 
             auto read{
                 [&](auto& dest) noexcept {
@@ -62,28 +69,23 @@ namespace gm {
                 }
             };
 
+            error = Error::invalid_header;
             static constexpr std::array GLYPH_SIGN{ 'G', 'L', 'Y', '\1', '\1', '\0' };
             std::array<char, GLYPH_SIGN.size()> sign;
-            if (!read(sign) || sign != GLYPH_SIGN) {
-                throw Error::invalid_header;
-            }
+            throw_if_failed(read(sign) && sign == GLYPH_SIGN);
 
+            error = Error::data_corrupted;
             u32 size;
-            if (!read(_height) || !read(_top) || !read(size)) {
-                throw Error::data_corrupted;
-            }
+            throw_if_failed(read(_height) && read(_top) && read(size));
 
             _glyphs.reserve(size);
             for (usize i{}; i != size; ++i) {
                 u32 ch;
                 Glyph glyph;
-                if (!read(ch) || !read(glyph) || !_glyphs.emplace(ch, glyph).second) {
-                    throw Error::data_corrupted;
-                }
+                throw_if_failed(read(ch) && read(glyph) && _glyphs.emplace(ch, glyph).second);
             }
-            if (file.peek() != std::char_traits<char>::eof()) {
-                throw Error::data_corrupted;
-            }
+
+            throw_if_failed(file.peek() == std::char_traits<char>::eof());
         }
 
         bool empty() const noexcept {
