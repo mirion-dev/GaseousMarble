@@ -136,7 +136,7 @@ namespace gm {
         }
 
         void swap(BasicString& other) noexcept {
-            std::swap(_data, other._data);
+            std::ranges::swap(_data, other._data);
         }
 
         friend void swap(BasicString& left, BasicString& right) noexcept {
