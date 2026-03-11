@@ -38,6 +38,4 @@ Draw Unicode texts in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), 
 
 ## Credits
 
-| **Project** | **Reference** |
-| -- | -- |
-| [GMAPI](https://github.com/snakedeveloper/gmapi) | Data structures |
+- [GMAPI](https://github.com/snakedeveloper/gmapi)
