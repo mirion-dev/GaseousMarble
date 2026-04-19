@@ -2,11 +2,12 @@ module;
 
 #include <cassert>
 
-export module gm:font;
+export module gm.font;
 
 import std;
-import :core;
-import :engine;
+import gm.types;
+import gm.utils;
+import gm.engine;
 
 namespace gm {
 

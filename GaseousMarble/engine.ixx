@@ -2,14 +2,12 @@ module;
 
 #include <cassert>
 
-export module gm:engine;
+export module gm.engine;
 
 import std;
-import :core;
+import gm.types;
 
 namespace gm {
-
-#pragma region fundamental types of GML
 
     struct StringHeader {
         u16 code_page;
@@ -173,10 +171,6 @@ namespace gm {
 
     }
 
-#pragma endregion
-
-#pragma region interface of GameMaker function resources
-
     class Value {
     public:
         enum class Type {
@@ -296,7 +290,5 @@ namespace gm {
             return res;
         }
     };
-
-#pragma endregion
 
 }

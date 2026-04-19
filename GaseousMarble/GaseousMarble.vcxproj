@@ -12,11 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api.ixx" />
-    <ClCompile Include="core.ixx" />
+    <ClCompile Include="gm.ixx" />
+    <ClCompile Include="utils.ixx" />
     <ClCompile Include="draw.ixx" />
     <ClCompile Include="engine.ixx" />
     <ClCompile Include="font.ixx" />
-    <ClCompile Include="gm.ixx" />
+    <ClCompile Include="types.ixx" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="debugger\gm.natvis" />

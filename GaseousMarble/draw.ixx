@@ -2,12 +2,13 @@ module;
 
 #include <icu.h>
 
-export module gm:draw;
+export module gm.draw;
 
 import std;
-import :core;
-import :engine;
-import :font;
+import gm.types;
+import gm.utils;
+import gm.engine;
+import gm.font;
 
 namespace gm {
 

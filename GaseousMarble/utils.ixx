@@ -3,37 +3,12 @@ module;
 #include <icu.h>
 #include <wil/resource.h>
 
-export module gm:core;
+export module gm.utils;
 
 import std;
+import gm.types;
 
 namespace gm {
-
-#pragma region fundamental types
-
-    export {
-
-        using i8 = std::int8_t;
-        using i16 = std::int16_t;
-        using i32 = std::int32_t;
-        using i64 = std::int64_t;
-
-        using u8 = std::uint8_t;
-        using u16 = std::uint16_t;
-        using u32 = std::uint32_t;
-        using u64 = std::uint64_t;
-
-        using f32 = float;
-        using f64 = double;
-
-        using isize = std::ptrdiff_t;
-        using usize = std::size_t;
-
-    }
-
-#pragma endregion
-
-#pragma region utilities
 
     export template <class T, auto Deleter, T Null = {}>
     using Handle = wil::unique_any<T, decltype(Deleter), Deleter, wil::details::pointer_access_all, T, T, Null>;
@@ -114,10 +89,6 @@ namespace gm {
         }
     };
 
-#pragma endregion
-
-#pragma region text handling
-
     export bool is_white_space(u32 ch) noexcept {
         return u_isUWhiteSpace(ch);
     }
@@ -189,7 +160,5 @@ namespace gm {
             first = last;
         }
     }
-
-#pragma endregion
 
 }
