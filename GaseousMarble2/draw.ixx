@@ -132,7 +132,7 @@ namespace gm {
         }
 
         HRESULT text(f32 x, f32 y, std::string_view text) noexcept {
-            THROW_IF_FAILED(_update_format());
+            RETURN_IF_FAILED(_update_format());
 
             u32 render_width{ Direct3D::render_width() }, render_height{ Direct3D::render_height() };
             if (_render_width != render_width || _render_height != render_height) {
@@ -184,19 +184,15 @@ namespace gm {
             RETURN_IF_FAILED(_texture->UnlockRect(0));
 
             D3DXVECTOR2 pos{ x, y };
-            RETURN_IF_FAILED(
-                _sprite->Draw(
-                    _texture.get(),
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    0,
-                    &pos,
-                    D3DCOLOR_XRGB(255, 255, 255)
-                )
+            return _sprite->Draw(
+                _texture.get(),
+                nullptr,
+                nullptr,
+                nullptr,
+                0,
+                &pos,
+                D3DCOLOR_XRGB(255, 255, 255)
             );
-
-            return 0;
         }
     };
 
