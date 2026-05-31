@@ -16,7 +16,7 @@ namespace gm {
 
     export class Draw {
     public:
-        struct Setting {
+        struct Option {
             std::wstring font{ L"Microsoft YaHei" };
             DWRITE_FONT_WEIGHT weight{ DWRITE_FONT_WEIGHT_NORMAL };
             DWRITE_FONT_STYLE style{ DWRITE_FONT_STYLE_NORMAL };
@@ -42,23 +42,12 @@ namespace gm {
         wil::com_ptr<IDirect3DTexture8> _texture;
         wil::com_ptr<ID3DXSprite> _sprite;
 
+        std::wstring _text;
         wil::com_ptr<ID2D1SolidColorBrush> _brush;
         wil::com_ptr<IDWriteTextFormat> _format;
+        wil::com_ptr<IDWriteTextLayout> _layout;
 
-        Setting _setting;
-
-        HRESULT _update_format() noexcept {
-            return _factory_dw->CreateTextFormat(
-                _setting.font.data(),
-                nullptr,
-                _setting.weight,
-                _setting.style,
-                _setting.stretch,
-                _setting.size,
-                _setting.locale.data(),
-                &_format
-            );
-        }
+        Option _option;
 
         HRESULT _update_objects() noexcept {
             RETURN_IF_FAILED(
@@ -101,8 +90,32 @@ namespace gm {
             return _update_brush();
         }
 
+        HRESULT _update_format() noexcept {
+            return _factory_dw->CreateTextFormat(
+                _option.font.data(),
+                nullptr,
+                _option.weight,
+                _option.style,
+                _option.stretch,
+                _option.size,
+                _option.locale.data(),
+                &_format
+            );
+        }
+
+        HRESULT _update_layout() noexcept {
+            return _factory_dw->CreateTextLayout(
+                _text.data(),
+                _text.size(),
+                _format.get(),
+                _option.box_width,
+                _option.box_height,
+                &_layout
+            );
+        }
+
         HRESULT _update_brush() noexcept {
-            return _render_target->CreateSolidColorBrush(_setting.color, &_brush);
+            return _render_target->CreateSolidColorBrush(_option.color, &_brush);
         }
 
     public:
@@ -129,11 +142,11 @@ namespace gm {
                     _factory_dw.put_unknown()
                 )
             );
+            THROW_IF_FAILED(_update_format());
+            THROW_IF_FAILED(_update_layout());
         }
 
         HRESULT text(f32 x, f32 y, std::string_view text) noexcept {
-            RETURN_IF_FAILED(_update_format());
-
             u32 render_width{ Direct3D::render_width() }, render_height{ Direct3D::render_height() };
             if (_render_width != render_width || _render_height != render_height) {
                 _render_width = render_width;
@@ -141,33 +154,27 @@ namespace gm {
                 RETURN_IF_FAILED(_update_objects());
             }
 
-            std::wstring u16{ text.begin(), text.end() };
-            wil::com_ptr<IDWriteTextLayout> layout;
-            RETURN_IF_FAILED(
-                _factory_dw->CreateTextLayout(
-                    u16.data(),
-                    u16.size(),
-                    _format.get(),
-                    _setting.box_width,
-                    _setting.box_height,
-                    &layout
-                )
-            );
+            std::u8string text_u8{ text.begin(), text.end() };
+            std::wstring text_u16{ std::filesystem::path{ text_u8 }.wstring() };
+            if (_text != text_u16) {
+                _text = text_u16;
+                RETURN_IF_FAILED(_update_layout());
+            }
 
             _render_target->BeginDraw();
             _render_target->Clear();
             _render_target->DrawTextLayout(
-                D2D1::Point2F(_setting.origin_x, _setting.origin_y),
-                layout.get(),
+                D2D1::Point2F(_option.origin_x, _option.origin_y),
+                _layout.get(),
                 _brush.get()
             );
             RETURN_IF_FAILED(_render_target->EndDraw());
 
             wil::com_ptr<IWICBitmapLock> bitmap_lock;
-            WICRect rect{ 0, 0, static_cast<i32>(_render_width), static_cast<i32>(_render_height) };
+            WICRect bitmap_rect{ 0, 0, static_cast<i32>(_render_width), static_cast<i32>(_render_height) };
             u32 bitmap_stride, _;
             u8* bitmap_data;
-            RETURN_IF_FAILED(_bitmap->Lock(&rect, WICBitmapLockRead, &bitmap_lock));
+            RETURN_IF_FAILED(_bitmap->Lock(&bitmap_rect, WICBitmapLockRead, &bitmap_lock));
             RETURN_IF_FAILED(bitmap_lock->GetStride(&bitmap_stride));
             RETURN_IF_FAILED(bitmap_lock->GetDataPointer(&_, &bitmap_data));
 
@@ -180,7 +187,6 @@ namespace gm {
                 std::memcpy(texture_data + y * texture_stride, bitmap_data + y * bitmap_stride, _render_width * 4);
             }
 
-            bitmap_lock.reset();
             RETURN_IF_FAILED(_texture->UnlockRect(0));
 
             D3DXVECTOR2 pos{ x, y };
