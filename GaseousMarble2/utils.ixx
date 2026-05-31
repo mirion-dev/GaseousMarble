@@ -10,10 +10,10 @@ namespace gm {
         Pr _pred;
 
     public:
-        template <class... Args>
-        InvokeChain& and_then(Args&&... args) {
+        template <class Fn>
+        InvokeChain& and_then(Fn&& func) {
             if (_pred(_value)) {
-                _value = std::invoke(std::forward<Args>(args)...);
+                _value = func();
             }
             return *this;
         }
