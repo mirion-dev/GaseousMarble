@@ -56,11 +56,11 @@ namespace gm {
             }
         };
 
-        std::list<std::pair<K, V>> _list;
-        std::unordered_map<Ref, typename decltype(_list)::iterator, Hash, std::equal_to<>> _map;
+        std::list<std::pair<K, V>> _data;
+        std::unordered_map<Ref, typename decltype(_data)::iterator, Hash, std::equal_to<>> _map;
 
     public:
-        using iterator = decltype(_list)::iterator;
+        using iterator = decltype(_data)::iterator;
 
         Cache() noexcept = default;
 
@@ -69,23 +69,23 @@ namespace gm {
             auto map_iter{ _map.find(key) };
             if (map_iter != _map.end()) {
                 iterator iter{ map_iter->second };
-                _list.splice(_list.end(), _list, iter);
+                _data.splice(_data.end(), _data, iter);
                 return { iter, false };
             }
 
-            if (_list.size() == N) {
-                _map.erase(_list.front().first);
-                _list.pop_front();
+            if (_data.size() == N) {
+                _map.erase(_data.front().first);
+                _data.pop_front();
             }
 
-            iterator iter{ _list.emplace(_list.end(), std::forward<Key>(key), V(std::forward<Args>(args)...)) };
+            iterator iter{ _data.emplace(_data.end(), std::forward<Key>(key), V(std::forward<Args>(args)...)) };
             _map.emplace(iter->first, iter);
             return { iter, true };
         }
 
         void clear() noexcept {
             _map.clear();
-            _list.clear();
+            _data.clear();
         }
     };
 
@@ -137,7 +137,7 @@ namespace gm {
             return false;
         }
 
-        Handle<UBreakIterator*, ubrk_close> breaker{ ubrk_open(UBRK_WORD, nullptr, nullptr, 0, &error) };
+        Handle<UBreakIterator*, ubrk_close> breaker{ ubrk_open(UBRK_WORD, "", nullptr, 0, &error) };
         if (!breaker) {
             return false;
         }
