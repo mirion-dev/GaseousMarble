@@ -225,10 +225,10 @@ namespace gm {
 
     public:
         enum class Id {
-#include "detail/FunctionId.inc"
+#include "inc/FunctionId.inc"
         };
 
-        static constexpr auto ARG_VARIABLE{ static_cast<usize>(-1) };
+        static constexpr auto ARGS_VARIABLE{ static_cast<usize>(-1) };
 
     private:
         Data* _data{};
@@ -269,7 +269,7 @@ namespace gm {
 
             // this assertion may fail on game exit since GameMaker has already released function resources
             static constexpr usize ARGS_COUNT{ sizeof...(args) };
-            assert(arg_count() == ARG_VARIABLE || arg_count() == ARGS_COUNT);
+            assert(arg_count() == ARGS_VARIABLE || arg_count() == ARGS_COUNT);
 
             std::array<Value, ARGS_COUNT> args_arr{ static_cast<Value>(args)... };
             Value res;
