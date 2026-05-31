@@ -1,8 +1,8 @@
 module;
 
-#include <d2d1.h>
+#include <d2d1_3.h>
 #include <d3dx8.h>
-#include <dwrite.h>
+#include <dwrite_3.h>
 #include <wincodec.h>
 #include <wil/com.h>
 
@@ -31,9 +31,9 @@ namespace gm {
         };
 
     private:
-        wil::com_ptr<IWICImagingFactory> _factory_wic;
-        wil::com_ptr<ID2D1Factory> _factory_d2d;
-        wil::com_ptr<IDWriteFactory> _factory_dw;
+        wil::com_ptr<IWICImagingFactory2> _factory_wic;
+        wil::com_ptr<ID2D1Factory7> _factory_d2d;
+        wil::com_ptr<IDWriteFactory7> _factory_dw;
 
         u32 _render_width{};
         u32 _render_height{};
