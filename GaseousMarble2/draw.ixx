@@ -172,19 +172,28 @@ namespace gm {
 
             wil::com_ptr<IWICBitmapLock> bitmap_lock;
             WICRect bitmap_rect{ 0, 0, static_cast<i32>(_render_width), static_cast<i32>(_render_height) };
-            u32 bitmap_stride, _;
+            u32 bitmap_stride, bitmap_size;
             u8* bitmap_data;
             RETURN_IF_FAILED(_bitmap->Lock(&bitmap_rect, WICBitmapLockRead, &bitmap_lock));
             RETURN_IF_FAILED(bitmap_lock->GetStride(&bitmap_stride));
-            RETURN_IF_FAILED(bitmap_lock->GetDataPointer(&_, &bitmap_data));
+            RETURN_IF_FAILED(bitmap_lock->GetDataPointer(&bitmap_size, &bitmap_data));
 
             D3DLOCKED_RECT texture_lock;
             RETURN_IF_FAILED(_texture->LockRect(0, &texture_lock, nullptr, 0));
             auto texture_stride{ static_cast<u32>(texture_lock.Pitch) };
             auto texture_data{ static_cast<u8*>(texture_lock.pBits) };
 
-            for (u32 y{}; y < _render_height; ++y) {
-                std::memcpy(texture_data + y * texture_stride, bitmap_data + y * bitmap_stride, _render_width * 4);
+            if (bitmap_stride == texture_stride) {
+                std::memcpy(texture_data, bitmap_data, bitmap_size);
+            }
+            else {
+                for (u32 y{}; y < _render_height; ++y) {
+                    std::memcpy(
+                        texture_data + y * texture_stride,
+                        bitmap_data + y * bitmap_stride,
+                        _render_width * sizeof(u32)
+                    );
+                }
             }
 
             RETURN_IF_FAILED(_texture->UnlockRect(0));
