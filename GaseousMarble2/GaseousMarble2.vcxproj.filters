@@ -6,6 +6,5 @@
     <ClCompile Include="engine.ixx" />
     <ClCompile Include="draw.ixx" />
     <ClCompile Include="gm.ixx" />
-    <ClCompile Include="utils.ixx" />
   </ItemGroup>
 </Project>

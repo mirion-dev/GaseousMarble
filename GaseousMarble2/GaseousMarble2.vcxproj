@@ -86,6 +86,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d2d1.lib;d3d8.lib;d3dx8.lib;dwrite.lib;icu.lib;legacy_stdio_definitions.lib;windowscodecs.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libci.lib</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -97,7 +98,6 @@
     <ClCompile Include="gm.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="types.ixx" />
-    <ClCompile Include="utils.ixx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
