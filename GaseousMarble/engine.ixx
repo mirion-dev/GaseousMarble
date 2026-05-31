@@ -9,6 +9,8 @@ import gm.types;
 
 namespace gm {
 
+    // https://docwiki.embarcadero.com/RADStudio/Athens/en/Unicode_in_RAD_Studio#New_String_Type:_UnicodeString
+
     struct StringHeader {
         u16 code_page;
         u16 char_size;
@@ -20,14 +22,17 @@ namespace gm {
     static constexpr u16 CODE_PAGE{ sizeof(C) == 1 ? 65001 : sizeof(C) == 2 ? 1200 : 12000 };
 
     template <class C>
-    static constexpr usize HEADER_SIZE{ sizeof(StringHeader) / sizeof(C) };
-
-    template <class C>
     class EmptyString {
-        StringHeader _header{ CODE_PAGE<C>, sizeof(C), 1, 0 };
-        C _data[1]{};
+        alignas(StringHeader) u8 _storage[sizeof(StringHeader) + sizeof(C)];
+        C* _data;
 
     public:
+        EmptyString() noexcept {
+            *std::start_lifetime_as<StringHeader>(_storage) = { CODE_PAGE<C>, sizeof(C), 1, 0 };
+            _data = std::start_lifetime_as_array<C>(_storage + sizeof(StringHeader), 1);
+            *_data = {};
+        }
+
         C* data() noexcept {
             return _data;
         }
@@ -45,15 +50,12 @@ namespace gm {
         const C* _data{ empty_string<C>.data() };
 
         auto _header() const noexcept {
-            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE<C>));
+            return std::launder(reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader)));
         }
 
     public:
         BasicStringView() noexcept = default;
 
-        BasicStringView(std::nullptr_t) noexcept = delete;
-
-        // `str` must represent a Delphi UnicodeString
         BasicStringView(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept :
             _data{ static_cast<std::basic_string_view<C>>(str).data() } {}
 
@@ -83,11 +85,11 @@ namespace gm {
         C* _data{ empty_string<C>.data() };
 
         auto _header() noexcept {
-            return std::launder(reinterpret_cast<StringHeader*>(_data - HEADER_SIZE<C>));
+            return std::launder(reinterpret_cast<StringHeader*>(reinterpret_cast<u8*>(_data) - sizeof(StringHeader)));
         }
 
         auto _header() const noexcept {
-            return std::launder(reinterpret_cast<const StringHeader*>(_data - HEADER_SIZE<C>));
+            return std::launder(reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader)));
         }
 
     public:
@@ -95,15 +97,12 @@ namespace gm {
             ++_header()->ref_count;
         }
 
-        BasicString(std::nullptr_t) noexcept = delete;
-
         BasicString(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept {
             auto view{ static_cast<std::basic_string_view<C>>(str) };
-
-            _data = new C[HEADER_SIZE<C> + view.size() + 1];
-            new(_data) StringHeader{ CODE_PAGE<C>, sizeof(C), 1, view.size() };
-            _data += HEADER_SIZE<C>;
-            new(std::uninitialized_copy(view.begin(), view.end(), _data)) C{};
+            auto storage{ new u8[sizeof(StringHeader) + (view.size() + 1) * sizeof(C)] };
+            *std::start_lifetime_as<StringHeader>(storage) = { CODE_PAGE<C>, sizeof(C), 1, view.size() };
+            _data = std::start_lifetime_as_array<C>(storage + sizeof(StringHeader), view.size() + 1);
+            *std::ranges::copy(view, _data).out = {};
         }
 
         BasicString(const BasicString& other) noexcept :
@@ -118,7 +117,7 @@ namespace gm {
 
         ~BasicString() noexcept {
             if (--_header()->ref_count == 0) {
-                delete[](_data - HEADER_SIZE<C>);
+                delete[](reinterpret_cast<u8*>(_data) - sizeof(StringHeader));
             }
         }
 
