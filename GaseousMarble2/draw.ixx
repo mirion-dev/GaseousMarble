@@ -1,15 +1,16 @@
 module;
 
 #include <d2d1_3.h>
+#include <d3d11_4.h>
 #include <d3dx8.h>
 #include <dwrite_3.h>
-#include <wincodec.h>
 #include <wil/com.h>
 
 export module gm.draw;
 
 import std;
 import gm.types;
+import gm.env;
 import gm.engine;
 
 namespace gm {
@@ -31,182 +32,175 @@ namespace gm {
         };
 
     private:
-        wil::com_ptr<IWICImagingFactory2> _factory_wic;
-        wil::com_ptr<ID2D1Factory7> _factory_d2d;
-        wil::com_ptr<IDWriteFactory7> _factory_dw;
+        Option _option;
 
         u32 _render_width{};
         u32 _render_height{};
-        wil::com_ptr<IWICBitmap> _bitmap;
-        wil::com_ptr<ID2D1RenderTarget> _render_target;
-        wil::com_ptr<IDirect3DTexture8> _texture;
+        wil::com_ptr<ID3D11Texture2D1> _texture;
+        wil::com_ptr<IDXGISurface2> _surface;
+        wil::com_ptr<ID2D1Bitmap1> _bitmap;
+        wil::com_ptr<ID3D11Texture2D1> _texture_cpu;
+
+        wil::com_ptr<IDirect3DTexture8> _target;
         wil::com_ptr<ID3DXSprite> _sprite;
 
         std::wstring _text;
+        wil::com_ptr<IDWriteTextFormat3> _format;
+        wil::com_ptr<IDWriteTextLayout4> _layout;
         wil::com_ptr<ID2D1SolidColorBrush> _brush;
-        wil::com_ptr<IDWriteTextFormat> _format;
-        wil::com_ptr<IDWriteTextLayout> _layout;
 
-        Option _option;
+        void _update_objects() {
+            D3D11_TEXTURE2D_DESC1 desc{
+                .Width      = _render_width,
+                .Height     = _render_height,
+                .MipLevels  = 1,
+                .ArraySize  = 1,
+                .Format     = DXGI_FORMAT_B8G8R8A8_UNORM,
+                .SampleDesc = { 1 },
+                .Usage      = D3D11_USAGE_DEFAULT,
+                .BindFlags  = D3D11_BIND_RENDER_TARGET
+            };
+            D3D11_TEXTURE2D_DESC1 desc_cpu{
+                .Width          = _render_width,
+                .Height         = _render_height,
+                .MipLevels      = 1,
+                .ArraySize      = 1,
+                .Format         = DXGI_FORMAT_B8G8R8A8_UNORM,
+                .SampleDesc     = { 1 },
+                .Usage          = D3D11_USAGE_STAGING,
+                .CPUAccessFlags = D3D11_CPU_ACCESS_READ
+            };
+            THROW_IF_FAILED(env::d3d_device->CreateTexture2D1(&desc, nullptr, &_texture));
+            THROW_IF_FAILED(env::d3d_device->CreateTexture2D1(&desc_cpu, nullptr, &_texture_cpu));
+            _surface = _texture.query<decltype(_surface)::element_type>();
+            THROW_IF_FAILED(env::d2d_context->CreateBitmapFromDxgiSurface(_surface.get(), nullptr, &_bitmap));
 
-        HRESULT _update_objects() noexcept {
-            RETURN_IF_FAILED(
-                _factory_wic->CreateBitmap(
-                    _render_width,
-                    _render_height,
-                    GUID_WICPixelFormat32bppPBGRA,
-                    WICBitmapCacheOnDemand,
-                    &_bitmap
-                )
-            );
-            RETURN_IF_FAILED(
-                _factory_d2d->CreateWicBitmapRenderTarget(
-                    _bitmap.get(),
-                    D2D1::RenderTargetProperties(
-                        D2D1_RENDER_TARGET_TYPE_DEFAULT,
-                        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
-                    ),
-                    &_render_target
-                )
-            );
-            RETURN_IF_FAILED(
-                D3DXCreateTexture(
-                    Direct3D::device(),
+            THROW_IF_FAILED(
+                Direct3D::device()->CreateTexture(
                     _render_width,
                     _render_height,
                     1,
                     0,
                     D3DFMT_A8R8G8B8,
                     D3DPOOL_MANAGED,
-                    &_texture
+                    &_target
                 )
             );
-            RETURN_IF_FAILED(
+            THROW_IF_FAILED(
                 D3DXCreateSprite(
                     Direct3D::device(),
                     &_sprite
                 )
             );
-            return _update_brush();
         }
 
-        HRESULT _update_format() noexcept {
-            return _factory_dw->CreateTextFormat(
-                _option.font.data(),
-                nullptr,
-                _option.weight,
-                _option.style,
-                _option.stretch,
-                _option.size,
-                _option.locale.data(),
-                &_format
+        void _update_format() {
+            wil::com_ptr<IDWriteTextFormat> format_base;
+            THROW_IF_FAILED(
+                env::dw_factory->CreateTextFormat(
+                    _option.font.data(),
+                    nullptr,
+                    _option.weight,
+                    _option.style,
+                    _option.stretch,
+                    _option.size,
+                    _option.locale.data(),
+                    &format_base
+                )
             );
+            _format = format_base.query<decltype(_format)::element_type>();
         }
 
-        HRESULT _update_layout() noexcept {
-            return _factory_dw->CreateTextLayout(
-                _text.data(),
-                _text.size(),
-                _format.get(),
-                _option.box_width,
-                _option.box_height,
-                &_layout
+        void _update_layout() {
+            wil::com_ptr<IDWriteTextLayout> layout_base;
+            THROW_IF_FAILED(
+                env::dw_factory->CreateTextLayout(
+                    _text.data(),
+                    _text.size(),
+                    _format.get(),
+                    _option.box_width,
+                    _option.box_height,
+                    &layout_base
+                )
             );
+            _layout = layout_base.query<decltype(_layout)::element_type>();
         }
 
-        HRESULT _update_brush() noexcept {
-            return _render_target->CreateSolidColorBrush(_option.color, &_brush);
+        void _update_brush() {
+            THROW_IF_FAILED(env::d2d_context->CreateSolidColorBrush(_option.color, &_brush));
         }
 
     public:
         Draw() {
-            THROW_IF_FAILED(
-                CoCreateInstance(
-                    CLSID_WICImagingFactory2,
-                    nullptr,
-                    CLSCTX_INPROC_SERVER,
-                    __uuidof(*_factory_wic),
-                    _factory_wic.put_void()
-                )
-            );
-            THROW_IF_FAILED(
-                D2D1CreateFactory(
-                    D2D1_FACTORY_TYPE_SINGLE_THREADED,
-                    &_factory_d2d
-                )
-            );
-            THROW_IF_FAILED(
-                DWriteCreateFactory(
-                    DWRITE_FACTORY_TYPE_SHARED,
-                    __uuidof(*_factory_dw),
-                    _factory_dw.put_unknown()
-                )
-            );
-            THROW_IF_FAILED(_update_format());
-            THROW_IF_FAILED(_update_layout());
+            _update_format();
+            _update_layout();
+            _update_brush();
         }
 
-        HRESULT text(f32 x, f32 y, std::string_view text) noexcept {
+        void text(f32 x, f32 y, std::string_view text) {
             u32 render_width{ Direct3D::render_width() }, render_height{ Direct3D::render_height() };
             if (_render_width != render_width || _render_height != render_height) {
                 _render_width = render_width;
                 _render_height = render_height;
-                RETURN_IF_FAILED(_update_objects());
+                _update_objects();
             }
 
             std::u8string text_u8{ text.begin(), text.end() };
             std::wstring text_u16{ std::filesystem::path{ text_u8 }.wstring() };
             if (_text != text_u16) {
                 _text = text_u16;
-                RETURN_IF_FAILED(_update_layout());
+                _update_layout();
             }
 
-            _render_target->BeginDraw();
-            _render_target->Clear();
-            _render_target->DrawTextLayout(
-                D2D1::Point2F(_option.origin_x, _option.origin_y),
-                _layout.get(),
-                _brush.get()
-            );
-            RETURN_IF_FAILED(_render_target->EndDraw());
+            {
+                env::d2d_context->SetTarget(_bitmap.get());
+                auto _{ wil::scope_exit([&] { env::d2d_context->SetTarget(nullptr); }) };
+                env::d2d_context->BeginDraw();
+                auto _2{ wil::scope_exit([&] { env::d2d_context->EndDraw(); }) };
 
-            wil::com_ptr<IWICBitmapLock> bitmap_lock;
-            WICRect bitmap_rect{ 0, 0, static_cast<i32>(_render_width), static_cast<i32>(_render_height) };
-            u32 bitmap_stride, bitmap_size;
-            u8* bitmap_data;
-            RETURN_IF_FAILED(_bitmap->Lock(&bitmap_rect, WICBitmapLockRead, &bitmap_lock));
-            RETURN_IF_FAILED(bitmap_lock->GetStride(&bitmap_stride));
-            RETURN_IF_FAILED(bitmap_lock->GetDataPointer(&bitmap_size, &bitmap_data));
-
-            D3DLOCKED_RECT texture_lock;
-            RETURN_IF_FAILED(_texture->LockRect(0, &texture_lock, nullptr, 0));
-            auto texture_stride{ static_cast<u32>(texture_lock.Pitch) };
-            auto texture_data{ static_cast<u8*>(texture_lock.pBits) };
-
-            if (bitmap_stride == texture_stride) {
-                std::memcpy(texture_data, bitmap_data, bitmap_size);
+                env::d2d_context->Clear();
+                env::d2d_context->DrawTextLayout(
+                    D2D1::Point2F(_option.origin_x, _option.origin_y),
+                    _layout.get(),
+                    _brush.get()
+                );
             }
-            else {
-                for (u32 y{}; y < _render_height; ++y) {
-                    std::memcpy(
-                        texture_data + y * texture_stride,
-                        bitmap_data + y * bitmap_stride,
-                        _render_width * sizeof(u32)
-                    );
+
+            env::d3d_context->CopyResource(_texture_cpu.get(), _texture.get());
+
+            {
+                D3D11_MAPPED_SUBRESOURCE dx11_res;
+                D3DLOCKED_RECT dx8_res;
+                THROW_IF_FAILED(env::d3d_context->Map(_texture_cpu.get(), 0, D3D11_MAP_READ, 0, &dx11_res));
+                auto _{ wil::scope_exit([&] { env::d3d_context->Unmap(_texture_cpu.get(), 0); }) };
+                THROW_IF_FAILED(_target->LockRect(0, &dx8_res, nullptr, 0));
+                auto _2{ wil::scope_exit([&] { _target->UnlockRect(0); }) };
+
+                u32 dx11_pitch{ dx11_res.RowPitch };
+                auto dx11_data{ static_cast<u8*>(dx11_res.pData) };
+                auto dx8_pitch{ static_cast<u32>(dx8_res.Pitch) };
+                auto dx8_data{ static_cast<u8*>(dx8_res.pBits) };
+                if (dx11_pitch == dx8_pitch) {
+                    std::memcpy(dx8_data, dx11_data, dx11_pitch * _render_height);
+                }
+                else {
+                    for (u32 y{}; y < _render_height; ++y) {
+                        std::memcpy(dx8_data + y * dx8_pitch, dx11_data + y * dx11_pitch, _render_width * sizeof(u32));
+                    }
                 }
             }
 
-            RETURN_IF_FAILED(_texture->UnlockRect(0));
-
             D3DXVECTOR2 pos{ x, y };
-            return _sprite->Draw(
-                _texture.get(),
-                nullptr,
-                nullptr,
-                nullptr,
-                0,
-                &pos,
-                D3DCOLOR_XRGB(255, 255, 255)
+            THROW_IF_FAILED(
+                _sprite->Draw(
+                    _target.get(),
+                    nullptr,
+                    nullptr,
+                    nullptr,
+                    0,
+                    &pos,
+                    D3DCOLOR_XRGB(255, 255, 255)
+                )
             );
         }
     };
