@@ -7,6 +7,6 @@
     <ClCompile Include="draw.ixx" />
     <ClCompile Include="gm.ixx" />
     <ClCompile Include="env.ixx" />
-    <ClCompile Include="errors.ixx" />
+    <ClCompile Include="utils.ixx" />
   </ItemGroup>
 </Project>
