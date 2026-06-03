@@ -27,7 +27,7 @@ namespace gm {
         std::vector<Glyph> glyphs;
     };
 
-    class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer1> {
+    class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
             return 0;
@@ -83,62 +83,6 @@ namespace gm {
         }
 
         STDMETHODIMP DrawUnderline(void*, FLOAT, FLOAT, const DWRITE_UNDERLINE*, IUnknown*) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP DrawGlyphRun(
-            void* client_drawing_context,
-            FLOAT baseline_origin_x,
-            FLOAT baseline_origin_y,
-            DWRITE_GLYPH_ORIENTATION_ANGLE orientation_angle,
-            DWRITE_MEASURING_MODE measuring_mode,
-            const DWRITE_GLYPH_RUN* glyph_run,
-            const DWRITE_GLYPH_RUN_DESCRIPTION* glyph_run_description,
-            IUnknown* client_drawing_effect
-        ) noexcept {
-            return DrawGlyphRun(
-                client_drawing_context,
-                baseline_origin_x,
-                baseline_origin_y,
-                measuring_mode,
-                glyph_run,
-                glyph_run_description,
-                client_drawing_effect
-            );
-        }
-
-        STDMETHODIMP DrawInlineObject(
-            void*,
-            FLOAT,
-            FLOAT,
-            DWRITE_GLYPH_ORIENTATION_ANGLE,
-            IDWriteInlineObject*,
-            BOOL,
-            BOOL,
-            IUnknown* _
-        ) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP DrawStrikethrough(
-            void*,
-            FLOAT,
-            FLOAT,
-            DWRITE_GLYPH_ORIENTATION_ANGLE,
-            const DWRITE_STRIKETHROUGH*,
-            IUnknown* _
-        ) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP DrawUnderline(
-            void*,
-            FLOAT,
-            FLOAT,
-            DWRITE_GLYPH_ORIENTATION_ANGLE,
-            const DWRITE_UNDERLINE*,
-            IUnknown* _
-        ) noexcept {
             return 0;
         }
     };
