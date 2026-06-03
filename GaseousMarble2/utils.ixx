@@ -44,37 +44,38 @@ namespace gm {
             }
         };
 
-        std::list<std::pair<K, V>> _data;
-        std::unordered_map<
-            std::conditional_t<sizeof(K) <= sizeof(void*) * 2, K, KRef>,
-            typename decltype(_data)::iterator,
-            Hash,
-            std::equal_to<>
-        > _map;
+        std::unordered_map<K, V, Hash, std::equal_to<>> _data;
+        std::deque<std::conditional_t<sizeof(K) <= sizeof(void*) * 2, K, KRef>> _order;
 
     public:
+        Cache() noexcept = default;
+        Cache(const Cache&) noexcept = delete;
+        Cache(Cache&&) noexcept = default;
+
+        Cache& operator=(const Cache&) noexcept = delete;
+        Cache& operator=(Cache&&) noexcept = default;
+
         template <class Key, class Fn>
-        std::pair<std::pair<K, V>&, bool> get(Key&& key, Fn&& func) {
-            auto map_iter{ _map.find(key) };
-            if (map_iter != _map.end()) {
-                auto iter{ map_iter->second };
-                _data.splice(_data.end(), _data, iter);
+        std::pair<std::pair<const K, V>&, bool> get(Key&& key, Fn&& func) {
+            auto iter{ _data.find(std::forward<Key>(key)) };
+            if (iter != _data.end()) {
                 return { *iter, false };
             }
 
-            if (_data.size() == N) {
-                _map.erase(_data.front().first);
-                _data.pop_front();
+            iter = _data.emplace(std::forward<Key>(key), std::forward<Fn>(func)()).first;
+            _order.push_back(iter->first);
+
+            if (_data.size() > N) {
+                _data.erase(_order.front());
+                _order.pop_front();
             }
 
-            auto iter{ _data.emplace(_data.end(), std::forward<Key>(key), std::forward<Fn>(func)()) };
-            _map.emplace(iter->first, iter);
             return { *iter, true };
         }
 
         void clear() noexcept {
-            _map.clear();
             _data.clear();
+            _order.clear();
         }
     };
 
