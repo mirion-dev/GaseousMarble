@@ -16,13 +16,13 @@ import gm.engine;
 namespace gm {
 
     struct Layout {
-    struct Glyph {
-        wil::com_ptr<IDWriteFontFace7> face;
-        f32 size;
-        u16 gid;
-        f32 x;
-        f32 y;
-    };
+        struct Glyph {
+            wil::com_ptr<IDWriteFontFace7> face;
+            f32 size;
+            u16 gid;
+            f32 x;
+            f32 y;
+        };
 
         std::vector<Glyph> glyphs;
     };
@@ -165,7 +165,7 @@ namespace gm {
             }
 
             std::wstring text_u16{ to_wstring(text) };
-            auto result{ _layout.get(
+            auto& glyphs{ _layout.get(
                 text_u16,
                 [&] {
                     wil::com_ptr<IDWriteTextLayout> dw_layout_base;
@@ -194,7 +194,49 @@ namespace gm {
                     );
                     return layout;
                 }
-            ) };
+            ).first.second.glyphs };
+
+            for (auto& glyph : glyphs) {
+                f32 advance{};
+                DWRITE_GLYPH_OFFSET offsets{};
+                DWRITE_GLYPH_RUN run{
+                    glyph.face.get(),
+                    glyph.size,
+                    1,
+                    &glyph.gid,
+                    &advance,
+                    &offsets,
+                };
+                wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
+                THROW_IF_FAILED(
+                    env::dw_factory->CreateGlyphRunAnalysis(
+                        &run,
+                        nullptr,
+                        DWRITE_RENDERING_MODE1_NATURAL,
+                        DWRITE_MEASURING_MODE_NATURAL,
+                        DWRITE_GRID_FIT_MODE_DISABLED,
+                        DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
+                        0,
+                        0,
+                        &rasterizer
+                    )
+                );
+
+                RECT bbox;
+                THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
+
+                auto width{ static_cast<u32>(bbox.right - bbox.left) };
+                auto height{ static_cast<u32>(bbox.bottom - bbox.top) };
+                std::vector<u8> alpha(width * height * 1);
+                THROW_IF_FAILED(
+                    rasterizer->CreateAlphaTexture(
+                        DWRITE_TEXTURE_ALIASED_1x1,
+                        &bbox,
+                        alpha.data(),
+                        alpha.size()
+                    )
+                );
+            }
         }
     };
 
