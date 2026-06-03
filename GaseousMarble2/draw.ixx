@@ -15,6 +15,7 @@ import gm.engine;
 
 namespace gm {
 
+    struct Layout {
     struct Glyph {
         wil::com_ptr<IDWriteFontFace7> face;
         f32 size;
@@ -23,7 +24,6 @@ namespace gm {
         f32 y;
     };
 
-    struct Layout {
         std::vector<Glyph> glyphs;
     };
 
@@ -50,11 +50,12 @@ namespace gm {
             const DWRITE_GLYPH_RUN_DESCRIPTION* glyph_run_description,
             IUnknown* client_drawing_effect
         ) noexcept {
-            auto& [glyphs]{ *static_cast<Layout*>(client_drawing_context) };
+            auto& glyphs{ static_cast<Layout*>(client_drawing_context)->glyphs };
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
             wil::com_ptr face_base{ glyph_run->fontFace };
-            wil::com_ptr face{ face_base.query<decltype(Glyph::face)::element_type>() };
+            wil::com_ptr face{ face_base.query<decltype(Layout::Glyph::face)::element_type>() };
             f32 size{ glyph_run->fontEmSize };
+            // ignore glyph_run->isSideways
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
             for (u32 i{}; i < glyph_run->glyphCount; ++i) {
                 u16 gid{ glyph_run->glyphIndices[i] };
@@ -178,6 +179,7 @@ namespace gm {
                     &_target
                 )
             );
+
             THROW_IF_FAILED(
                 D3DXCreateSprite(
                     Direct3D::device(),
@@ -201,6 +203,7 @@ namespace gm {
                 )
             );
             _format = format_base.query<decltype(_format)::element_type>();
+
             _layout.clear();
         }
 
@@ -233,6 +236,7 @@ namespace gm {
                         )
                     );
                     wil::com_ptr dw_layout{ dw_layout_base.query<IDWriteTextLayout4>() };
+
                     wil::com_ptr<LayoutCollector> collector;
                     collector.attach(winrt::make_self<LayoutCollector>().detach());
                     Layout layout;
