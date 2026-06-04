@@ -56,10 +56,10 @@ namespace gm {
         Cache& operator=(Cache&&) noexcept = default;
 
         template <class Key, class Fn>
-        std::pair<std::pair<const K, V>&, bool> get(Key&& key, Fn&& func) {
+        std::pair<const V&, bool> get(Key&& key, Fn&& func) {
             auto iter{ _data.find(std::forward<Key>(key)) };
             if (iter != _data.end()) {
-                return { *iter, false };
+                return { iter->second, false };
             }
 
             iter = _data.emplace(std::forward<Key>(key), std::forward<Fn>(func)()).first;
@@ -70,7 +70,7 @@ namespace gm {
                 _order.pop_front();
             }
 
-            return { *iter, true };
+            return { iter->second, true };
         }
 
         void clear() noexcept {

@@ -194,7 +194,7 @@ namespace gm {
                     );
                     return layout;
                 }
-            ).first.second.glyphs };
+            ).first.glyphs };
 
             for (auto& glyph : glyphs) {
                 f32 advance{};
