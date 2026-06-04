@@ -57,7 +57,7 @@ namespace gm {
             f32 size{ glyph_run->fontEmSize };
             // ignore glyph_run->isSideways
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
-            for (u32 i{}; i < glyph_run->glyphCount; ++i) {
+            for (usize i{}; i < glyph_run->glyphCount; ++i) {
                 u16 gid{ glyph_run->glyphIndices[i] };
                 f32 advance{ glyph_run->glyphAdvances[i] };
                 f32 offset_x{ glyph_run->glyphOffsets[i].advanceOffset };
@@ -103,8 +103,8 @@ namespace gm {
     export class Draw {
         Option _option;
 
-        u32 _render_width{};
-        u32 _render_height{};
+        usize _render_width{};
+        usize _render_height{};
         wil::com_ptr<IDirect3DTexture8> _target;
         wil::com_ptr<ID3DXSprite> _sprite;
 
@@ -153,7 +153,7 @@ namespace gm {
 
     public:
         void text(f32 x, f32 y, std::string_view text) {
-            u32 render_width{ Direct3D::render_width() }, render_height{ Direct3D::render_height() };
+            usize render_width{ Direct3D::render_width() }, render_height{ Direct3D::render_height() };
             if (!_target || !_sprite || _render_width != render_width || _render_height != render_height) {
                 _render_width = render_width;
                 _render_height = render_height;
@@ -192,6 +192,7 @@ namespace gm {
                             y - _option.origin_y
                         )
                     );
+
                     return layout;
                 }
             ).first.glyphs };
@@ -225,8 +226,8 @@ namespace gm {
                 RECT bbox;
                 THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
 
-                auto width{ static_cast<u32>(bbox.right - bbox.left) };
-                auto height{ static_cast<u32>(bbox.bottom - bbox.top) };
+                                auto width{ static_cast<usize>(bbox.right - bbox.left) };
+                                auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
                 std::vector<u8> alpha(width * height);
                 THROW_IF_FAILED(
                     rasterizer->CreateAlphaTexture(

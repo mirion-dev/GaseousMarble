@@ -195,11 +195,11 @@ namespace gm {
             return _resource_ptr->device;
         }
 
-        static u32 render_width() noexcept {
+        static usize render_width() noexcept {
             return _resource_ptr->render_width;
         }
 
-        static u32 render_height() noexcept {
+        static usize render_height() noexcept {
             return _resource_ptr->render_height;
         }
     };
