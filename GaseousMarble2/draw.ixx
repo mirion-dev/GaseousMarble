@@ -2,6 +2,7 @@ module;
 
 #include <d3dx8.h>
 #include <dwrite_3.h>
+#include <rectpack2D/finders_interface.h>
 #include <wil/com.h>
 #include <wil/cppwinrt.h>
 
@@ -14,6 +15,174 @@ import gm.env;
 import gm.engine;
 
 namespace gm {
+
+    class TextureLock {
+        wil::com_ptr<IDirect3DTexture8> _texture;
+        std::mdspan<u8, std::dextents<usize, 2>, std::layout_stride> _data;
+
+    public:
+        TextureLock() noexcept = default;
+
+        TextureLock(wil::com_ptr<IDirect3DTexture8> texture, usize x, usize y, usize width, usize height) {
+            if (texture) {
+                D3DLOCKED_RECT lock;
+                RECT rect{
+                    static_cast<isize>(x),
+                    static_cast<isize>(y),
+                    static_cast<isize>(x + width),
+                    static_cast<isize>(y + height)
+                };
+                THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, 0));
+
+                _texture = texture;
+                _data = {
+                    static_cast<u8*>(lock.pBits),
+                    { std::extents{ height, width }, std::array{ lock.Pitch, 1 } }
+                };
+            }
+        }
+
+        TextureLock(TextureLock&& other) noexcept {
+            swap(other);
+        }
+
+        ~TextureLock() noexcept {
+            if (_texture) {
+                _texture->UnlockRect(0);
+            }
+        }
+
+        TextureLock& operator=(TextureLock&& other) noexcept {
+            swap(other);
+            return *this;
+        }
+
+        void swap(TextureLock& other) noexcept {
+            std::ranges::swap(_texture, other._texture);
+            std::ranges::swap(_data, other._data);
+        }
+
+        friend void swap(TextureLock& left, TextureLock& right) noexcept {
+            left.swap(right);
+        }
+
+        const auto& data() const noexcept {
+            return _data;
+        }
+    };
+
+    template <usize N, usize Size = 1024>
+        requires (N > 0 && Size > 0)
+    class GlyphAtlas {
+    public:
+        struct Glyph {
+            wil::com_ptr<IDirect3DTexture8> texture;
+            usize x;
+            usize y;
+            usize width;
+            usize height;
+            isize offset_x;
+            isize offset_y;
+        };
+
+        struct Key {
+            wil::com_ptr<IDWriteFontFace7> face;
+            u16 gid;
+
+            friend bool operator==(Key left, Key right) noexcept {
+                return left.face.get() == right.face.get() && left.gid == right.gid;
+            }
+        };
+
+    private:
+        struct Hash {
+            template <class T>
+            usize operator()(const T& value) const noexcept {
+                if constexpr (std::same_as<T, Key>) {
+                    usize a{ std::hash<usize>{}(reinterpret_cast<usize>(value.face.get())) };
+                    usize b{ std::hash<u16>{}(value.gid) };
+                    return a ^ b + 0x9e3779b9 + (a << 6) + (a >> 2);
+                }
+                else {
+                    return std::hash<T>{}(value);
+                }
+            }
+        };
+
+        std::unordered_map<Key, Glyph, Hash> _data;
+        std::deque<std::vector<Key>> _order;
+        wil::com_ptr<IDirect3DTexture8> _current_texture;
+        rectpack2D::empty_spaces<false> _current_bin{ { Size, Size } };
+        std::vector<Key> _current_keys;
+
+        static auto _new_texture() {
+            wil::com_ptr<IDirect3DTexture8> texture;
+            THROW_IF_FAILED(
+                Direct3D::device()->CreateTexture(
+                    Size,
+                    Size,
+                    1,
+                    0,
+                    D3DFMT_A8R8G8B8,
+                    D3DPOOL_MANAGED,
+                    &texture
+                )
+            );
+            return texture;
+        }
+
+    public:
+        TextureLock lock() {
+            if (!_current_texture) {
+                _current_texture = _new_texture();
+            }
+            return { _current_texture, 0, 0, Size, Size };
+        }
+
+        template <class Fn>
+        std::pair<const Glyph&, bool> get(Key key, TextureLock& lock, Fn&& func) {
+            auto iter{ _data.find(key) };
+            if (iter != _data.end()) {
+                return { iter->second, false };
+            }
+
+            auto [alpha, width, height, offset_x, offset_y]{ std::forward<Fn>(func)() };
+            auto result{ _current_bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
+            if (!result) {
+                rectpack2D::empty_spaces<false> bin{ { Size, Size } };
+                result = bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
+                if (!result) {
+                    throw std::runtime_error{ "The glyph is too large." };
+                }
+
+                wil::com_ptr texture{ _new_texture() };
+                lock = { texture, 0, 0, Size, Size };
+
+                _current_bin = std::move(bin);
+                _current_texture = std::move(texture);
+                _order.emplace_back(std::move(_current_keys));
+                _current_keys.clear();
+
+                if (_order.size() >= N) {
+                    for (auto& key : _order.front()) {
+                        _data.erase(key);
+                    }
+                    _order.pop_front();
+                }
+            }
+
+            auto x{ static_cast<usize>(result->x) }, y{ static_cast<usize>(result->y) };
+            auto w{ static_cast<usize>(result->w) }, h{ static_cast<usize>(result->h) };
+            std::mdspan<u8, std::dextents<usize, 2>> src{ alpha.data(), h, w };
+            for (usize i{}; i < h; ++i) {
+                std::memcpy(&lock.data()[y + i, x], &src[i, 0], w);
+            }
+
+            iter = _data.emplace(key, Glyph{ _current_texture, x, y, w, h, offset_x, offset_y }).first;
+            _current_keys.push_back(key);
+            return { iter->second, true };
+        }
+    };
 
     struct Layout {
         struct Glyph {
@@ -110,6 +279,7 @@ namespace gm {
 
         wil::com_ptr<IDWriteTextFormat3> _format;
         Cache<std::wstring, Layout, 1024> _layout;
+        GlyphAtlas<4> _atlas;
 
         void _update_target() {
             THROW_IF_FAILED(
@@ -165,7 +335,7 @@ namespace gm {
             }
 
             std::wstring text_u16{ to_wstring(text) };
-            auto& glyphs{ _layout.get(
+            auto& glyph_layout{ _layout.get(
                 text_u16,
                 [&] {
                     wil::com_ptr<IDWriteTextLayout> dw_layout_base;
@@ -197,47 +367,63 @@ namespace gm {
                 }
             ).first.glyphs };
 
-            for (auto& glyph : glyphs) {
-                f32 advance{};
-                DWRITE_GLYPH_OFFSET offsets{};
-                DWRITE_GLYPH_RUN run{
-                    glyph.face.get(),
-                    glyph.size,
-                    1,
-                    &glyph.gid,
-                    &advance,
-                    &offsets,
-                };
-                wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
-                THROW_IF_FAILED(
-                    env::dw_factory->CreateGlyphRunAnalysis(
-                        &run,
-                        nullptr,
-                        DWRITE_RENDERING_MODE1_NATURAL,
-                        DWRITE_MEASURING_MODE_NATURAL,
-                        DWRITE_GRID_FIT_MODE_DISABLED,
-                        DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
-                        0,
-                        0,
-                        &rasterizer
-                    )
-                );
+            std::vector<decltype(_atlas)::Glyph> glyphs;
+            {
+                auto lock{ _atlas.lock() };
+                for (auto& glyph : glyph_layout) {
+                    glyphs.push_back(
+                        _atlas.get(
+                            { glyph.face, glyph.gid },
+                            lock,
+                            [&] {
+                                f32 advance{};
+                                DWRITE_GLYPH_OFFSET offsets{};
+                                DWRITE_GLYPH_RUN run{
+                                    glyph.face.get(),
+                                    glyph.size,
+                                    1,
+                                    &glyph.gid,
+                                    &advance,
+                                    &offsets,
+                                };
+                                wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
+                                THROW_IF_FAILED(
+                                    env::dw_factory->CreateGlyphRunAnalysis(
+                                        &run,
+                                        nullptr,
+                                        DWRITE_RENDERING_MODE1_NATURAL,
+                                        DWRITE_MEASURING_MODE_NATURAL,
+                                        DWRITE_GRID_FIT_MODE_DISABLED,
+                                        DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
+                                        0,
+                                        0,
+                                        &rasterizer
+                                    )
+                                );
 
-                RECT bbox;
-                THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
+                                RECT bbox;
+                                THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
 
                                 auto width{ static_cast<usize>(bbox.right - bbox.left) };
                                 auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
-                std::vector<u8> alpha(width * height);
-                THROW_IF_FAILED(
-                    rasterizer->CreateAlphaTexture(
-                        DWRITE_TEXTURE_ALIASED_1x1,
-                        &bbox,
-                        alpha.data(),
-                        alpha.size()
-                    )
-                );
+                                std::vector<u8> alpha(width * height);
+                                THROW_IF_FAILED(
+                                    rasterizer->CreateAlphaTexture(
+                                        DWRITE_TEXTURE_ALIASED_1x1,
+                                        &bbox,
+                                        alpha.data(),
+                                        alpha.size()
+                                    )
+                                );
+
+                                return std::tuple{ alpha, width, height, bbox.left, bbox.top };
+                            }
+                        ).first
+                    );
+                }
             }
+
+            (void)glyphs;
         }
     };
 
