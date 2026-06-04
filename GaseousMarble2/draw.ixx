@@ -133,12 +133,14 @@ namespace gm {
 
     public:
         TextureLock lock() {
-            if (!_current_texture) {
-                _current_texture = _new_texture();
-                _current_bin.reset({ Size, Size });
-                _current_keys.clear();
-            }
-            return { _current_texture, 0, 0, Size, Size };
+            wil::com_ptr texture{ _current_texture ? _current_texture : _new_texture() };
+            TextureLock texture_lock{ texture, 0, 0, Size, Size };
+
+            _current_texture = texture;
+            _current_bin.reset({ Size, Size });
+            _current_keys.clear();
+
+            return texture_lock;
         }
 
         const Glyph* get(Key key) noexcept {
@@ -163,10 +165,11 @@ namespace gm {
                 }
 
                 wil::com_ptr texture{ _new_texture() };
-                lock = { texture, 0, 0, Size, Size };
+                TextureLock texture_lock{ texture, 0, 0, Size, Size };
 
+                lock = std::move(texture_lock);
                 _current_bin = std::move(bin);
-                _current_texture = std::move(texture);
+                _current_texture = texture;
                 _order.emplace_back(std::move(_current_keys));
                 _current_keys.clear();
 
@@ -277,8 +280,11 @@ namespace gm {
         ) noexcept {
             auto& glyphs{ static_cast<Layout*>(client_drawing_context)->glyphs };
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
-            wil::com_ptr face_base{ glyph_run->fontFace };
-            wil::com_ptr face{ face_base.query<decltype(Layout::Glyph::face)::element_type>() };
+
+            wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
+            decltype(Layout::Glyph::face) face;
+            RETURN_IF_FAILED(face_base.query_to<decltype(face)::element_type>(&face));
+
             f32 size{ glyph_run->fontEmSize };
             // ignore glyph_run->isSideways
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
@@ -287,6 +293,7 @@ namespace gm {
                 f32 advance{ glyph_run->glyphAdvances[i] };
                 f32 offset_x{ glyph_run->glyphOffsets[i].advanceOffset };
                 f32 offset_y{ glyph_run->glyphOffsets[i].ascenderOffset };
+
                 if (is_ltr) {
                     glyphs.push_back({ face, size, gid, x + offset_x, y - offset_y });
                     x += advance;
@@ -296,6 +303,7 @@ namespace gm {
                     x -= advance;
                 }
             }
+
             return 0;
         }
 
@@ -338,6 +346,8 @@ namespace gm {
         GlyphAtlas<4> _atlas;
 
         void _update_target() {
+            wil::com_ptr<IDirect3DTexture8> target;
+            wil::com_ptr<ID3DXSprite> sprite;
             THROW_IF_FAILED(
                 Direct3D::device()->CreateTexture(
                     _render_width,
@@ -346,16 +356,18 @@ namespace gm {
                     0,
                     D3DFMT_A8R8G8B8,
                     D3DPOOL_MANAGED,
-                    &_target
+                    &target
                 )
             );
-
             THROW_IF_FAILED(
                 D3DXCreateSprite(
                     Direct3D::device(),
-                    &_sprite
+                    &sprite
                 )
             );
+
+            _target = target;
+            _sprite = sprite;
         }
 
         void _update_format() {
