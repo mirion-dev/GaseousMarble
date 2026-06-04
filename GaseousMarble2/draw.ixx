@@ -18,7 +18,7 @@ namespace gm {
 
     class TextureLock {
         wil::com_ptr<IDirect3DTexture8> _texture;
-        std::mdspan<u8, std::dextents<usize, 2>, std::layout_stride> _data;
+        std::mdspan<u32, std::dextents<usize, 2>, std::layout_stride> _data;
 
     public:
         TextureLock() noexcept = default;
@@ -36,8 +36,8 @@ namespace gm {
 
                 _texture = texture;
                 _data = {
-                    static_cast<u8*>(lock.pBits),
-                    { std::extents{ height, width }, std::array{ lock.Pitch, 1 } }
+                    static_cast<u32*>(lock.pBits),
+                    { std::extents{ height, width }, std::array{ lock.Pitch / sizeof(u32), 1uz } }
                 };
             }
         }
@@ -133,7 +133,11 @@ namespace gm {
 
     public:
         TextureLock lock() {
-            wil::com_ptr texture{ _current_texture ? _current_texture : _new_texture() };
+            if (_current_texture) {
+                return { _current_texture, 0, 0, Size, Size };
+            }
+
+            wil::com_ptr texture{ _new_texture() };
             TextureLock texture_lock{ texture, 0, 0, Size, Size };
 
             _current_texture = texture;
@@ -185,7 +189,9 @@ namespace gm {
             auto w{ static_cast<usize>(result->w) }, h{ static_cast<usize>(result->h) };
             std::mdspan<u8, std::dextents<usize, 2>> src{ alpha.data(), h, w };
             for (usize i{}; i < h; ++i) {
-                std::memcpy(&lock.data()[y + i, x], &src[i, 0], w);
+                for (usize j{}; j < w; ++j) {
+                    lock.data()[y + i, x + j] = D3DCOLOR_RGBA(0xff, 0xff, 0xff, (src[i, j]));
+                }
             }
 
             iter = _data.emplace(key, Glyph{ _current_texture, x, y, w, h, offset_x, offset_y }).first;
@@ -471,7 +477,7 @@ namespace gm {
                                 env::dw_factory->CreateGlyphRunAnalysis(
                                     &run,
                                     nullptr,
-                                    DWRITE_RENDERING_MODE1_NATURAL,
+                                    DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
                                     DWRITE_MEASURING_MODE_NATURAL,
                                     DWRITE_GRID_FIT_MODE_DISABLED,
                                     DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
@@ -502,7 +508,37 @@ namespace gm {
                 }
             }
 
-            (void)glyph_meta;
+            // can be optimized
+            wil::com_ptr<IDirect3DSurface8> dest;
+            THROW_IF_FAILED(_target->GetSurfaceLevel(0, &dest));
+            for (auto&& [glyph, meta] : std::views::zip(glyph_layout, glyph_meta)) {
+                wil::com_ptr<IDirect3DSurface8> src;
+                THROW_IF_FAILED(meta->texture->GetSurfaceLevel(0, &src));
+
+                RECT src_rect{
+                    static_cast<i32>(meta->x),
+                    static_cast<i32>(meta->y),
+                    static_cast<i32>(meta->x + meta->width),
+                    static_cast<i32>(meta->y + meta->height)
+                };
+                POINT dest_pos{
+                    static_cast<i32>(glyph.x + meta->offset_x),
+                    static_cast<i32>(glyph.y + meta->offset_y)
+                };
+                THROW_IF_FAILED(Direct3D::device()->CopyRects(src.get(), &src_rect, 1, dest.get(), &dest_pos));
+            }
+
+            THROW_IF_FAILED(
+                _sprite->Draw(
+                    _target.get(),
+                    nullptr,
+                    nullptr,
+                    nullptr,
+                    0,
+                    nullptr,
+                    D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff)
+                )
+            );
         }
     };
 
