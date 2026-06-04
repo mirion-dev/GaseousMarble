@@ -355,7 +355,7 @@ namespace gm {
                     1,
                     0,
                     D3DFMT_A8R8G8B8,
-                    D3DPOOL_MANAGED,
+                    D3DPOOL_DEFAULT,
                     &target
                 )
             );
@@ -437,9 +437,14 @@ namespace gm {
             ).glyphs };
 
             std::vector<usize> missing;
+            std::vector<const decltype(_atlas)::Glyph*> glyph_meta(glyph_layout.size());
             for (auto&& [i, glyph] : glyph_layout | std::views::enumerate) {
-                if (_atlas.get({ glyph.face, glyph.gid }) == nullptr) {
+                const auto* meta{ _atlas.get({ glyph.face, glyph.gid }) };
+                if (meta == nullptr) {
                     missing.push_back(i);
+                }
+                else {
+                    glyph_meta[i] = meta;
                 }
             }
 
@@ -447,7 +452,7 @@ namespace gm {
                 auto lock{ _atlas.lock() };
                 for (usize i : missing) {
                     auto& glyph{ glyph_layout[i] };
-                    _atlas.get(
+                    glyph_meta[i] = &_atlas.get(
                         { glyph.face, glyph.gid },
                         lock,
                         [&] {
@@ -497,7 +502,7 @@ namespace gm {
                 }
             }
 
-            // TODO
+            (void)glyph_meta;
         }
     };
 
