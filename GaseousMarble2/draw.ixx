@@ -171,7 +171,7 @@ namespace gm {
                 _current_keys.clear();
 
                 if (_order.size() >= N) {
-                    for (auto& key : _order.front()) {
+                    for (const Key& key : _order.front()) {
                         _data.erase(key);
                     }
                     _order.pop_front();
@@ -424,63 +424,68 @@ namespace gm {
                 }
             ).glyphs };
 
-            std::vector<decltype(_atlas)::Glyph> glyphs;
-            {
+            std::vector<usize> missing;
+            for (auto&& [i, glyph] : glyph_layout | std::views::enumerate) {
+                if (_atlas.get({ glyph.face, glyph.gid }) == nullptr) {
+                    missing.push_back(i);
+                }
+            }
+
+            if (!missing.empty()) {
                 auto lock{ _atlas.lock() };
-                for (auto& glyph : glyph_layout) {
-                    glyphs.push_back(
-                        _atlas.get(
-                            { glyph.face, glyph.gid },
-                            lock,
-                            [&] {
-                                f32 advance{};
-                                DWRITE_GLYPH_OFFSET offsets{};
-                                DWRITE_GLYPH_RUN run{
-                                    glyph.face.get(),
-                                    glyph.size,
-                                    1,
-                                    &glyph.gid,
-                                    &advance,
-                                    &offsets,
-                                };
-                                wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
-                                THROW_IF_FAILED(
-                                    env::dw_factory->CreateGlyphRunAnalysis(
-                                        &run,
-                                        nullptr,
-                                        DWRITE_RENDERING_MODE1_NATURAL,
-                                        DWRITE_MEASURING_MODE_NATURAL,
-                                        DWRITE_GRID_FIT_MODE_DISABLED,
-                                        DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
-                                        0,
-                                        0,
-                                        &rasterizer
-                                    )
-                                );
+                for (usize i : missing) {
+                    auto& glyph{ glyph_layout[i] };
+                    _atlas.get(
+                        { glyph.face, glyph.gid },
+                        lock,
+                        [&] {
+                            f32 advance{};
+                            DWRITE_GLYPH_OFFSET offsets{};
+                            DWRITE_GLYPH_RUN run{
+                                glyph.face.get(),
+                                glyph.size,
+                                1,
+                                &glyph.gid,
+                                &advance,
+                                &offsets,
+                            };
+                            wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
+                            THROW_IF_FAILED(
+                                env::dw_factory->CreateGlyphRunAnalysis(
+                                    &run,
+                                    nullptr,
+                                    DWRITE_RENDERING_MODE1_NATURAL,
+                                    DWRITE_MEASURING_MODE_NATURAL,
+                                    DWRITE_GRID_FIT_MODE_DISABLED,
+                                    DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
+                                    0,
+                                    0,
+                                    &rasterizer
+                                )
+                            );
 
-                                RECT bbox;
-                                THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
+                            RECT bbox;
+                            THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
 
-                                auto width{ static_cast<usize>(bbox.right - bbox.left) };
-                                auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
-                                std::vector<u8> alpha(width * height);
-                                THROW_IF_FAILED(
-                                    rasterizer->CreateAlphaTexture(
-                                        DWRITE_TEXTURE_ALIASED_1x1,
-                                        &bbox,
-                                        alpha.data(),
-                                        alpha.size()
-                                    )
-                                );
+                            auto width{ static_cast<usize>(bbox.right - bbox.left) };
+                            auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
+                            std::vector<u8> alpha(width * height);
+                            THROW_IF_FAILED(
+                                rasterizer->CreateAlphaTexture(
+                                    DWRITE_TEXTURE_ALIASED_1x1,
+                                    &bbox,
+                                    alpha.data(),
+                                    alpha.size()
+                                )
+                            );
 
-                                return std::tuple{ alpha, width, height, bbox.left, bbox.top };
-                            }
-                        )
+                            return std::tuple{ alpha, width, height, bbox.left, bbox.top };
+                        }
                     );
                 }
             }
 
-            (void)glyphs;
+            // TODO
         }
     };
 
