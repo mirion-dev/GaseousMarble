@@ -109,7 +109,7 @@ namespace gm {
         wil::com_ptr<ID3DXSprite> _sprite;
 
         wil::com_ptr<IDWriteTextFormat3> _format;
-        Cache<std::wstring, Layout, 256> _layout;
+        Cache<std::wstring, Layout, 1024> _layout;
 
         void _update_target() {
             THROW_IF_FAILED(
@@ -227,7 +227,7 @@ namespace gm {
 
                 auto width{ static_cast<u32>(bbox.right - bbox.left) };
                 auto height{ static_cast<u32>(bbox.bottom - bbox.top) };
-                std::vector<u8> alpha(width * height * 1);
+                std::vector<u8> alpha(width * height);
                 THROW_IF_FAILED(
                     rasterizer->CreateAlphaTexture(
                         DWRITE_TEXTURE_ALIASED_1x1,
