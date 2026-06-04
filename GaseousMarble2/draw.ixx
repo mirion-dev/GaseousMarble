@@ -112,7 +112,7 @@ namespace gm {
         std::unordered_map<Key, Glyph, Hash> _data;
         std::deque<std::vector<Key>> _order;
         wil::com_ptr<IDirect3DTexture8> _current_texture;
-        rectpack2D::empty_spaces<false> _current_bin{ { Size, Size } };
+        rectpack2D::empty_spaces<false> _current_bin{ {} };
         std::vector<Key> _current_keys;
 
         static auto _new_texture() {
@@ -135,15 +135,22 @@ namespace gm {
         TextureLock lock() {
             if (!_current_texture) {
                 _current_texture = _new_texture();
+                _current_bin.reset({ Size, Size });
+                _current_keys.clear();
             }
             return { _current_texture, 0, 0, Size, Size };
         }
 
+        const Glyph* get(Key key) noexcept {
+            auto iter{ _data.find(key) };
+            return iter != _data.end() ? &iter->second : nullptr;
+        }
+
         template <class Fn>
-        std::pair<const Glyph&, bool> get(Key key, TextureLock& lock, Fn&& func) {
+        const Glyph& get(Key key, TextureLock& lock, Fn&& func) {
             auto iter{ _data.find(key) };
             if (iter != _data.end()) {
-                return { iter->second, false };
+                return iter->second;
             }
 
             auto [alpha, width, height, offset_x, offset_y]{ std::forward<Fn>(func)() };
@@ -180,7 +187,13 @@ namespace gm {
 
             iter = _data.emplace(key, Glyph{ _current_texture, x, y, w, h, offset_x, offset_y }).first;
             _current_keys.push_back(key);
-            return { iter->second, true };
+            return iter->second;
+        }
+
+        void clear() noexcept {
+            _data.clear();
+            _order.clear();
+            _current_texture = nullptr;
         }
     };
 
@@ -194,6 +207,49 @@ namespace gm {
         };
 
         std::vector<Glyph> glyphs;
+    };
+
+    export template <usize N>
+        requires (N > 0)
+    class LayoutCache {
+        std::unordered_map<std::wstring_view, Layout> _data;
+        std::deque<std::wstring> _order;
+
+    public:
+        LayoutCache() noexcept = default;
+        LayoutCache(const LayoutCache&) noexcept = delete;
+        LayoutCache(LayoutCache&&) noexcept = default;
+
+        LayoutCache& operator=(const LayoutCache&) noexcept = delete;
+        LayoutCache& operator=(LayoutCache&&) noexcept = default;
+
+        const Layout* get(std::wstring_view text) noexcept {
+            auto iter{ _data.find(text) };
+            return iter != _data.end() ? &iter->second : nullptr;
+        }
+
+        template <class Fn>
+        const Layout& get(std::wstring text, Fn&& func) {
+            auto iter{ _data.find(text) };
+            if (iter != _data.end()) {
+                return iter->second;
+            }
+
+            Layout value{ std::forward<Fn>(func)() };
+            iter = _data.emplace(_order.emplace_back(text), std::move(value)).first;
+
+            if (_data.size() > N) {
+                _data.erase(_order.front());
+                _order.pop_front();
+            }
+
+            return iter->second;
+        }
+
+        void clear() noexcept {
+            _data.clear();
+            _order.clear();
+        }
     };
 
     class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
@@ -278,7 +334,7 @@ namespace gm {
         wil::com_ptr<ID3DXSprite> _sprite;
 
         wil::com_ptr<IDWriteTextFormat3> _format;
-        Cache<std::wstring, Layout, 1024> _layout;
+        LayoutCache<1024> _layout;
         GlyphAtlas<4> _atlas;
 
         void _update_target() {
@@ -319,6 +375,7 @@ namespace gm {
             _format = format_base.query<decltype(_format)::element_type>();
 
             _layout.clear();
+            _atlas.clear();
         }
 
     public:
@@ -365,7 +422,7 @@ namespace gm {
 
                     return layout;
                 }
-            ).first.glyphs };
+            ).glyphs };
 
             std::vector<decltype(_atlas)::Glyph> glyphs;
             {
@@ -418,7 +475,7 @@ namespace gm {
 
                                 return std::tuple{ alpha, width, height, bbox.left, bbox.top };
                             }
-                        ).first
+                        )
                     );
                 }
             }
