@@ -10,11 +10,20 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="draw.ixx" />
+    <ClCompile Include="engine.ixx" />
+    <ClCompile Include="env.ixx" />
+    <ClCompile Include="gm.ixx" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="types.ixx" />
+    <ClCompile Include="utils.ixx" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{38030e2f-4282-44fd-8976-193478a8817e}</ProjectGuid>
-    <RootNamespace>GaseousMarble2</RootNamespace>
+    <ProjectGuid>{9f0e3bc3-b86b-4fa5-8290-4ed4e6015239}</ProjectGuid>
+    <RootNamespace>GaseousMarble</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -46,11 +55,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(IncludePath);$(SolutionDir)third_party\dx81\include;$(SolutionDir)third_party\rectpack2d\src</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)third_party\dx81\include;$(SolutionDir)third_party\rectpack2d\src</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(SolutionDir)third_party\dx81\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(IncludePath);$(SolutionDir)third_party\dx81\include;$(SolutionDir)third_party\rectpack2d\src</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)third_party\dx81\include;$(SolutionDir)third_party\rectpack2d\src</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(SolutionDir)third_party\dx81\lib</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -66,6 +75,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d8.lib;d3dx8.lib;dwrite.lib;legacy_stdio_definitions.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libci.lib</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -92,15 +102,6 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="draw.ixx" />
-    <ClCompile Include="engine.ixx" />
-    <ClCompile Include="env.ixx" />
-    <ClCompile Include="gm.ixx" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="types.ixx" />
-    <ClCompile Include="utils.ixx" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
