@@ -16,126 +16,6 @@ import gm.engine;
 
 namespace gm {
 
-    struct Layout {
-        struct Glyph {
-            wil::com_ptr<IDWriteFontFace7> face;
-            f32 size;
-            u16 gid;
-            f32 x;
-            f32 y;
-        };
-
-        std::vector<Glyph> glyphs;
-    };
-
-    export template <usize N>
-        requires (N > 0)
-    class LayoutCache {
-        std::unordered_map<std::wstring_view, Layout> _data;
-        std::deque<std::wstring> _order;
-
-    public:
-        LayoutCache() noexcept = default;
-        LayoutCache(const LayoutCache&) noexcept = delete;
-        LayoutCache(LayoutCache&&) noexcept = default;
-
-        LayoutCache& operator=(const LayoutCache&) noexcept = delete;
-        LayoutCache& operator=(LayoutCache&&) noexcept = default;
-
-        const Layout* get(std::wstring_view text) noexcept {
-            auto iter{ _data.find(text) };
-            return iter != _data.end() ? &iter->second : nullptr;
-        }
-
-        template <class Fn>
-        const Layout& get(std::wstring_view text, Fn&& func) {
-            auto iter{ _data.find(text) };
-            if (iter != _data.end()) {
-                return iter->second;
-            }
-
-            Layout value{ std::forward<Fn>(func)() };
-            iter = _data.emplace(_order.emplace_back(text), std::move(value)).first;
-
-            if (_data.size() > N) {
-                _data.erase(_order.front());
-                _order.pop_front();
-            }
-
-            return iter->second;
-        }
-
-        void clear() noexcept {
-            _data.clear();
-            _order.clear();
-        }
-    };
-
-    class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
-    public:
-        STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP GetCurrentTransform(void*, DWRITE_MATRIX*) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP GetPixelsPerDip(void*, FLOAT*) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP DrawGlyphRun(
-            void* client_drawing_context,
-            FLOAT baseline_origin_x,
-            FLOAT baseline_origin_y,
-            DWRITE_MEASURING_MODE measuring_mode,
-            const DWRITE_GLYPH_RUN* glyph_run,
-            const DWRITE_GLYPH_RUN_DESCRIPTION* glyph_run_description,
-            IUnknown* client_drawing_effect
-        ) noexcept {
-            auto& glyphs{ static_cast<Layout*>(client_drawing_context)->glyphs };
-            f32 x{ baseline_origin_x }, y{ baseline_origin_y };
-
-            wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
-            decltype(Layout::Glyph::face) face;
-            RETURN_IF_FAILED(face_base.query_to<decltype(face)::element_type>(&face));
-
-            f32 size{ glyph_run->fontEmSize };
-            // ignore glyph_run->isSideways
-            bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
-            for (usize i{}; i < glyph_run->glyphCount; ++i) {
-                u16 gid{ glyph_run->glyphIndices[i] };
-                f32 advance{ glyph_run->glyphAdvances[i] };
-                f32 offset_x{ glyph_run->glyphOffsets[i].advanceOffset };
-                f32 offset_y{ glyph_run->glyphOffsets[i].ascenderOffset };
-
-                if (is_ltr) {
-                    glyphs.emplace_back(face, size, gid, x + offset_x, y - offset_y);
-                    x += advance;
-                }
-                else {
-                    glyphs.emplace_back(face, size, gid, x - offset_x, y - offset_y);
-                    x -= advance;
-                }
-            }
-
-            return 0;
-        }
-
-        STDMETHODIMP DrawInlineObject(void*, FLOAT, FLOAT, IDWriteInlineObject*, BOOL, BOOL, IUnknown*) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP DrawStrikethrough(void*, FLOAT, FLOAT, const DWRITE_STRIKETHROUGH*, IUnknown*) noexcept {
-            return 0;
-        }
-
-        STDMETHODIMP DrawUnderline(void*, FLOAT, FLOAT, const DWRITE_UNDERLINE*, IUnknown*) noexcept {
-            return 0;
-        }
-    };
-
     class TextureLock {
         wil::com_ptr<IDirect3DTexture8> _texture;
         std::mdspan<u32, std::dextents<usize, 2>, std::layout_stride> _data;
@@ -331,6 +211,126 @@ namespace gm {
             _data.clear();
             _order.clear();
             _current_texture = nullptr;
+        }
+    };
+
+    struct Layout {
+        struct Glyph {
+            wil::com_ptr<IDWriteFontFace7> face;
+            f32 size;
+            u16 gid;
+            f32 x;
+            f32 y;
+        };
+
+        std::vector<Glyph> glyphs;
+    };
+
+    export template <usize N>
+        requires (N > 0)
+    class LayoutCache {
+        std::unordered_map<std::wstring_view, Layout> _data;
+        std::deque<std::wstring> _order;
+
+    public:
+        LayoutCache() noexcept = default;
+        LayoutCache(const LayoutCache&) noexcept = delete;
+        LayoutCache(LayoutCache&&) noexcept = default;
+
+        LayoutCache& operator=(const LayoutCache&) noexcept = delete;
+        LayoutCache& operator=(LayoutCache&&) noexcept = default;
+
+        const Layout* get(std::wstring_view text) noexcept {
+            auto iter{ _data.find(text) };
+            return iter != _data.end() ? &iter->second : nullptr;
+        }
+
+        template <class Fn>
+        const Layout& get(std::wstring_view text, Fn&& func) {
+            auto iter{ _data.find(text) };
+            if (iter != _data.end()) {
+                return iter->second;
+            }
+
+            Layout value{ std::forward<Fn>(func)() };
+            iter = _data.emplace(_order.emplace_back(text), std::move(value)).first;
+
+            if (_data.size() > N) {
+                _data.erase(_order.front());
+                _order.pop_front();
+            }
+
+            return iter->second;
+        }
+
+        void clear() noexcept {
+            _data.clear();
+            _order.clear();
+        }
+    };
+
+    class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
+    public:
+        STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
+            return 0;
+        }
+
+        STDMETHODIMP GetCurrentTransform(void*, DWRITE_MATRIX*) noexcept {
+            return 0;
+        }
+
+        STDMETHODIMP GetPixelsPerDip(void*, FLOAT*) noexcept {
+            return 0;
+        }
+
+        STDMETHODIMP DrawGlyphRun(
+            void* client_drawing_context,
+            FLOAT baseline_origin_x,
+            FLOAT baseline_origin_y,
+            DWRITE_MEASURING_MODE measuring_mode,
+            const DWRITE_GLYPH_RUN* glyph_run,
+            const DWRITE_GLYPH_RUN_DESCRIPTION* glyph_run_description,
+            IUnknown* client_drawing_effect
+        ) noexcept {
+            auto& glyphs{ static_cast<Layout*>(client_drawing_context)->glyphs };
+            f32 x{ baseline_origin_x }, y{ baseline_origin_y };
+
+            wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
+            decltype(Layout::Glyph::face) face;
+            RETURN_IF_FAILED(face_base.query_to<decltype(face)::element_type>(&face));
+
+            f32 size{ glyph_run->fontEmSize };
+            // ignore glyph_run->isSideways
+            bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
+            for (usize i{}; i < glyph_run->glyphCount; ++i) {
+                u16 gid{ glyph_run->glyphIndices[i] };
+                f32 advance{ glyph_run->glyphAdvances[i] };
+                f32 offset_x{ glyph_run->glyphOffsets[i].advanceOffset };
+                f32 offset_y{ glyph_run->glyphOffsets[i].ascenderOffset };
+
+                if (is_ltr) {
+                    glyphs.emplace_back(face, size, gid, x + offset_x, y - offset_y);
+                    x += advance;
+                }
+                else {
+                    glyphs.emplace_back(face, size, gid, x - offset_x, y - offset_y);
+                    x -= advance;
+                }
+            }
+
+            return 0;
+        }
+
+        STDMETHODIMP DrawInlineObject(void*, FLOAT, FLOAT, IDWriteInlineObject*, BOOL, BOOL, IUnknown*) noexcept {
+            return 0;
+        }
+
+        STDMETHODIMP DrawStrikethrough(void*, FLOAT, FLOAT, const DWRITE_STRIKETHROUGH*, IUnknown*) noexcept {
+            return 0;
+        }
+
+        STDMETHODIMP DrawUnderline(void*, FLOAT, FLOAT, const DWRITE_UNDERLINE*, IUnknown*) noexcept {
+            return 0;
         }
     };
 
