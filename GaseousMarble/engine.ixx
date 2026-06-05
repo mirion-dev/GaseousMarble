@@ -28,8 +28,8 @@ namespace gm {
 
     public:
         EmptyString() noexcept {
-            *std::start_lifetime_as<StringHeader>(_storage) = { CODE_PAGE<C>, sizeof(C), 1, 0 };
-            _data = std::start_lifetime_as_array<C>(_storage + sizeof(StringHeader), 1);
+            *reinterpret_cast<StringHeader*>(_storage) = { CODE_PAGE<C>, sizeof(C), 1, 0 };
+            _data = reinterpret_cast<C*>(_storage + sizeof(StringHeader));
             *_data = {};
         }
 
@@ -50,7 +50,9 @@ namespace gm {
         const C* _data{ empty_string<C>.data() };
 
         auto _header() const noexcept {
-            return std::launder(reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader)));
+            return std::launder(
+                reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader))
+            );
         }
 
     public:
@@ -89,7 +91,9 @@ namespace gm {
         }
 
         auto _header() const noexcept {
-            return std::launder(reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader)));
+            return std::launder(
+                reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader))
+            );
         }
 
     public:
@@ -100,8 +104,8 @@ namespace gm {
         BasicString(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept {
             auto view{ static_cast<std::basic_string_view<C>>(str) };
             auto storage{ new u8[sizeof(StringHeader) + (view.size() + 1) * sizeof(C)] };
-            *std::start_lifetime_as<StringHeader>(storage) = { CODE_PAGE<C>, sizeof(C), 1, view.size() };
-            _data = std::start_lifetime_as_array<C>(storage + sizeof(StringHeader), view.size() + 1);
+            *reinterpret_cast<StringHeader*>(storage) = { CODE_PAGE<C>, sizeof(C), 1, view.size() };
+            _data = reinterpret_cast<C*>(storage + sizeof(StringHeader));
             *std::ranges::copy(view, _data).out = {};
         }
 
