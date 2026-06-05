@@ -228,12 +228,11 @@ namespace gm {
             template <class T>
             usize operator()(const T& value) const noexcept {
                 if constexpr (std::same_as<T, Key>) {
-                    usize a{ std::hash<usize>{}(reinterpret_cast<usize>(value.face.get())) };
-                    usize b{ std::hash<u16>{}(value.gid) };
+                    usize a{ gm::Hash{}(value.face) }, b{ gm::Hash{}(value.gid) };
                     return a ^ b + 0x9e3779b9 + (a << 6) + (a >> 2);
                 }
                 else {
-                    return std::hash<T>{}(value);
+                    return gm::Hash{}(value);
                 }
             }
         };

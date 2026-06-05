@@ -1,6 +1,11 @@
+module;
+
+#include <wil/com.h>
+
 export module gm.utils;
 
 import std;
+import gm.types;
 
 namespace gm {
 
@@ -8,5 +13,17 @@ namespace gm {
         std::u8string str_u8{ str.begin(), str.end() };
         return std::filesystem::path{ str_u8 }.wstring();
     }
+
+    export struct Hash {
+        template <class T>
+        usize operator()(const T& value) const noexcept {
+            return std::hash<T>{}(value);
+        }
+
+        template <class T>
+        usize operator()(wil::com_ptr<T> value) const noexcept {
+            return std::hash<T*>{}(value.get());
+        }
+    };
 
 }
