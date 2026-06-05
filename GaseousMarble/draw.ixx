@@ -111,11 +111,11 @@ namespace gm {
                 f32 offset_y{ glyph_run->glyphOffsets[i].ascenderOffset };
 
                 if (is_ltr) {
-                    glyphs.push_back({ face, size, gid, x + offset_x, y - offset_y });
+                    glyphs.emplace_back(face, size, gid, x + offset_x, y - offset_y);
                     x += advance;
                 }
                 else {
-                    glyphs.push_back({ face, size, gid, x - offset_x, y - offset_y });
+                    glyphs.emplace_back(face, size, gid, x - offset_x, y - offset_y);
                     x -= advance;
                 }
             }
@@ -147,10 +147,10 @@ namespace gm {
             if (texture) {
                 D3DLOCKED_RECT lock;
                 RECT rect{
-                    static_cast<isize>(x),
-                    static_cast<isize>(y),
-                    static_cast<isize>(x + width),
-                    static_cast<isize>(y + height)
+                    static_cast<isize>(std::round(x)),
+                    static_cast<isize>(std::round(y)),
+                    static_cast<isize>(std::round(x + width)),
+                    static_cast<isize>(std::round(y + height))
                 };
                 THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, 0));
 
@@ -516,19 +516,38 @@ namespace gm {
                 }
             }
 
-            // can be optimized
+            std::unordered_map<
+                wil::com_ptr<IDirect3DTexture8>,
+                std::pair<std::vector<RECT>, std::vector<POINT>>,
+                Hash
+            > rects;
+
+            for (auto&& [glyph, meta] : std::views::zip(glyph_layout, glyph_meta)) {
+                auto& [src_rects, dest_points]{ rects[meta->texture] };
+                src_rects.emplace_back(meta->rect());
+                dest_points.emplace_back(
+                    static_cast<isize>(std::round(glyph.x + meta->offset_x)),
+                    static_cast<isize>(std::round(glyph.y + meta->offset_y))
+                );
+            }
+
             wil::com_ptr<IDirect3DSurface8> dest;
             THROW_IF_FAILED(_target->GetSurfaceLevel(0, &dest));
-            for (auto&& [glyph, meta] : std::views::zip(glyph_layout, glyph_meta)) {
-                wil::com_ptr<IDirect3DSurface8> src;
-                THROW_IF_FAILED(meta->texture->GetSurfaceLevel(0, &src));
 
-                RECT src_rect{ meta->rect() };
-                POINT dest_pos{
-                    static_cast<isize>(glyph.x + meta->offset_x),
-                    static_cast<isize>(glyph.y + meta->offset_y)
-                };
-                THROW_IF_FAILED(Direct3D::device()->CopyRects(src.get(), &src_rect, 1, dest.get(), &dest_pos));
+            for (auto& [src_texture, pair] : rects) {
+                wil::com_ptr<IDirect3DSurface8> src;
+                THROW_IF_FAILED(src_texture->GetSurfaceLevel(0, &src));
+
+                auto& [src_rects, dest_points]{ pair };
+                THROW_IF_FAILED(
+                    Direct3D::device()->CopyRects(
+                        src.get(),
+                        src_rects.data(),
+                        src_rects.size(),
+                        dest.get(),
+                        dest_points.data()
+                    )
+                );
             }
 
             THROW_IF_FAILED(
