@@ -71,43 +71,41 @@ namespace gm {
         }
     };
 
+    struct GlyphId {
+        wil::com_ptr<IDWriteFontFace7> face;
+        u16 gid;
+
+        friend bool operator==(GlyphId left, GlyphId right) noexcept {
+            return left.face.get() == right.face.get() && left.gid == right.gid;
+        }
+    };
+
+    struct GlyphMeta {
+        wil::com_ptr<IDirect3DTexture8> texture;
+        usize x;
+        usize y;
+        usize width;
+        usize height;
+        isize offset_x;
+        isize offset_y;
+
+        RECT rect() const noexcept {
+            return {
+                static_cast<isize>(x),
+                static_cast<isize>(y),
+                static_cast<isize>(x + width),
+                static_cast<isize>(y + height)
+            };
+        }
+    };
+
     template <usize N, usize Size = 1024>
         requires (N > 0 && Size > 0)
     class GlyphAtlas {
-    public:
-        struct Glyph {
-            wil::com_ptr<IDirect3DTexture8> texture;
-            usize x;
-            usize y;
-            usize width;
-            usize height;
-            isize offset_x;
-            isize offset_y;
-
-            RECT rect() const noexcept {
-                return {
-                    static_cast<isize>(x),
-                    static_cast<isize>(y),
-                    static_cast<isize>(x + width),
-                    static_cast<isize>(y + height)
-                };
-            }
-        };
-
-        struct Key {
-            wil::com_ptr<IDWriteFontFace7> face;
-            u16 gid;
-
-            friend bool operator==(Key left, Key right) noexcept {
-                return left.face.get() == right.face.get() && left.gid == right.gid;
-            }
-        };
-
-    private:
         struct Hash {
             template <class T>
             usize operator()(const T& value) const noexcept {
-                if constexpr (std::same_as<T, Key>) {
+                if constexpr (std::same_as<T, GlyphId>) {
                     usize a{ gm::Hash{}(value.face) }, b{ gm::Hash{}(value.gid) };
                     return a ^ b + 0x9e3779b9 + (a << 6) + (a >> 2);
                 }
@@ -117,11 +115,12 @@ namespace gm {
             }
         };
 
-        std::unordered_map<Key, Glyph, Hash> _data;
-        std::deque<std::vector<Key>> _order;
+        std::unordered_map<GlyphId, GlyphMeta, Hash> _data;
+        std::deque<std::vector<GlyphId>> _order;
+
         wil::com_ptr<IDirect3DTexture8> _current_texture;
         rectpack2D::empty_spaces<false> _current_bin{ {} };
-        std::vector<Key> _current_keys;
+        std::vector<GlyphId> _current_ids;
 
         static auto _new_texture() {
             wil::com_ptr<IDirect3DTexture8> texture;
@@ -150,19 +149,19 @@ namespace gm {
 
             _current_texture = texture;
             _current_bin.reset({ Size, Size });
-            _current_keys.clear();
+            _current_ids.clear();
 
             return texture_lock;
         }
 
-        const Glyph* get(Key key) noexcept {
-            auto iter{ _data.find(key) };
+        const GlyphMeta* get(GlyphId id) noexcept {
+            auto iter{ _data.find(id) };
             return iter != _data.end() ? &iter->second : nullptr;
         }
 
         template <class Fn>
-        const Glyph& get(Key key, TextureLock& lock, Fn&& func) {
-            auto iter{ _data.find(key) };
+        const GlyphMeta& get(GlyphId id, TextureLock& lock, Fn&& func) {
+            auto iter{ _data.find(id) };
             if (iter != _data.end()) {
                 return iter->second;
             }
@@ -182,12 +181,12 @@ namespace gm {
                 lock = std::move(texture_lock);
                 _current_bin = std::move(bin);
                 _current_texture = texture;
-                _order.emplace_back(std::move(_current_keys));
-                _current_keys.clear();
+                _order.emplace_back(std::move(_current_ids));
+                _current_ids.clear();
 
                 if (_order.size() >= N) {
-                    for (const Key& key : _order.front()) {
-                        _data.erase(key);
+                    for (const GlyphId& id : _order.front()) {
+                        _data.erase(id);
                     }
                     _order.pop_front();
                 }
@@ -202,8 +201,8 @@ namespace gm {
                 }
             }
 
-            iter = _data.emplace(key, Glyph{ _current_texture, x, y, w, h, offset_x, offset_y }).first;
-            _current_keys.push_back(key);
+            iter = _data.emplace(id, GlyphMeta{ _current_texture, x, y, w, h, offset_x, offset_y }).first;
+            _current_ids.push_back(id);
             return iter->second;
         }
 
@@ -214,15 +213,15 @@ namespace gm {
         }
     };
 
-    struct Layout {
-        struct Glyph {
-            wil::com_ptr<IDWriteFontFace7> face;
-            f32 size;
-            u16 gid;
-            f32 x;
-            f32 y;
-        };
+    struct Glyph {
+        wil::com_ptr<IDWriteFontFace7> face;
+        u16 gid;
+        f32 size;
+        f32 x;
+        f32 y;
+    };
 
+    struct Layout {
         std::vector<Glyph> glyphs;
     };
 
@@ -252,8 +251,8 @@ namespace gm {
                 return iter->second;
             }
 
-            Layout value{ std::forward<Fn>(func)() };
-            iter = _data.emplace(_order.emplace_back(text), std::move(value)).first;
+            Layout layout{ std::forward<Fn>(func)() };
+            iter = _data.emplace(_order.emplace_back(text), std::move(layout)).first;
 
             if (_data.size() > N) {
                 _data.erase(_order.front());
@@ -296,7 +295,7 @@ namespace gm {
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
-            decltype(Layout::Glyph::face) face;
+            decltype(Glyph::face) face;
             RETURN_IF_FAILED(face_base.query_to<decltype(face)::element_type>(&face));
 
             f32 size{ glyph_run->fontEmSize };
@@ -309,11 +308,11 @@ namespace gm {
                 f32 offset_y{ glyph_run->glyphOffsets[i].ascenderOffset };
 
                 if (is_ltr) {
-                    glyphs.emplace_back(face, size, gid, x + offset_x, y - offset_y);
+                    glyphs.emplace_back(face, gid, size, x + offset_x, y - offset_y);
                     x += advance;
                 }
                 else {
-                    glyphs.emplace_back(face, size, gid, x - offset_x, y - offset_y);
+                    glyphs.emplace_back(face, gid, size, x - offset_x, y - offset_y);
                     x -= advance;
                 }
             }
@@ -373,12 +372,7 @@ namespace gm {
                     &target
                 )
             );
-            THROW_IF_FAILED(
-                D3DXCreateSprite(
-                    Direct3D::device(),
-                    &sprite
-                )
-            );
+            THROW_IF_FAILED(D3DXCreateSprite(Direct3D::device(), &sprite));
 
             _target = target;
             _sprite = sprite;
@@ -418,7 +412,7 @@ namespace gm {
             }
 
             std::wstring text_u16{ to_wstring(text) };
-            auto& glyph_layout{ _layout.get(
+            auto& glyphs{ _layout.get(
                 text_u16,
                 [&] {
                     wil::com_ptr<IDWriteTextLayout> dw_layout_base;
@@ -451,9 +445,9 @@ namespace gm {
             ).glyphs };
 
             std::vector<usize> missing;
-            std::vector<const decltype(_atlas)::Glyph*> glyph_meta(glyph_layout.size());
-            for (auto&& [i, glyph] : glyph_layout | std::views::enumerate) {
-                const auto* meta{ _atlas.get({ glyph.face, glyph.gid }) };
+            std::vector<const GlyphMeta*> glyph_meta(glyphs.size());
+            for (auto&& [i, glyph] : glyphs | std::views::enumerate) {
+                const GlyphMeta* meta{ _atlas.get({ glyph.face, glyph.gid }) };
                 if (meta == nullptr) {
                     missing.push_back(i);
                 }
@@ -465,7 +459,7 @@ namespace gm {
             if (!missing.empty()) {
                 auto lock{ _atlas.lock() };
                 for (usize i : missing) {
-                    auto& glyph{ glyph_layout[i] };
+                    auto& glyph{ glyphs[i] };
                     glyph_meta[i] = &_atlas.get(
                         { glyph.face, glyph.gid },
                         lock,
@@ -522,7 +516,7 @@ namespace gm {
                 Hash
             > rects;
 
-            for (auto&& [glyph, meta] : std::views::zip(glyph_layout, glyph_meta)) {
+            for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
                 auto& [src_rects, dest_points]{ rects[meta->texture] };
                 src_rects.emplace_back(meta->rect());
                 dest_points.emplace_back(
