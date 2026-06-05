@@ -238,7 +238,7 @@ namespace gm {
         }
 
         template <class Fn>
-        const Layout& get(std::wstring text, Fn&& func) {
+        const Layout& get(std::wstring_view text, Fn&& func) {
             auto iter{ _data.find(text) };
             if (iter != _data.end()) {
                 return iter->second;
@@ -502,7 +502,7 @@ namespace gm {
                                 )
                             );
 
-                            return std::tuple{ alpha, width, height, bbox.left, bbox.top };
+                            return std::tuple{ std::move(alpha), width, height, bbox.left, bbox.top };
                         }
                     );
                 }
