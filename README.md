@@ -1,5 +1,5 @@
-> [!Warning]
-> You are viewing the readme for the `master` branch, which may contain unreleased features. For a specific version, please select the corresponding tag.
+> [!note]
+> See [v2](https://github.com/mirion-dev/GaseousMarble/tree/v2) for current work.
 
 # GaseousMarble
 
