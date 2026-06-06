@@ -139,6 +139,13 @@ namespace gm {
         }
 
     public:
+        GlyphAtlas() noexcept = default;
+        GlyphAtlas(const GlyphAtlas&) noexcept = delete;
+        GlyphAtlas(GlyphAtlas&&) noexcept = default;
+
+        GlyphAtlas& operator=(const GlyphAtlas&) noexcept = delete;
+        GlyphAtlas& operator=(GlyphAtlas&&) noexcept = default;
+
         TextureLock lock() {
             if (_current_texture) {
                 return { _current_texture, 0, 0, Size, Size };
