@@ -1,6 +1,6 @@
 module;
 
-#include <d3dx8.h>
+#include <d3d8.h>
 #include <dwrite_3.h>
 #include <rectpack2D/finders_interface.h>
 #include <wil/com.h>
@@ -88,15 +88,6 @@ namespace gm {
         usize height;
         isize offset_x;
         isize offset_y;
-
-        RECT rect() const noexcept {
-            return {
-                static_cast<isize>(x),
-                static_cast<isize>(y),
-                static_cast<isize>(x + width),
-                static_cast<isize>(y + height)
-            };
-        }
     };
 
     template <usize N, usize Size = 1024>
@@ -145,6 +136,10 @@ namespace gm {
 
         GlyphAtlas& operator=(const GlyphAtlas&) noexcept = delete;
         GlyphAtlas& operator=(GlyphAtlas&&) noexcept = default;
+
+        static usize texture_size() noexcept {
+            return Size;
+        }
 
         TextureLock lock() {
             if (_current_texture) {
@@ -356,34 +351,9 @@ namespace gm {
     export class Draw {
         Option _option;
 
-        usize _render_width{};
-        usize _render_height{};
-        wil::com_ptr<IDirect3DTexture8> _target;
-        wil::com_ptr<ID3DXSprite> _sprite;
-
         wil::com_ptr<IDWriteTextFormat3> _format;
         LayoutCache<1024> _layout;
         GlyphAtlas<4> _atlas;
-
-        void _update_target() {
-            wil::com_ptr<IDirect3DTexture8> target;
-            wil::com_ptr<ID3DXSprite> sprite;
-            THROW_IF_FAILED(
-                Direct3D::device()->CreateTexture(
-                    _render_width,
-                    _render_height,
-                    1,
-                    0,
-                    D3DFMT_A8R8G8B8,
-                    D3DPOOL_DEFAULT,
-                    &target
-                )
-            );
-            THROW_IF_FAILED(D3DXCreateSprite(Direct3D::device(), &sprite));
-
-            _target = target;
-            _sprite = sprite;
-        }
 
         void _update_format() {
             wil::com_ptr<IDWriteTextFormat> format_base;
@@ -407,13 +377,6 @@ namespace gm {
 
     public:
         void text(f32 x, f32 y, std::string_view text) {
-            usize render_width{ Direct3D::render_width() }, render_height{ Direct3D::render_height() };
-            if (!_target || !_sprite || _render_width != render_width || _render_height != render_height) {
-                _render_width = render_width;
-                _render_height = render_height;
-                _update_target();
-            }
-
             if (!_format) {
                 _update_format();
             }
@@ -517,51 +480,59 @@ namespace gm {
                 }
             }
 
-            std::unordered_map<
-                wil::com_ptr<IDirect3DTexture8>,
-                std::pair<std::vector<RECT>, std::vector<POINT>>,
-                Hash
-            > rects;
+            struct Vertex {
+                f32 x;
+                f32 y;
+                f32 z;
+                f32 rhw;
+                u32 color;
+                f32 u;
+                f32 v;
+            };
 
+            std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
             for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
-                auto& [src_rects, dest_points]{ rects[meta->texture] };
-                src_rects.emplace_back(meta->rect());
-                dest_points.emplace_back(
-                    static_cast<isize>(std::round(glyph.x + meta->offset_x)),
-                    static_cast<isize>(std::round(glyph.y + meta->offset_y))
-                );
+                f32 x1{ glyph.x + meta->offset_x - .5f };
+                f32 y1{ glyph.y + meta->offset_y - .5f };
+                f32 x2{ x1 + meta->width };
+                f32 y2{ y1 + meta->height };
+
+                f32 size{ static_cast<f32>(_atlas.texture_size()) };
+                f32 u1{ meta->x / size };
+                f32 v1{ meta->y / size };
+                f32 u2{ (meta->x + meta->width) / size };
+                f32 v2{ (meta->y + meta->height) / size };
+
+                u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
+                Vertex tl{ x1, y1, 0, 1, color, u1, v1 };
+                Vertex tr{ x2, y1, 0, 1, color, u2, v1 };
+                Vertex bl{ x1, y2, 0, 1, color, u1, v2 };
+                Vertex br{ x2, y2, 0, 1, color, u2, v2 };
+                batches[meta->texture].append_range(std::array{ tl, tr, bl, br, bl, tr });
             }
 
-            wil::com_ptr<IDirect3DSurface8> dest;
-            THROW_IF_FAILED(_target->GetSurfaceLevel(0, &dest));
+            auto device{ Direct3D::device() };
 
-            for (auto& [src_texture, pair] : rects) {
-                wil::com_ptr<IDirect3DSurface8> src;
-                THROW_IF_FAILED(src_texture->GetSurfaceLevel(0, &src));
+            DWORD old_fvf;
+            THROW_IF_FAILED(device->GetVertexShader(&old_fvf));
+            auto _{ wil::scope_exit([&] { device->SetVertexShader(old_fvf); }) };
 
-                auto& [src_rects, dest_points]{ pair };
+            wil::com_ptr<IDirect3DBaseTexture8> old_texture;
+            THROW_IF_FAILED(device->GetTexture(0, &old_texture));
+            auto _2{ wil::scope_exit([&] { device->SetTexture(0, old_texture.get()); }) };
+
+            THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
+            for (auto& [texture, vertices] : batches) {
+                THROW_IF_FAILED(device->SetTexture(0, texture.get()));
                 THROW_IF_FAILED(
-                    Direct3D::device()->CopyRects(
-                        src.get(),
-                        src_rects.data(),
-                        src_rects.size(),
-                        dest.get(),
-                        dest_points.data()
+                    device->DrawPrimitiveUP(
+                        D3DPT_TRIANGLELIST,
+                        vertices.size() / 3,
+                        vertices.data(),
+                        sizeof(Vertex)
                     )
                 );
             }
-
-            THROW_IF_FAILED(
-                _sprite->Draw(
-                    _target.get(),
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    0,
-                    nullptr,
-                    D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff)
-                )
-            );
         }
     };
 
