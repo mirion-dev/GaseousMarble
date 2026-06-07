@@ -227,57 +227,6 @@ namespace gm {
         std::vector<Glyph> glyphs;
     };
 
-    export template <usize N>
-        requires (N > 0)
-    class LayoutCache {
-        std::list<std::pair<std::wstring, Layout>> _data;
-        std::unordered_map<std::wstring_view, decltype(_data)::iterator> _map;
-
-    public:
-        LayoutCache() noexcept = default;
-        LayoutCache(const LayoutCache&) noexcept = delete;
-        LayoutCache(LayoutCache&&) noexcept = default;
-
-        LayoutCache& operator=(const LayoutCache&) noexcept = delete;
-        LayoutCache& operator=(LayoutCache&&) noexcept = default;
-
-        const Layout* get(std::wstring_view text) noexcept {
-            auto map_iter{ _map.find(text) };
-            if (map_iter != _map.end()) {
-                auto iter{ map_iter->second };
-                _data.splice(_data.end(), _data, iter);
-                return &iter->second;
-            }
-
-            return nullptr;
-        }
-
-        template <class Fn>
-        const Layout& get(std::wstring_view text, Fn&& func) {
-            auto map_iter{ _map.find(text) };
-            if (map_iter != _map.end()) {
-                auto iter{ map_iter->second };
-                _data.splice(_data.end(), _data, iter);
-                return iter->second;
-            }
-
-            auto iter{ _data.emplace(_data.end(), text, std::forward<Fn>(func)()) };
-            _map.emplace(iter->first, iter);
-
-            if (_data.size() > N) {
-                _map.erase(_data.front().first);
-                _data.pop_front();
-            }
-
-            return iter->second;
-        }
-
-        void clear() noexcept {
-            _map.clear();
-            _data.clear();
-        }
-    };
-
     class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
@@ -343,6 +292,71 @@ namespace gm {
         }
     };
 
+    struct Vertex {
+        f32 x;
+        f32 y;
+        f32 z;
+        f32 rhw;
+        u32 color;
+        f32 u;
+        f32 v;
+    };
+
+    struct CompiledLayout {
+        std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
+    };
+
+    export template <usize N>
+        requires (N > 0)
+    class LayoutCache {
+        std::list<std::pair<std::wstring, CompiledLayout>> _data;
+        std::unordered_map<std::wstring_view, decltype(_data)::iterator> _map;
+
+    public:
+        LayoutCache() noexcept = default;
+        LayoutCache(const LayoutCache&) noexcept = delete;
+        LayoutCache(LayoutCache&&) noexcept = default;
+
+        LayoutCache& operator=(const LayoutCache&) noexcept = delete;
+        LayoutCache& operator=(LayoutCache&&) noexcept = default;
+
+        const CompiledLayout* get(std::wstring_view text) noexcept {
+            auto map_iter{ _map.find(text) };
+            if (map_iter != _map.end()) {
+                auto iter{ map_iter->second };
+                _data.splice(_data.end(), _data, iter);
+                return &iter->second;
+            }
+
+            return nullptr;
+        }
+
+        template <class Fn>
+        const CompiledLayout& get(std::wstring_view text, Fn&& func) {
+            auto map_iter{ _map.find(text) };
+            if (map_iter != _map.end()) {
+                auto iter{ map_iter->second };
+                _data.splice(_data.end(), _data, iter);
+                return iter->second;
+            }
+
+            auto iter{ _data.emplace(_data.end(), text, std::forward<Fn>(func)()) };
+            _map.emplace(iter->first, iter);
+
+            if (_data.size() > N) {
+                _map.erase(_data.front().first);
+                _data.pop_front();
+            }
+
+            return iter->second;
+        }
+
+        void clear() noexcept {
+            _map.clear();
+            _data.clear();
+        }
+    };
+
     struct Option {
         std::wstring font{ L"Microsoft YaHei" };
         DWRITE_FONT_WEIGHT weight{ DWRITE_FONT_WEIGHT_NORMAL };
@@ -360,8 +374,8 @@ namespace gm {
         Option _option;
 
         wil::com_ptr<IDWriteTextFormat3> _format;
+        GlyphAtlas<16> _atlas;
         LayoutCache<1024> _layout;
-        GlyphAtlas<4> _atlas;
 
         void _update_format() {
             wil::com_ptr<IDWriteTextFormat> format_base;
@@ -390,7 +404,7 @@ namespace gm {
             }
 
             std::wstring text_u16{ to_wstring(text) };
-            auto& glyphs{ _layout.get(
+            auto& batches{ _layout.get(
                 text_u16,
                 [&] {
                     wil::com_ptr<IDWriteTextLayout> dw_layout_base;
@@ -406,9 +420,9 @@ namespace gm {
                     );
                     wil::com_ptr dw_layout{ dw_layout_base.query<IDWriteTextLayout4>() };
 
+                    Layout layout;
                     wil::com_ptr<LayoutCollector> collector;
                     collector.attach(winrt::make_self<LayoutCollector>().detach());
-                    Layout layout;
                     THROW_IF_FAILED(
                         dw_layout->Draw(
                             &layout,
@@ -418,106 +432,102 @@ namespace gm {
                         )
                     );
 
-                    return layout;
-                }
-            ).glyphs };
-
-            std::vector<usize> missing;
-            std::vector<const GlyphMeta*> glyph_meta(glyphs.size());
-            for (auto&& [i, glyph] : glyphs | std::views::enumerate) {
-                const GlyphMeta* meta{ _atlas.get({ glyph.face, glyph.gid }) };
-                if (meta == nullptr) {
-                    missing.push_back(i);
-                }
-                else {
-                    glyph_meta[i] = meta;
-                }
-            }
-
-            if (!missing.empty()) {
-                auto lock{ _atlas.lock() };
-                for (usize i : missing) {
-                    auto& glyph{ glyphs[i] };
-                    glyph_meta[i] = &_atlas.get(
-                        { glyph.face, glyph.gid },
-                        lock,
-                        [&] {
-                            f32 advance{};
-                            DWRITE_GLYPH_OFFSET offsets{};
-                            DWRITE_GLYPH_RUN run{
-                                glyph.face.get(),
-                                glyph.size,
-                                1,
-                                &glyph.gid,
-                                &advance,
-                                &offsets,
-                            };
-                            wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
-                            THROW_IF_FAILED(
-                                env::dw_factory->CreateGlyphRunAnalysis(
-                                    &run,
-                                    nullptr,
-                                    DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
-                                    DWRITE_MEASURING_MODE_NATURAL,
-                                    DWRITE_GRID_FIT_MODE_DISABLED,
-                                    DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
-                                    0,
-                                    0,
-                                    &rasterizer
-                                )
-                            );
-
-                            RECT bbox;
-                            THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
-
-                            auto width{ static_cast<usize>(bbox.right - bbox.left) };
-                            auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
-                            std::vector<u8> alpha(width * height);
-                            THROW_IF_FAILED(
-                                rasterizer->CreateAlphaTexture(
-                                    DWRITE_TEXTURE_ALIASED_1x1,
-                                    &bbox,
-                                    alpha.data(),
-                                    alpha.size()
-                                )
-                            );
-
-                            return std::tuple{ std::move(alpha), width, height, bbox.left, bbox.top };
+                    auto& glyphs{ layout.glyphs };
+                    std::vector<usize> missing;
+                    std::vector<const GlyphMeta*> glyph_meta(glyphs.size());
+                    for (auto&& [i, glyph] : glyphs | std::views::enumerate) {
+                        const GlyphMeta* meta{ _atlas.get({ glyph.face, glyph.gid }) };
+                        if (meta == nullptr) {
+                            missing.push_back(i);
                         }
-                    );
+                        else {
+                            glyph_meta[i] = meta;
+                        }
+                    }
+
+                    if (!missing.empty()) {
+                        auto lock{ _atlas.lock() };
+                        for (usize i : missing) {
+                            auto& glyph{ glyphs[i] };
+                            glyph_meta[i] = &_atlas.get(
+                                { glyph.face, glyph.gid },
+                                lock,
+                                [&] {
+                                    f32 advance{};
+                                    DWRITE_GLYPH_OFFSET offsets{};
+                                    DWRITE_GLYPH_RUN run{
+                                        glyph.face.get(),
+                                        glyph.size,
+                                        1,
+                                        &glyph.gid,
+                                        &advance,
+                                        &offsets,
+                                    };
+                                    wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
+                                    THROW_IF_FAILED(
+                                        env::dw_factory->CreateGlyphRunAnalysis(
+                                            &run,
+                                            nullptr,
+                                            DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
+                                            DWRITE_MEASURING_MODE_NATURAL,
+                                            DWRITE_GRID_FIT_MODE_DISABLED,
+                                            DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
+                                            0,
+                                            0,
+                                            &rasterizer
+                                        )
+                                    );
+
+                                    RECT bbox;
+                                    THROW_IF_FAILED(
+                                        rasterizer->GetAlphaTextureBounds(
+                                            DWRITE_TEXTURE_ALIASED_1x1,
+                                            &bbox
+                                        )
+                                    );
+
+                                    auto width{ static_cast<usize>(bbox.right - bbox.left) };
+                                    auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
+                                    std::vector<u8> alpha(width * height);
+                                    THROW_IF_FAILED(
+                                        rasterizer->CreateAlphaTexture(
+                                            DWRITE_TEXTURE_ALIASED_1x1,
+                                            &bbox,
+                                            alpha.data(),
+                                            alpha.size()
+                                        )
+                                    );
+
+                                    return std::tuple{ std::move(alpha), width, height, bbox.left, bbox.top };
+                                }
+                            );
+                        }
+                    }
+
+                    CompiledLayout compiled;
+                    for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
+                        f32 x1{ glyph.x + meta->offset_x - .5f };
+                        f32 y1{ glyph.y + meta->offset_y - .5f };
+                        f32 x2{ x1 + meta->width };
+                        f32 y2{ y1 + meta->height };
+
+                        f32 size{ static_cast<f32>(_atlas.texture_size()) };
+                        f32 u1{ meta->x / size };
+                        f32 v1{ meta->y / size };
+                        f32 u2{ (meta->x + meta->width) / size };
+                        f32 v2{ (meta->y + meta->height) / size };
+
+                        u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
+                        Vertex tl{ x1, y1, 0, 1, color, u1, v1 };
+                        Vertex tr{ x2, y1, 0, 1, color, u2, v1 };
+                        Vertex bl{ x1, y2, 0, 1, color, u1, v2 };
+                        Vertex br{ x2, y2, 0, 1, color, u2, v2 };
+                        compiled.batches[meta->texture].append_range(std::array{ tl, tr, bl, br, bl, tr });
+                    }
+
+                    return compiled;
                 }
-            }
-
-            struct Vertex {
-                f32 x;
-                f32 y;
-                f32 z;
-                f32 rhw;
-                u32 color;
-                f32 u;
-                f32 v;
-            };
-
-            std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
-            for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
-                f32 x1{ glyph.x + meta->offset_x - .5f };
-                f32 y1{ glyph.y + meta->offset_y - .5f };
-                f32 x2{ x1 + meta->width };
-                f32 y2{ y1 + meta->height };
-
-                f32 size{ static_cast<f32>(_atlas.texture_size()) };
-                f32 u1{ meta->x / size };
-                f32 v1{ meta->y / size };
-                f32 u2{ (meta->x + meta->width) / size };
-                f32 v2{ (meta->y + meta->height) / size };
-
-                u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
-                Vertex tl{ x1, y1, 0, 1, color, u1, v1 };
-                Vertex tr{ x2, y1, 0, 1, color, u2, v1 };
-                Vertex bl{ x1, y2, 0, 1, color, u1, v2 };
-                Vertex br{ x2, y2, 0, 1, color, u2, v2 };
-                batches[meta->texture].append_range(std::array{ tl, tr, bl, br, bl, tr });
-            }
+            ).batches };
 
             auto device{ Direct3D::device() };
 
