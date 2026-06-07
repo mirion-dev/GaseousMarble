@@ -376,10 +376,6 @@ namespace gm {
         f32 v;
     };
 
-    struct CompiledLayout {
-        std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
-    };
-
     struct Option {
         std::wstring font{ L"Microsoft YaHei" };
         DWRITE_FONT_WEIGHT weight{ DWRITE_FONT_WEIGHT_NORMAL };
@@ -532,7 +528,7 @@ namespace gm {
                 }
             }
 
-            CompiledLayout compiled;
+            std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
             for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
                 f32 x1{ glyph.x + meta->offset_x - .5f };
                 f32 y1{ glyph.y + meta->offset_y - .5f };
@@ -547,11 +543,11 @@ namespace gm {
                 f32 v2{ (meta->y + meta->height) / height };
 
                 u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
-                Vertex tl{ x1, y1, 0, 1, color, u1, v1 };
-                Vertex tr{ x2, y1, 0, 1, color, u2, v1 };
-                Vertex bl{ x1, y2, 0, 1, color, u1, v2 };
-                Vertex br{ x2, y2, 0, 1, color, u2, v2 };
-                compiled.batches[meta->texture].append_range(std::array{ tl, tr, bl, br, bl, tr });
+                Vertex a{ x1, y1, 0, 1, color, u1, v1 };
+                Vertex b{ x2, y1, 0, 1, color, u2, v1 };
+                Vertex c{ x1, y2, 0, 1, color, u1, v2 };
+                Vertex d{ x2, y2, 0, 1, color, u2, v2 };
+                batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
             }
 
             auto device{ Direct3D::device() };
@@ -565,7 +561,7 @@ namespace gm {
             auto _2{ wil::scope_exit([&] { device->SetTexture(0, old_texture.get()); }) };
 
             THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
-            for (auto& [texture, vertices] : compiled.batches) {
+            for (auto& [texture, vertices] : batches) {
                 THROW_IF_FAILED(device->SetTexture(0, texture.get()));
                 THROW_IF_FAILED(
                     device->DrawPrimitiveUP(
