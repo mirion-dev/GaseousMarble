@@ -72,7 +72,7 @@ namespace gm {
     };
 
     struct GlyphId {
-        wil::com_ptr<IDWriteFontFace7> face;
+        wil::com_ptr<IDWriteFontFace5> face;
         u16 gid;
 
         friend bool operator==(GlyphId left, GlyphId right) noexcept {
@@ -216,7 +216,7 @@ namespace gm {
     };
 
     struct Glyph {
-        wil::com_ptr<IDWriteFontFace7> face;
+        wil::com_ptr<IDWriteFontFace5> face;
         u16 gid;
         f32 size;
         f32 x;
