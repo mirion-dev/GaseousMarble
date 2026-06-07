@@ -90,8 +90,6 @@ namespace gm {
         isize offset_y;
     };
 
-    template <usize N, usize Size = 1024>
-        requires (N > 0 && Size > 0)
     class GlyphAtlas {
         struct Hash {
             template <class T>
@@ -106,6 +104,10 @@ namespace gm {
             }
         };
 
+        usize _cache_size;
+        usize _texture_width;
+        usize _texture_height;
+
         std::unordered_map<GlyphId, GlyphMeta, Hash> _data;
         std::deque<std::vector<GlyphId>> _order;
 
@@ -113,12 +115,12 @@ namespace gm {
         rectpack2D::empty_spaces<false> _current_bin{ {} };
         std::vector<GlyphId> _current_ids;
 
-        static auto _new_texture() {
+        auto _new_texture() const {
             wil::com_ptr<IDirect3DTexture8> texture;
             THROW_IF_FAILED(
                 Direct3D::device()->CreateTexture(
-                    Size,
-                    Size,
+                    _texture_width,
+                    _texture_height,
                     1,
                     0,
                     D3DFMT_A8R8G8B8,
@@ -130,27 +132,39 @@ namespace gm {
         }
 
     public:
-        GlyphAtlas() noexcept = default;
+        GlyphAtlas(usize cache_size, usize texture_width = 1024, usize texture_height = 1024) noexcept :
+            _cache_size{ cache_size },
+            _texture_width{ texture_width },
+            _texture_height{ texture_height } {}
+
         GlyphAtlas(const GlyphAtlas&) noexcept = delete;
         GlyphAtlas(GlyphAtlas&&) noexcept = default;
 
         GlyphAtlas& operator=(const GlyphAtlas&) noexcept = delete;
         GlyphAtlas& operator=(GlyphAtlas&&) noexcept = default;
 
-        static usize texture_size() noexcept {
-            return Size;
+        usize cache_size() const noexcept {
+            return _cache_size;
+        }
+
+        usize texture_width() const noexcept {
+            return _texture_width;
+        }
+
+        usize texture_height() const noexcept {
+            return _texture_height;
         }
 
         TextureLock lock() {
             if (_current_texture) {
-                return { _current_texture, 0, 0, Size, Size };
+                return { _current_texture, 0, 0, _texture_width, _texture_height };
             }
 
             wil::com_ptr texture{ _new_texture() };
-            TextureLock texture_lock{ texture, 0, 0, Size, Size };
+            TextureLock texture_lock{ texture, 0, 0, _texture_width, _texture_height };
 
             _current_texture = texture;
-            _current_bin.reset({ Size, Size });
+            _current_bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
             _current_ids.clear();
 
             return texture_lock;
@@ -171,14 +185,17 @@ namespace gm {
             auto [alpha, width, height, offset_x, offset_y]{ std::forward<Fn>(func)() };
             auto result{ _current_bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
             if (!result) {
-                rectpack2D::empty_spaces<false> bin{ { Size, Size } };
+                rectpack2D::empty_spaces<false> bin{ {
+                    static_cast<isize>(_texture_width),
+                    static_cast<isize>(_texture_height)
+                } };
                 result = bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
                 if (!result) {
                     throw std::runtime_error{ "The glyph is too large." };
                 }
 
                 wil::com_ptr texture{ _new_texture() };
-                TextureLock texture_lock{ texture, 0, 0, Size, Size };
+                TextureLock texture_lock{ texture, 0, 0, _texture_width, _texture_height };
 
                 lock = std::move(texture_lock);
                 _current_bin = std::move(bin);
@@ -186,7 +203,7 @@ namespace gm {
                 _order.emplace_back(std::move(_current_ids));
                 _current_ids.clear();
 
-                if (_order.size() >= N) {
+                if (_order.size() >= _cache_size) {
                     for (const GlyphId& id : _order.front()) {
                         _data.erase(id);
                     }
@@ -227,19 +244,25 @@ namespace gm {
         std::vector<Glyph> glyphs;
     };
 
-    export template <usize N>
-        requires (N > 0)
     class LayoutCache {
+        usize _cache_size;
+
         std::list<std::pair<std::wstring, Layout>> _data;
         std::unordered_map<std::wstring_view, decltype(_data)::iterator> _map;
 
     public:
-        LayoutCache() noexcept = default;
+        LayoutCache(usize cache_size) noexcept :
+            _cache_size{ cache_size } {}
+
         LayoutCache(const LayoutCache&) noexcept = delete;
         LayoutCache(LayoutCache&&) noexcept = default;
 
         LayoutCache& operator=(const LayoutCache&) noexcept = delete;
         LayoutCache& operator=(LayoutCache&&) noexcept = default;
+
+        usize cache_size() const noexcept {
+            return _cache_size;
+        }
 
         const Layout* get(std::wstring_view text) noexcept {
             auto map_iter{ _map.find(text) };
@@ -264,7 +287,7 @@ namespace gm {
             auto iter{ _data.emplace(_data.end(), text, std::forward<Fn>(func)()) };
             _map.emplace(iter->first, iter);
 
-            if (_data.size() > N) {
+            if (_data.size() > _cache_size) {
                 _map.erase(_data.front().first);
                 _data.pop_front();
             }
@@ -374,8 +397,8 @@ namespace gm {
         Option _option;
 
         wil::com_ptr<IDWriteTextFormat3> _format;
-        GlyphAtlas<16> _atlas;
-        LayoutCache<1024> _layout;
+        GlyphAtlas _atlas{ 16 };
+        LayoutCache _layout{ 1024 };
 
         void _update_format() {
             wil::com_ptr<IDWriteTextFormat> format_base;
@@ -516,11 +539,12 @@ namespace gm {
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
 
-                f32 size{ static_cast<f32>(_atlas.texture_size()) };
-                f32 u1{ meta->x / size };
-                f32 v1{ meta->y / size };
-                f32 u2{ (meta->x + meta->width) / size };
-                f32 v2{ (meta->y + meta->height) / size };
+                f32 width{ static_cast<f32>(_atlas.texture_width()) };
+                f32 height{ static_cast<f32>(_atlas.texture_height()) };
+                f32 u1{ meta->x / width };
+                f32 v1{ meta->y / height };
+                f32 u2{ (meta->x + meta->width) / width };
+                f32 v2{ (meta->y + meta->height) / height };
 
                 u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
                 Vertex tl{ x1, y1, 0, 1, color, u1, v1 };
