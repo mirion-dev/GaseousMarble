@@ -27,10 +27,10 @@ namespace gm {
             if (texture) {
                 D3DLOCKED_RECT lock;
                 RECT rect{
-                    static_cast<isize>(std::round(x)),
-                    static_cast<isize>(std::round(y)),
-                    static_cast<isize>(std::round(x + width)),
-                    static_cast<isize>(std::round(y + height))
+                    static_cast<isize>(x),
+                    static_cast<isize>(y),
+                    static_cast<isize>(x + width),
+                    static_cast<isize>(y + height)
                 };
                 THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, 0));
 
