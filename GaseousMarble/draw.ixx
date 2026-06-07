@@ -393,8 +393,8 @@ namespace gm {
         Option _option;
 
         wil::com_ptr<IDWriteTextFormat3> _format;
-        GlyphAtlas _atlas{ 16 };
         LayoutCache _layout{ 1024 };
+        GlyphAtlas _atlas{ 16 };
 
         void _update_format() {
             wil::com_ptr<IDWriteTextFormat> format_base;
@@ -554,11 +554,11 @@ namespace gm {
 
             DWORD old_fvf;
             THROW_IF_FAILED(device->GetVertexShader(&old_fvf));
-            auto _{ wil::scope_exit([&] { device->SetVertexShader(old_fvf); }) };
-
+            auto fvf_guard{ wil::scope_exit([&] { device->SetVertexShader(old_fvf); }) };
+            
             wil::com_ptr<IDirect3DBaseTexture8> old_texture;
             THROW_IF_FAILED(device->GetTexture(0, &old_texture));
-            auto _2{ wil::scope_exit([&] { device->SetTexture(0, old_texture.get()); }) };
+            auto texture_guard{ wil::scope_exit([&] { device->SetTexture(0, old_texture.get()); }) };
 
             THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
             for (auto& [texture, vertices] : batches) {
