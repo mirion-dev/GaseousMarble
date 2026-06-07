@@ -230,8 +230,8 @@ namespace gm {
     export template <usize N>
         requires (N > 0)
     class LayoutCache {
-        std::unordered_map<std::wstring_view, Layout> _data;
-        std::deque<std::wstring> _order;
+        std::list<std::pair<std::wstring, Layout>> _data;
+        std::unordered_map<std::wstring_view, decltype(_data)::iterator> _map;
 
     public:
         LayoutCache() noexcept = default;
@@ -242,31 +242,39 @@ namespace gm {
         LayoutCache& operator=(LayoutCache&&) noexcept = default;
 
         const Layout* get(std::wstring_view text) noexcept {
-            auto iter{ _data.find(text) };
-            return iter != _data.end() ? &iter->second : nullptr;
+            auto map_iter{ _map.find(text) };
+            if (map_iter != _map.end()) {
+                auto iter{ map_iter->second };
+                _data.splice(_data.end(), _data, iter);
+                return &iter->second;
+            }
+
+            return nullptr;
         }
 
         template <class Fn>
         const Layout& get(std::wstring_view text, Fn&& func) {
-            auto iter{ _data.find(text) };
-            if (iter != _data.end()) {
+            auto map_iter{ _map.find(text) };
+            if (map_iter != _map.end()) {
+                auto iter{ map_iter->second };
+                _data.splice(_data.end(), _data, iter);
                 return iter->second;
             }
 
-            Layout layout{ std::forward<Fn>(func)() };
-            iter = _data.emplace(_order.emplace_back(text), std::move(layout)).first;
+            auto iter{ _data.emplace(_data.end(), text, std::forward<Fn>(func)()) };
+            _map.emplace(iter->first, iter);
 
             if (_data.size() > N) {
-                _data.erase(_order.front());
-                _order.pop_front();
+                _map.erase(_data.front().first);
+                _data.pop_front();
             }
 
             return iter->second;
         }
 
         void clear() noexcept {
+            _map.clear();
             _data.clear();
-            _order.clear();
         }
     };
 
