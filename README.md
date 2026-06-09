@@ -11,6 +11,6 @@
 
 ## Credits
 
-- [GMAPI](https://github.com/snakedeveloper/gmapi) (referenced only)
+- [GMAPI](https://github.com/snakedeveloper/gmapi) (references their reverse engineering results only)
 - [rectpack2D](https://github.com/TeamHypersomnia/rectpack2D)
 - [WIL](https://github.com/microsoft/wil/wiki)
