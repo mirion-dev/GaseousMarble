@@ -24,6 +24,12 @@ namespace gm {
         usize operator()(wil::com_ptr<T> value) const noexcept {
             return std::hash<T*>{}(value.get());
         }
+
+        template <class... Args>
+        static usize combine(const Args&... values) noexcept {
+            usize res{};
+            return ((res = res ^ Hash{}(values) + 0x9e3779b9 + (res << 6) + (res >> 2)), ...);
+        }
     };
 
 }
