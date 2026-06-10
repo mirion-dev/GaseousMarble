@@ -115,7 +115,9 @@ namespace gm {
             ++_header()->ref_count;
         }
 
-        BasicString(BasicString&& other) noexcept {
+        BasicString(BasicString&& other) noexcept :
+            BasicString{} {
+
             swap(other);
         }
 
