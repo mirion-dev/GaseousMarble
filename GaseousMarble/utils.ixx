@@ -27,8 +27,8 @@ namespace gm {
 
         template <class... Args>
         static usize combine(const Args&... values) noexcept {
-            usize res{};
-            return ((res = res ^ Hash{}(values) + 0x9e3779b9 + (res << 6) + (res >> 2)), ...);
+            usize result{};
+            return ((result = result ^ Hash{}(values) + 0x9e3779b9 + (result << 6) + (result >> 2)), ...);
         }
     };
 
