@@ -25,7 +25,8 @@ namespace gm {
         std::vector<Glyph> glyphs;
     };
 
-    class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
+    // Unimplement IDWriteTextRenderer1: vertical writing mode is unsupported
+    class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
             return S_OK;
@@ -58,7 +59,7 @@ namespace gm {
             RETURN_IF_FAILED(face_base.query_to<IDWriteFontFace5>(&face));
 
             f32 size{ glyph_run->fontEmSize };
-            // ignore glyph_run->isSideways
+            // Ignore isSideways: vertical writing mode is unsupported
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
             for (usize i{}; i < glyph_run->glyphCount; ++i) {
                 u16 gid{ glyph_run->glyphIndices[i] };
@@ -92,6 +93,28 @@ namespace gm {
         }
     };
 
+    export struct DrawOption {
+        std::pair<const std::string, Font>* font{};
+        // FlowDirection           : unsupported
+        // ReadingDirection        : unsupported
+        // TextAlignment           : unimplemented
+        // ParagraphAlignment      : unimplemented
+        // WordWrapping            : unimplemented
+        // LineSpacing             : unimplemented
+        // Trimming                : unsupported
+        // IncrementalTabStop      : unimplemented
+        // FontFallback            : unsupported
+        // LastLineWrapping        : unsupported
+        // OpticalAlignment        : unsupported
+        // VerticalGlyphOrientation: unsupported
+        // FontAxisValues          : unsupported
+        // AutomaticFontAxes       : unsupported
+        // MaxWidth                : unimplemented
+        // MaxHeight               : unimplemented
+        // CharacterSpacing        : unimplemented
+        // PairKerning             : unimplemented
+    };
+
     class LayoutCache {
         usize _cache_size{};
 
@@ -123,11 +146,11 @@ namespace gm {
         const Layout& get(
             std::wstring_view text,
             wil::com_ptr<IDWriteTextFormat3> format,
-            const Font& font,
+            const DrawOption& option,
             f32 x,
             f32 y
         ) {
-            assert(*this && format);
+            assert(*this && format && option.font != nullptr);
 
             auto map_iter{ _map.find(text) };
             if (map_iter != _map.end()) {
@@ -150,12 +173,12 @@ namespace gm {
             wil::com_ptr dw_layout{ dw_layout_base.query<IDWriteTextLayout4>() };
 
             DWRITE_TEXT_RANGE range{ 0, text.size() };
-            THROW_IF_FAILED(dw_layout->SetFontFamilyName(font.name().data(), range));
-            THROW_IF_FAILED(dw_layout->SetFontSize(font.size(), range));
-            THROW_IF_FAILED(dw_layout->SetFontWeight(font.weight(), range));
-            THROW_IF_FAILED(dw_layout->SetFontStyle(font.style(), range));
-            THROW_IF_FAILED(dw_layout->SetFontStretch(font.stretch(), range));
-            THROW_IF_FAILED(dw_layout->SetLocaleName(font.locale().data(), range));
+            THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font->second.name().data(), range));
+            THROW_IF_FAILED(dw_layout->SetFontSize(option.font->second.size(), range));
+            THROW_IF_FAILED(dw_layout->SetFontWeight(option.font->second.weight(), range));
+            THROW_IF_FAILED(dw_layout->SetFontStyle(option.font->second.style(), range));
+            THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
+            THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
             Layout layout;
             wil::com_ptr<LayoutCollector> collector;
@@ -181,19 +204,18 @@ namespace gm {
     };
 
     export class Draw {
-    struct Vertex {
-        f32 x;
-        f32 y;
-        f32 z;
-        f32 rhw;
-        u32 color;
-        f32 u;
-        f32 v;
-    };
+        struct Vertex {
+            f32 x;
+            f32 y;
+            f32 z;
+            f32 rhw;
+            u32 color;
+            f32 u;
+            f32 v;
+        };
 
-    export class Draw {
+        DrawOption _option;
         wil::com_ptr<IDWriteTextFormat3> _format;
-        std::pair<const std::string, Font>* _font{};
         LayoutCache _layout{ 1024 };
 
         static wil::com_ptr<IDWriteTextFormat3> _new_format() {
@@ -221,16 +243,16 @@ namespace gm {
         Draw& operator=(Draw&&) noexcept = default;
 
         auto font() const noexcept {
-            return _font;
+            return _option.font;
         }
 
         void set_font(std::pair<const std::string, Font>* font) noexcept {
-            _font = font;
+            _option.font = font;
             _layout.clear();
         }
 
         void text(f32 x, f32 y, std::string_view text) {
-            if (_font == nullptr) {
+            if (_option.font == nullptr) {
                 throw std::invalid_argument{ "Not bound to a font." };
             }
 
@@ -239,9 +261,9 @@ namespace gm {
             }
 
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
-            auto& glyphs{ _layout.get(to_wstring(text), _format, _font->second, x, y).glyphs };
+            auto& glyphs{ _layout.get(to_wstring(text), _format, _option, x, y).glyphs };
             auto glyph_meta{
-                _font->second.get(
+                _option.font->second.get(
                     glyphs | std::views::transform([](const Glyph& glyph) { return static_cast<GlyphId>(glyph); })
                 )
             };
@@ -251,8 +273,8 @@ namespace gm {
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
 
-                f32 width{ static_cast<f32>(_font->second.texture_width()) };
-                f32 height{ static_cast<f32>(_font->second.texture_height()) };
+                f32 width{ static_cast<f32>(_option.font->second.texture_width()) };
+                f32 height{ static_cast<f32>(_option.font->second.texture_height()) };
                 f32 u1{ meta->x / width };
                 f32 v1{ meta->y / height };
                 f32 u2{ (meta->x + meta->width) / width };

@@ -108,6 +108,7 @@ namespace gm {
         };
 
         std::wstring _name;
+        // FontCollection: unimplemented, used for loading from font files
         f32 _size{};
         DWRITE_FONT_WEIGHT _weight{};
         DWRITE_FONT_STYLE _style{};

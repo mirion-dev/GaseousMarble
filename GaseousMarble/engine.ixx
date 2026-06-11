@@ -10,7 +10,7 @@ import gm.types;
 
 namespace gm {
 
-    // see https://docwiki.embarcadero.com/RADStudio/Athens/en/Unicode_in_RAD_Studio#New_String_Type:_UnicodeString
+    // See https://docwiki.embarcadero.com/RADStudio/Athens/en/Unicode_in_RAD_Studio#New_String_Type:_UnicodeString
     export template <class C>
     class BasicString {
         struct Header {
