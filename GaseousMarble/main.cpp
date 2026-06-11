@@ -18,7 +18,7 @@ static std::vector<String> string_stack;
 static std::unordered_map<std::string, Font> font_map;
 static Draw draw;
 
-auto internal_call_guard(usize real_count, usize string_count) {
+static auto internal_call_guard(usize real_count, usize string_count) {
     auto guard{ wil::scope_exit(
         [&] {
             real_stack.clear();
@@ -43,11 +43,23 @@ API Real gm_internal_push_string(const char* value) noexcept {
     return S_OK;
 }
 
+API Real gm_init() noexcept
+try {
+    return env::init() ? S_OK : S_FALSE;
+}
+CATCH_RETURN()
+
 API Real gm_internal_new_font() noexcept
 try {
     auto _{ internal_call_guard(4, 3) };
+
+    std::string key{ string_stack[0] };
+    if (key.empty()) {
+        throw std::invalid_argument{ "Font key must not be empty." };
+    }
+
     return font_map.try_emplace(
-            static_cast<std::string>(string_stack[0]),
+            std::move(key),
             Font{
                 to_wstring(string_stack[1]),
                 static_cast<f32>(real_stack[0]),
@@ -62,23 +74,36 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm_init() noexcept
-try {
-    return env::init() ? S_OK : S_FALSE;
+API Real gm_delete_font(const char* font_key_ptr) noexcept {
+    auto iter{ font_map.find(font_key_ptr) };
+    if (iter == font_map.end()) {
+        return S_FALSE;
+    }
+
+    if (draw.font() == &*iter) {
+        draw.set_font(nullptr);
+    }
+
+    font_map.erase(iter);
+    return S_OK;
 }
-CATCH_RETURN()
 
 API Real gm_set_font(const char* font_key_ptr) noexcept
 try {
     auto iter{ font_map.find(font_key_ptr) };
     if (iter == font_map.end()) {
-        throw std::invalid_argument{ "Invalid font key." };
+        throw std::invalid_argument{ "Font not found." };
     }
 
-    draw.set_font(&iter->second);
+    draw.set_font(&*iter);
     return S_OK;
 }
 CATCH_RETURN()
+
+API const char* gm_get_font() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? "" : font->first.data();
+}
 
 API Real gm_draw(Real x, Real y, const char* text_ptr) noexcept
 try {

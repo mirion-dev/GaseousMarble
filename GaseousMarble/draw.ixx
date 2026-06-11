@@ -180,6 +180,7 @@ namespace gm {
         }
     };
 
+    export class Draw {
     struct Vertex {
         f32 x;
         f32 y;
@@ -192,7 +193,7 @@ namespace gm {
 
     export class Draw {
         wil::com_ptr<IDWriteTextFormat3> _format;
-        Font* _font{};
+        std::pair<const std::string, Font>* _font{};
         LayoutCache _layout{ 1024 };
 
         static wil::com_ptr<IDWriteTextFormat3> _new_format() {
@@ -219,11 +220,11 @@ namespace gm {
 
         Draw& operator=(Draw&&) noexcept = default;
 
-        Font* font() const noexcept {
+        auto font() const noexcept {
             return _font;
         }
 
-        void set_font(Font* font) noexcept {
+        void set_font(std::pair<const std::string, Font>* font) noexcept {
             _font = font;
             _layout.clear();
         }
@@ -238,9 +239,9 @@ namespace gm {
             }
 
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
-            auto& glyphs{ _layout.get(to_wstring(text), _format, *_font, x, y).glyphs };
+            auto& glyphs{ _layout.get(to_wstring(text), _format, _font->second, x, y).glyphs };
             auto glyph_meta{
-                _font->get(
+                _font->second.get(
                     glyphs | std::views::transform([](const Glyph& glyph) { return static_cast<GlyphId>(glyph); })
                 )
             };
@@ -250,8 +251,8 @@ namespace gm {
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
 
-                f32 width{ static_cast<f32>(_font->texture_width()) };
-                f32 height{ static_cast<f32>(_font->texture_height()) };
+                f32 width{ static_cast<f32>(_font->second.texture_width()) };
+                f32 height{ static_cast<f32>(_font->second.texture_height()) };
                 f32 u1{ meta->x / width };
                 f32 v1{ meta->y / height };
                 f32 u2{ (meta->x + meta->width) / width };
