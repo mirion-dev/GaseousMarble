@@ -47,43 +47,6 @@ namespace gm {
     static EmptyString<C> empty_string;
 
     export template <class C>
-    class BasicStringView {
-        const C* _data{ empty_string<C>.data() };
-
-        auto _header() const noexcept {
-            return std::launder(
-                reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader))
-            );
-        }
-
-    public:
-        BasicStringView() noexcept = default;
-
-        BasicStringView(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept :
-            _data{ static_cast<std::basic_string_view<C>>(str).data() } {}
-
-        operator std::basic_string_view<C>() const noexcept {
-            return { _data, size() };
-        }
-
-        bool empty() const noexcept {
-            return size() == 0;
-        }
-
-        usize size() const noexcept {
-            return _header()->size;
-        }
-
-        usize ref_count() const noexcept {
-            return _header()->ref_count;
-        }
-
-        const C* data() const noexcept {
-            return _data;
-        }
-    };
-
-    export template <class C>
     class BasicString {
         C* _data{ empty_string<C>.data() };
 
@@ -119,7 +82,7 @@ namespace gm {
         BasicString(BasicString&& other) noexcept :
             BasicString{} {
 
-            swap(other);
+            this->swap(other);
         }
 
         ~BasicString() noexcept {
@@ -130,13 +93,17 @@ namespace gm {
 
         BasicString& operator=(const BasicString& other) noexcept {
             BasicString temp{ other };
-            swap(temp);
+            this->swap(temp);
             return *this;
         }
 
         BasicString& operator=(BasicString&& other) noexcept {
-            swap(other);
+            this->swap(other);
             return *this;
+        }
+
+        operator std::basic_string_view<C>() const noexcept {
+            return { _data, size() };
         }
 
         void swap(BasicString& other) noexcept {
@@ -145,10 +112,6 @@ namespace gm {
 
         friend void swap(BasicString& left, BasicString& right) noexcept {
             left.swap(right);
-        }
-
-        operator std::basic_string_view<C>() const noexcept {
-            return { _data, size() };
         }
 
         bool empty() const noexcept {
@@ -168,14 +131,8 @@ namespace gm {
         }
     };
 
-    export {
-
-        using Real = f64;
-
-        using String = BasicString<char>;
-        using StringView = BasicStringView<char>;
-
-    }
+    export using Real = f64;
+    export using String = BasicString<char>;
 
     export class Direct3D {
         struct Resource {
