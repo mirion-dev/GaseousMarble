@@ -10,54 +10,37 @@ import gm.types;
 
 namespace gm {
 
-    // https://docwiki.embarcadero.com/RADStudio/Athens/en/Unicode_in_RAD_Studio#New_String_Type:_UnicodeString
-
-    struct StringHeader {
-        u16 code_page;
-        u16 char_size;
-        u32 ref_count;
-        u32 size;
-    };
-
-    template <class C>
-    static constexpr u16 CODE_PAGE{ sizeof(C) == 1 ? 65001 : sizeof(C) == 2 ? 1200 : 12000 };
-
-    template <class C>
-    class EmptyString {
-        alignas(StringHeader) u8 _storage[sizeof(StringHeader) + sizeof(C)];
-        C* _data;
-
-    public:
-        EmptyString() noexcept {
-            *reinterpret_cast<StringHeader*>(_storage) = { CODE_PAGE<C>, sizeof(C), 1, 0 };
-            _data = reinterpret_cast<C*>(_storage + sizeof(StringHeader));
-            *_data = {};
-        }
-
-        C* data() noexcept {
-            return _data;
-        }
-
-        const C* data() const noexcept {
-            return _data;
-        }
-    };
-
-    template <class C>
-    static EmptyString<C> empty_string;
-
+    // see https://docwiki.embarcadero.com/RADStudio/Athens/en/Unicode_in_RAD_Studio#New_String_Type:_UnicodeString
     export template <class C>
     class BasicString {
-        C* _data{ empty_string<C>.data() };
+        struct Header {
+            u16 code_page{ sizeof(C) == 1 ? 65001 : sizeof(C) == 2 ? 1200 : 12000 };
+            u16 char_size{ sizeof(C) };
+            u32 ref_count{ 1 };
+            u32 size{};
+    };
+
+        struct Empty {
+            alignas(Header) u8 storage[sizeof(Header) + sizeof(C)];
+            C* data;
+
+            Empty() noexcept {
+                *reinterpret_cast<Header*>(storage) = {};
+                data = reinterpret_cast<C*>(storage + sizeof(Header));
+                *data = {};
+        }
+    };
+
+        static inline Empty _empty;
+
+        C* _data{ _empty.data };
 
         auto _header() noexcept {
-            return std::launder(reinterpret_cast<StringHeader*>(reinterpret_cast<u8*>(_data) - sizeof(StringHeader)));
+            return std::launder(reinterpret_cast<Header*>(reinterpret_cast<u8*>(_data) - sizeof(Header)));
         }
 
         auto _header() const noexcept {
-            return std::launder(
-                reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader))
-            );
+            return std::launder(reinterpret_cast<const Header*>(reinterpret_cast<const u8*>(_data) - sizeof(Header)));
         }
 
     public:
@@ -67,9 +50,9 @@ namespace gm {
 
         BasicString(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept {
             auto view{ static_cast<std::basic_string_view<C>>(str) };
-            auto storage{ new u8[sizeof(StringHeader) + (view.size() + 1) * sizeof(C)] };
-            *reinterpret_cast<StringHeader*>(storage) = { CODE_PAGE<C>, sizeof(C), 1, view.size() };
-            _data = reinterpret_cast<C*>(storage + sizeof(StringHeader));
+            auto storage{ new u8[sizeof(Header) + (view.size() + 1) * sizeof(C)] };
+            *reinterpret_cast<Header*>(storage) = { .size = view.size() };
+            _data = reinterpret_cast<C*>(storage + sizeof(Header));
             *std::ranges::copy(view, _data).out = {};
         }
 
@@ -87,7 +70,7 @@ namespace gm {
 
         ~BasicString() noexcept {
             if (--_header()->ref_count == 0) {
-                delete[](reinterpret_cast<u8*>(_data) - sizeof(StringHeader));
+                delete[](reinterpret_cast<u8*>(_data) - sizeof(Header));
             }
         }
 
@@ -134,7 +117,7 @@ namespace gm {
     export using Real = f64;
     export using String = BasicString<char>;
 
-    export class Direct3D {
+    export class Direct3d {
         struct Resource {
             IDirect3D8* interface;
             IDirect3DDevice8* device;

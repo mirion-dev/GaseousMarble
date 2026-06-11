@@ -238,7 +238,7 @@ namespace gm {
                 batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
             }
 
-            auto device{ Direct3D::device() };
+            auto device{ Direct3d::device() };
 
             DWORD old_fvf;
             THROW_IF_FAILED(device->GetVertexShader(&old_fvf));

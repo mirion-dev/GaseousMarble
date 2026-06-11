@@ -118,7 +118,7 @@ namespace gm {
         auto _new_texture() const {
             wil::com_ptr<IDirect3DTexture8> texture;
             THROW_IF_FAILED(
-                Direct3D::device()->CreateTexture(
+                Direct3d::device()->CreateTexture(
                     _texture_width,
                     _texture_height,
                     1,
