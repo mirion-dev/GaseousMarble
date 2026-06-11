@@ -55,7 +55,7 @@ namespace gm {
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
             wil::com_ptr<IDWriteFontFace5> face;
-            RETURN_IF_FAILED(face_base.query_to<decltype(face)::element_type>(&face));
+            RETURN_IF_FAILED(face_base.query_to<IDWriteFontFace5>(&face));
 
             f32 size{ glyph_run->fontEmSize };
             // ignore glyph_run->isSideways
@@ -120,7 +120,13 @@ namespace gm {
             return _cache_size;
         }
 
-        const Layout& get(std::wstring_view text, wil::com_ptr<IDWriteTextFormat3> format, f32 x, f32 y) {
+        const Layout& get(
+            std::wstring_view text,
+            wil::com_ptr<IDWriteTextFormat3> format,
+            const Font& font,
+            f32 x,
+            f32 y
+        ) {
             assert(*this && format);
 
             auto map_iter{ _map.find(text) };
@@ -142,6 +148,14 @@ namespace gm {
                 )
             );
             wil::com_ptr dw_layout{ dw_layout_base.query<IDWriteTextLayout4>() };
+
+            DWRITE_TEXT_RANGE range{ 0, text.size() };
+            THROW_IF_FAILED(dw_layout->SetFontFamilyName(font.name().data(), range));
+            THROW_IF_FAILED(dw_layout->SetFontSize(font.size(), range));
+            THROW_IF_FAILED(dw_layout->SetFontWeight(font.weight(), range));
+            THROW_IF_FAILED(dw_layout->SetFontStyle(font.style(), range));
+            THROW_IF_FAILED(dw_layout->SetFontStretch(font.stretch(), range));
+            THROW_IF_FAILED(dw_layout->SetLocaleName(font.locale().data(), range));
 
             Layout layout;
             wil::com_ptr<LayoutCollector> collector;
@@ -178,36 +192,55 @@ namespace gm {
 
     export class Draw {
         wil::com_ptr<IDWriteTextFormat3> _format;
+        Font* _font{};
         LayoutCache _layout{ 1024 };
-        Font _font{ L"Microsoft YaHei", 100 };
 
-        wil::com_ptr<IDWriteTextFormat3> _new_format() {
+        static wil::com_ptr<IDWriteTextFormat3> _new_format() {
             wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
                 env::dw_factory->CreateTextFormat(
-                    _font.name().data(),
+                    L"Arial",
                     nullptr,
-                    _font.weight(),
-                    _font.style(),
-                    _font.stretch(),
-                    _font.size(),
-                    _font.locale().data(),
+                    DWRITE_FONT_WEIGHT_NORMAL,
+                    DWRITE_FONT_STYLE_NORMAL,
+                    DWRITE_FONT_STRETCH_NORMAL,
+                    10,
+                    L"en-US",
                     &format_base
                 )
             );
-            return format_base.query<decltype(_format)::element_type>();
+            return format_base.query<IDWriteTextFormat3>();
         }
 
     public:
+        Draw() noexcept = default;
+
+        Draw(Draw&&) noexcept = default;
+
+        Draw& operator=(Draw&&) noexcept = default;
+
+        Font* font() const noexcept {
+            return _font;
+        }
+
+        void set_font(Font* font) noexcept {
+            _font = font;
+            _layout.clear();
+        }
+
         void text(f32 x, f32 y, std::string_view text) {
+            if (_font == nullptr) {
+                throw std::invalid_argument{ "Not bound to a font." };
+            }
+
             if (!_format) {
                 _format = _new_format();
             }
 
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
-            auto& glyphs{ _layout.get(to_wstring(text), _format, x, y).glyphs };
+            auto& glyphs{ _layout.get(to_wstring(text), _format, *_font, x, y).glyphs };
             auto glyph_meta{
-                _font.get(
+                _font->get(
                     glyphs | std::views::transform([](const Glyph& glyph) { return static_cast<GlyphId>(glyph); })
                 )
             };
@@ -217,8 +250,8 @@ namespace gm {
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
 
-                f32 width{ static_cast<f32>(_font.texture_width()) };
-                f32 height{ static_cast<f32>(_font.texture_height()) };
+                f32 width{ static_cast<f32>(_font->texture_width()) };
+                f32 height{ static_cast<f32>(_font->texture_height()) };
                 f32 u1{ meta->x / width };
                 f32 v1{ meta->y / height };
                 f32 u2{ (meta->x + meta->width) / width };
