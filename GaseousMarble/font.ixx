@@ -23,9 +23,7 @@ namespace gm {
         TextureLock() noexcept = default;
 
         TextureLock(wil::com_ptr<IDirect3DTexture8> texture, usize x, usize y, usize width, usize height) {
-            if (!texture) {
-                throw std::invalid_argument{ "Invalid texture." };
-            }
+            assert(texture && width > 0 && height > 0);
 
             D3DLOCKED_RECT lock;
             RECT rect{
@@ -160,9 +158,7 @@ namespace gm {
             _texture_width{ texture_width },
             _texture_height{ texture_height } {
 
-            if (_name.empty() || size < 0) {
-                throw std::invalid_argument{ "Invalid font name or size." };
-            }
+            assert(!_name.empty() && _size > 0);
 
             if (_locale.empty()) {
                 std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> default_locale;

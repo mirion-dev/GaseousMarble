@@ -25,61 +25,6 @@ namespace gm {
         std::vector<Glyph> glyphs;
     };
 
-    class LayoutCache {
-        usize _cache_size;
-
-        std::list<std::pair<std::wstring, Layout>> _data;
-        std::unordered_map<std::wstring_view, decltype(_data)::iterator> _map;
-
-    public:
-        LayoutCache(usize cache_size) noexcept :
-            _cache_size{ cache_size } {}
-
-        LayoutCache(LayoutCache&&) noexcept = default;
-
-        LayoutCache& operator=(LayoutCache&&) noexcept = default;
-
-        usize cache_size() const noexcept {
-            return _cache_size;
-        }
-
-        const Layout* get(std::wstring_view text) noexcept {
-            auto map_iter{ _map.find(text) };
-            if (map_iter != _map.end()) {
-                auto iter{ map_iter->second };
-                _data.splice(_data.end(), _data, iter);
-                return &iter->second;
-            }
-
-            return nullptr;
-        }
-
-        template <class Fn>
-        const Layout& get(std::wstring_view text, Fn&& func) {
-            auto map_iter{ _map.find(text) };
-            if (map_iter != _map.end()) {
-                auto iter{ map_iter->second };
-                _data.splice(_data.end(), _data, iter);
-                return iter->second;
-            }
-
-            auto iter{ _data.emplace(_data.end(), text, std::forward<Fn>(func)()) };
-            _map.try_emplace(iter->first, iter);
-
-            if (_data.size() > _cache_size) {
-                _map.erase(_data.front().first);
-                _data.pop_front();
-            }
-
-            return iter->second;
-        }
-
-        void clear() noexcept {
-            _map.clear();
-            _data.clear();
-        }
-    };
-
     class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
@@ -103,6 +48,8 @@ namespace gm {
             const DWRITE_GLYPH_RUN_DESCRIPTION* glyph_run_description,
             IUnknown* client_drawing_effect
         ) noexcept {
+            assert(client_drawing_context != nullptr);
+
             auto& glyphs{ static_cast<Layout*>(client_drawing_context)->glyphs };
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
 
@@ -145,6 +92,79 @@ namespace gm {
         }
     };
 
+    class LayoutCache {
+        usize _cache_size{};
+
+        std::list<std::pair<std::wstring, Layout>> _data;
+        std::unordered_map<std::wstring_view, decltype(_data)::iterator> _map;
+
+    public:
+        LayoutCache() noexcept = default;
+
+        LayoutCache(usize cache_size) noexcept :
+            _cache_size{ cache_size } {
+
+            assert(_cache_size > 0);
+        }
+
+        LayoutCache(LayoutCache&&) noexcept = default;
+
+        LayoutCache& operator=(LayoutCache&&) noexcept = default;
+
+        usize cache_size() const noexcept {
+            assert(!empty());
+            return _cache_size;
+        }
+
+        bool empty() const noexcept {
+            return _cache_size == 0;
+        }
+
+        const Layout& get(std::wstring_view text, wil::com_ptr<IDWriteTextFormat3> format, f32 x, f32 y) {
+            assert(!empty() && format);
+
+            auto map_iter{ _map.find(text) };
+            if (map_iter != _map.end()) {
+                auto iter{ map_iter->second };
+                _data.splice(_data.end(), _data, iter);
+                return iter->second;
+            }
+
+            wil::com_ptr<IDWriteTextLayout> dw_layout_base;
+            THROW_IF_FAILED(
+                env::dw_factory->CreateTextLayout(
+                    text.data(),
+                    text.size(),
+                    format.get(),
+                    std::numeric_limits<f32>::max(),
+                    std::numeric_limits<f32>::max(),
+                    &dw_layout_base
+                )
+            );
+            wil::com_ptr dw_layout{ dw_layout_base.query<IDWriteTextLayout4>() };
+
+            Layout layout;
+            wil::com_ptr<LayoutCollector> collector;
+            collector.attach(winrt::make_self<LayoutCollector>().detach());
+            THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), x, y));
+
+            auto iter{ _data.emplace(_data.end(), text, std::move(layout)) };
+            _map.try_emplace(iter->first, iter);
+
+            if (_data.size() > _cache_size) {
+                _map.erase(_data.front().first);
+                _data.pop_front();
+            }
+
+            return iter->second;
+        }
+
+        void clear() noexcept {
+            _map.clear();
+            _data.clear();
+        }
+    };
+
     struct Vertex {
         f32 x;
         f32 y;
@@ -183,35 +203,8 @@ namespace gm {
                 _format = _new_format();
             }
 
-            std::wstring text_u16{ to_wstring(text) };
-            auto& glyphs{
-                _layout.get(
-                    text_u16,
-                    [&] {
-                        wil::com_ptr<IDWriteTextLayout> dw_layout_base;
-                        THROW_IF_FAILED(
-                            env::dw_factory->CreateTextLayout(
-                                text_u16.data(),
-                                text_u16.size(),
-                                _format.get(),
-                                std::numeric_limits<f32>::max(),
-                                std::numeric_limits<f32>::max(),
-                                &dw_layout_base
-                            )
-                        );
-                        wil::com_ptr dw_layout{ dw_layout_base.query<IDWriteTextLayout4>() };
-
-                        Layout layout;
-                        wil::com_ptr<LayoutCollector> collector;
-                        collector.attach(winrt::make_self<LayoutCollector>().detach());
-                        THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), x, y));
-
-                        return layout;
-                    }
-                ).glyphs
-            };
-
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
+            auto& glyphs{ _layout.get(to_wstring(text), _format, x, y).glyphs };
             auto glyph_meta{
                 _font.get(
                     glyphs | std::views::transform([](const Glyph& glyph) { return static_cast<GlyphId>(glyph); })

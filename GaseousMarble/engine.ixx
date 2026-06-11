@@ -18,7 +18,7 @@ namespace gm {
             u16 char_size{ sizeof(C) };
             u32 ref_count{ 1 };
             u32 size{};
-    };
+        };
 
         struct Empty {
             alignas(Header) u8 storage[sizeof(Header) + sizeof(C)];
@@ -28,8 +28,8 @@ namespace gm {
                 *reinterpret_cast<Header*>(storage) = {};
                 data = reinterpret_cast<C*>(storage + sizeof(Header));
                 *data = {};
-        }
-    };
+            }
+        };
 
         static inline Empty _empty;
 
