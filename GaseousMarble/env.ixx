@@ -30,8 +30,31 @@ namespace gm::env {
         return d3d_resource->device;
     }
 
+    export {
+
+        using DwFactoryBase = IDWriteFactory;
+        using DwFactory = IDWriteFactory7;
+
+        using DwFontFaceBase = IDWriteFontFace;
+        using DwFontFace = IDWriteFontFace5;
+
+        using DwGlyphRunAnalysisBase = IDWriteGlyphRunAnalysis;
+        using DwGlyphRunAnalysis = IDWriteGlyphRunAnalysis;
+
+        // Not IDWriteTextRenderer1: vertical writing mode is unsupported
+        using DwTextRendererBase = IDWriteTextRenderer;
+        using DwTextRenderer = IDWriteTextRenderer;
+
+        using DwTextFormatBase = IDWriteTextFormat;
+        using DwTextFormat = IDWriteTextFormat3;
+
+        using DwTextLayoutBase = IDWriteTextLayout;
+        using DwTextLayout = IDWriteTextLayout4;
+
+    }
+
     struct DwResource {
-        wil::com_ptr<IDWriteFactory7> factory;
+        wil::com_ptr<DwFactory> factory;
     };
 
     const DwResource& dw_resource() {
@@ -41,7 +64,7 @@ namespace gm::env {
             THROW_IF_FAILED(
                 DWriteCreateFactory(
                     DWRITE_FACTORY_TYPE_SHARED,
-                    __uuidof(IDWriteFactory7),
+                    __uuidof(DwFactory),
                     resource.factory.put_unknown()
                 )
             );
@@ -50,7 +73,7 @@ namespace gm::env {
         return resource;
     }
 
-    export IDWriteFactory5* dw_factory() {
+    export DwFactory* dw_factory() {
         return dw_resource().factory.get();
     }
 

@@ -24,8 +24,7 @@ namespace gm {
         std::vector<Glyph> glyphs;
     };
 
-    // Unimplement IDWriteTextRenderer1: vertical writing mode is unsupported
-    class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer> {
+    class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
             return S_OK;
@@ -54,8 +53,8 @@ namespace gm {
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
-            wil::com_ptr<IDWriteFontFace5> face;
-            RETURN_IF_FAILED(face_base.query_to<IDWriteFontFace5>(&face));
+            wil::com_ptr<env::DwFontFace> face;
+            RETURN_IF_FAILED(face_base.query_to<env::DwFontFace>(&face));
 
             f32 size{ glyph_run->fontEmSize };
             // Ignore isSideways: vertical writing mode is unsupported
@@ -144,7 +143,7 @@ namespace gm {
 
         const Layout& get(
             std::wstring_view text,
-            wil::com_ptr<IDWriteTextFormat3> format,
+            wil::com_ptr<env::DwTextFormat> format,
             const DrawOption& option,
             f32 x,
             f32 y
@@ -158,7 +157,7 @@ namespace gm {
                 return iter->second;
             }
 
-            wil::com_ptr<IDWriteTextLayout> dw_layout_base;
+            wil::com_ptr<env::DwTextLayoutBase> dw_layout_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextLayout(
                     text.data(),
@@ -169,7 +168,7 @@ namespace gm {
                     &dw_layout_base
                 )
             );
-            wil::com_ptr dw_layout{ dw_layout_base.query<IDWriteTextLayout4>() };
+            wil::com_ptr dw_layout{ dw_layout_base.query<env::DwTextLayout>() };
 
             DWRITE_TEXT_RANGE range{ 0, text.size() };
             THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font->second.name().data(), range));
@@ -214,11 +213,11 @@ namespace gm {
         };
 
         DrawOption _option;
-        wil::com_ptr<IDWriteTextFormat3> _format;
+        wil::com_ptr<env::DwTextFormat> _format;
         LayoutCache _layout{ 1024 };
 
-        static wil::com_ptr<IDWriteTextFormat3> _new_format() {
-            wil::com_ptr<IDWriteTextFormat> format_base;
+        static wil::com_ptr<env::DwTextFormat> _new_format() {
+            wil::com_ptr<env::DwTextFormatBase> format_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
                     L"Arial",
@@ -231,7 +230,7 @@ namespace gm {
                     &format_base
                 )
             );
-            return format_base.query<IDWriteTextFormat3>();
+            return format_base.query<env::DwTextFormat>();
         }
 
     public:

@@ -75,7 +75,7 @@ namespace gm {
     };
 
     export struct GlyphId {
-        wil::com_ptr<IDWriteFontFace5> face;
+        wil::com_ptr<env::DwFontFace> face;
         f32 size;
         u16 gid;
 
@@ -258,7 +258,7 @@ namespace gm {
             DWRITE_GLYPH_OFFSET offsets{};
             for (auto& [i, id] : missing) {
                 DWRITE_GLYPH_RUN run{ id.face.get(), id.size, 1, &id.gid, &advance, &offsets };
-                wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
+                wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
                 THROW_IF_FAILED(
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
