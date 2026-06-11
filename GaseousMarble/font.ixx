@@ -46,7 +46,7 @@ namespace gm {
         }
 
         ~TextureLock() noexcept {
-            if (!empty()) {
+            if (_texture) {
                 _texture->UnlockRect(0);
             }
         }
@@ -54,6 +54,10 @@ namespace gm {
         TextureLock& operator=(TextureLock&& other) noexcept {
             swap(other);
             return *this;
+        }
+
+        operator bool() const noexcept {
+            return _texture != nullptr;
         }
 
         void swap(TextureLock& other) noexcept {
@@ -65,12 +69,8 @@ namespace gm {
             left.swap(right);
         }
 
-        bool empty() const noexcept {
-            return !_texture;
-        }
-
         const auto& data() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _data;
         }
     };
@@ -158,7 +158,9 @@ namespace gm {
             _texture_width{ texture_width },
             _texture_height{ texture_height } {
 
-            assert(!_name.empty() && _size > 0 && _texture_width > 0 && _texture_height > 0);
+            if (_name.empty() || _size <= 0 || _texture_width <= 0 || _texture_height <= 0) {
+                throw std::invalid_argument{ "Invalid font arguments." };
+            }
 
             if (_locale.empty()) {
                 std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> default_locale;
@@ -174,54 +176,54 @@ namespace gm {
 
         Font& operator=(Font&&) noexcept = default;
 
+        operator bool() const noexcept {
+            return !_name.empty();
+        }
+
         std::wstring_view name() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _name;
         }
 
         f32 size() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _size;
         }
 
         DWRITE_FONT_WEIGHT weight() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _weight;
         }
 
         DWRITE_FONT_STYLE style() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _style;
         }
 
         DWRITE_FONT_STRETCH stretch() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _stretch;
         }
 
         std::wstring_view locale() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _locale;
         }
 
         usize texture_width() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _texture_width;
         }
 
         usize texture_height() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _texture_height;
-        }
-
-        bool empty() const noexcept {
-            return _name.empty();
         }
 
         template <std::ranges::input_range R>
             requires std::same_as<std::ranges::range_value_t<R>, GlyphId>
         std::vector<const GlyphMeta*> get(R&& ids) {
-            assert(!empty());
+            assert(*this);
 
             std::vector<const GlyphMeta*> result;
             std::vector<std::pair<usize, GlyphId>> missing;

@@ -111,17 +111,17 @@ namespace gm {
 
         LayoutCache& operator=(LayoutCache&&) noexcept = default;
 
+        operator bool() const noexcept {
+            return _cache_size != 0;
+        }
+
         usize cache_size() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _cache_size;
         }
 
-        bool empty() const noexcept {
-            return _cache_size == 0;
-        }
-
         const Layout& get(std::wstring_view text, wil::com_ptr<IDWriteTextFormat3> format, f32 x, f32 y) {
-            assert(!empty() && format);
+            assert(*this && format);
 
             auto map_iter{ _map.find(text) };
             if (map_iter != _map.end()) {
@@ -160,6 +160,7 @@ namespace gm {
         }
 
         void clear() noexcept {
+            assert(*this);
             _map.clear();
             _data.clear();
         }
