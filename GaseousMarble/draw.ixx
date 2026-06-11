@@ -141,14 +141,8 @@ namespace gm {
             return _cache_size;
         }
 
-        const Layout& get(
-            std::wstring_view text,
-            wil::com_ptr<env::DwTextFormat> format,
-            const DrawOption& option,
-            f32 x,
-            f32 y
-        ) {
-            assert(*this && format && option.font != nullptr);
+        const Layout& get(std::wstring_view text, const DrawOption& option, wil::com_ptr<env::DwTextFormat> format) {
+            assert(*this && option.font != nullptr && format);
 
             auto map_iter{ _map.find(text) };
             if (map_iter != _map.end()) {
@@ -181,7 +175,7 @@ namespace gm {
             Layout layout;
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), x, y));
+            THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), 0, 0));
 
             auto iter{ _data.emplace(_data.end(), text, std::move(layout)) };
             _map.try_emplace(iter->first, iter);
@@ -259,15 +253,15 @@ namespace gm {
             }
 
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
-            auto& glyphs{ _layout.get(to_wstring(text), _format, _option, x, y).glyphs };
+            auto& glyphs{ _layout.get(to_wstring(text), _option, _format).glyphs };
             auto glyph_meta{
                 _option.font->second.get(
                     glyphs | std::views::transform([](const Glyph& glyph) { return static_cast<GlyphId>(glyph); })
                 )
             };
             for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
-                f32 x1{ glyph.x + meta->offset_x - .5f };
-                f32 y1{ glyph.y + meta->offset_y - .5f };
+                f32 x1{ x + glyph.x + meta->offset_x - .5f };
+                f32 y1{ y + glyph.y + meta->offset_y - .5f };
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
 
