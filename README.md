@@ -5,7 +5,7 @@
 
 Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
 
-The FPS of the test project is usually over 800 on my machine, so I don't list it here because of the noise.
+The FPS of the test project is usually over 900 on my machine, so I don't list it here because of the noise.
 
 ## Functions
 
@@ -41,3 +41,4 @@ The FPS of the test project is usually over 800 on my machine, so I don't list i
 ## Credits
 
 - [GMAPI](https://github.com/snakedeveloper/gmapi) (references their reverse engineering results only)
+- [WIL](https://github.com/microsoft/wil/wiki)
