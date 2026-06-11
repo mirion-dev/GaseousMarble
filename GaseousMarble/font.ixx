@@ -11,7 +11,6 @@ import std;
 import gm.types;
 import gm.utils;
 import gm.env;
-import gm.engine;
 
 namespace gm {
 
@@ -124,7 +123,7 @@ namespace gm {
         auto _new_texture() const {
             wil::com_ptr<IDirect3DTexture8> texture;
             THROW_IF_FAILED(
-                Direct3d::device()->CreateTexture(
+                env::d3d_device()->CreateTexture(
                     _texture_width,
                     _texture_height,
                     1,
@@ -261,7 +260,7 @@ namespace gm {
                 DWRITE_GLYPH_RUN run{ id.face.get(), id.size, 1, &id.gid, &advance, &offsets };
                 wil::com_ptr<IDWriteGlyphRunAnalysis> rasterizer;
                 THROW_IF_FAILED(
-                    env::dw_factory->CreateGlyphRunAnalysis(
+                    env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
                         DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,

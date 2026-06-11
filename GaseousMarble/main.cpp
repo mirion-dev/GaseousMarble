@@ -43,12 +43,6 @@ API f64 gm_internal_push_string(const char* value) noexcept {
     return S_OK;
 }
 
-API f64 gm_init() noexcept
-try {
-    return env::init() ? S_OK : S_FALSE;
-}
-CATCH_RETURN()
-
 API f64 gm_internal_new_font() noexcept
 try {
     auto _{ internal_call_guard(4, 3) };

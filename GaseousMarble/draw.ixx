@@ -11,7 +11,6 @@ import std;
 import gm.types;
 import gm.utils;
 import gm.env;
-import gm.engine;
 import gm.font;
 
 namespace gm {
@@ -161,7 +160,7 @@ namespace gm {
 
             wil::com_ptr<IDWriteTextLayout> dw_layout_base;
             THROW_IF_FAILED(
-                env::dw_factory->CreateTextLayout(
+                env::dw_factory()->CreateTextLayout(
                     text.data(),
                     text.size(),
                     format.get(),
@@ -221,7 +220,7 @@ namespace gm {
         static wil::com_ptr<IDWriteTextFormat3> _new_format() {
             wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
-                env::dw_factory->CreateTextFormat(
+                env::dw_factory()->CreateTextFormat(
                     L"Arial",
                     nullptr,
                     DWRITE_FONT_WEIGHT_NORMAL,
@@ -288,7 +287,7 @@ namespace gm {
                 batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
             }
 
-            auto device{ Direct3d::device() };
+            auto device{ env::d3d_device() };
 
             DWORD old_fvf;
             THROW_IF_FAILED(device->GetVertexShader(&old_fvf));

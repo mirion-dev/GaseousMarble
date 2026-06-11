@@ -5,17 +5,11 @@ action_id=603
 applies_to=self
 */
 var dll_path{ dll_path = parameter_string(1) }
-global.gm_init = external_define(dll_path, "gm_init", dll_cdecl, ty_real, 0)
 global.gm_internal_push_real = external_define(dll_path, "gm_internal_push_real", dll_cdecl, ty_real, 1, ty_real)
 global.gm_internal_push_string = external_define(dll_path, "gm_internal_push_string", dll_cdecl, ty_real, 1, ty_string)
 global.gm_internal_new_font = external_define(dll_path, "gm_internal_new_font", dll_cdecl, ty_real, 0)
 global.gm_set_font = external_define(dll_path, "gm_set_font", dll_cdecl, ty_real, 1, ty_string)
 global.gm_draw = external_define(dll_path, "gm_draw", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
-
-var error{ error = external_call(global.gm_init) }
-if (error < 0) {
-    show_error("gm_init error code: " + string(error), true)
-}
 
 external_call(global.gm_internal_push_string, "default")
 external_call(global.gm_internal_push_string, "Microsoft YaHei")
