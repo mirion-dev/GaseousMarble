@@ -23,22 +23,24 @@ namespace gm {
         TextureLock() noexcept = default;
 
         TextureLock(wil::com_ptr<IDirect3DTexture8> texture, usize x, usize y, usize width, usize height) {
-            if (texture) {
-                D3DLOCKED_RECT lock;
-                RECT rect{
-                    static_cast<isize>(x),
-                    static_cast<isize>(y),
-                    static_cast<isize>(x + width),
-                    static_cast<isize>(y + height)
-                };
-                THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, 0));
-
-                _texture = texture;
-                _data = {
-                    static_cast<u32*>(lock.pBits),
-                    { std::extents{ height, width }, std::array{ lock.Pitch / sizeof(u32), 1uz } }
-                };
+            if (!texture) {
+                throw std::invalid_argument{ "Invalid texture." };
             }
+
+            D3DLOCKED_RECT lock;
+            RECT rect{
+                static_cast<isize>(x),
+                static_cast<isize>(y),
+                static_cast<isize>(x + width),
+                static_cast<isize>(y + height)
+            };
+            THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, 0));
+
+            _texture = texture;
+            _data = {
+                static_cast<u32*>(lock.pBits),
+                { std::extents{ height, width }, std::array{ lock.Pitch / sizeof(u32), 1uz } }
+            };
         }
 
         TextureLock(TextureLock&& other) noexcept {
@@ -46,7 +48,7 @@ namespace gm {
         }
 
         ~TextureLock() noexcept {
-            if (_texture) {
+            if (!empty()) {
                 _texture->UnlockRect(0);
             }
         }
@@ -65,7 +67,12 @@ namespace gm {
             left.swap(right);
         }
 
+        bool empty() const noexcept {
+            return !_texture;
+        }
+
         const auto& data() const noexcept {
+            assert(!empty());
             return _data;
         }
     };
@@ -103,13 +110,13 @@ namespace gm {
         };
 
         std::wstring _name;
-        f32 _size;
-        DWRITE_FONT_WEIGHT _weight;
-        DWRITE_FONT_STYLE _style;
-        DWRITE_FONT_STRETCH _stretch;
+        f32 _size{};
+        DWRITE_FONT_WEIGHT _weight{};
+        DWRITE_FONT_STYLE _style{};
+        DWRITE_FONT_STRETCH _stretch{};
         std::wstring _locale;
-        usize _texture_width;
-        usize _texture_height;
+        usize _texture_width{};
+        usize _texture_height{};
 
         std::unordered_map<GlyphId, GlyphMeta, Hash> _data;
         wil::com_ptr<IDirect3DTexture8> _current_texture;
@@ -132,6 +139,8 @@ namespace gm {
         }
 
     public:
+        Font() noexcept = default;
+
         Font(
             std::wstring_view name,
             f32 size,
@@ -151,13 +160,17 @@ namespace gm {
             _texture_width{ texture_width },
             _texture_height{ texture_height } {
 
+            if (_name.empty() || size < 0) {
+                throw std::invalid_argument{ "Invalid font name or size." };
+            }
+
             if (_locale.empty()) {
-                std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> current_locale;
-                usize current_locale_size{
-                    static_cast<usize>(GetUserDefaultLocaleName(current_locale.data(), current_locale.size()))
+                std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> default_locale;
+                usize default_locale_size{
+                    static_cast<usize>(GetUserDefaultLocaleName(default_locale.data(), default_locale.size()))
                 };
-                THROW_LAST_ERROR_IF(current_locale_size == 0);
-                _locale = { current_locale.data(), current_locale_size };
+                THROW_LAST_ERROR_IF(default_locale_size == 0);
+                _locale = { default_locale.data(), default_locale_size };
             }
         }
 
@@ -166,40 +179,54 @@ namespace gm {
         Font& operator=(Font&&) noexcept = default;
 
         std::wstring_view name() const noexcept {
+            assert(!empty());
             return _name;
         }
 
         f32 size() const noexcept {
+            assert(!empty());
             return _size;
         }
 
         DWRITE_FONT_WEIGHT weight() const noexcept {
+            assert(!empty());
             return _weight;
         }
 
         DWRITE_FONT_STYLE style() const noexcept {
+            assert(!empty());
             return _style;
         }
 
         DWRITE_FONT_STRETCH stretch() const noexcept {
+            assert(!empty());
             return _stretch;
         }
 
         std::wstring_view locale() const noexcept {
+            assert(!empty());
             return _locale;
         }
 
         usize texture_width() const noexcept {
+            assert(!empty());
             return _texture_width;
         }
 
         usize texture_height() const noexcept {
+            assert(!empty());
             return _texture_height;
+        }
+
+        bool empty() const noexcept {
+            return _name.empty();
         }
 
         template <std::ranges::input_range R>
             requires std::same_as<std::ranges::range_value_t<R>, GlyphId>
         std::vector<const GlyphMeta*> get(R&& ids) {
+            assert(!empty());
+
             std::vector<const GlyphMeta*> result;
             std::vector<std::pair<usize, GlyphId>> missing;
             for (auto&& [i, id] : std::forward<R>(ids) | std::views::enumerate) {
