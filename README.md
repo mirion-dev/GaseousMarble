@@ -40,4 +40,4 @@ The FPS of the test project is usually over 800 on my machine, so I don't list i
 
 ## Credits
 
-- [GMAPI](https://github.com/snakedeveloper/gmapi)
+- [GMAPI](https://github.com/snakedeveloper/gmapi) (references their reverse engineering results only)
