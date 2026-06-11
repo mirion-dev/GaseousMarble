@@ -11,11 +11,11 @@ namespace gm::env {
 
     export wil::com_ptr<IDWriteFactory7> dw_factory;
 
-    static bool initialized;
+    export bool init() {
+        static bool initialized;
 
-    export void init() {
         if (initialized) {
-            return;
+            return false;
         }
 
         THROW_IF_FAILED(
@@ -27,6 +27,7 @@ namespace gm::env {
         );
 
         initialized = true;
+        return true;
     }
 
 }

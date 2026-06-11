@@ -158,7 +158,7 @@ namespace gm {
             _texture_width{ texture_width },
             _texture_height{ texture_height } {
 
-            assert(!_name.empty() && _size > 0);
+            assert(!_name.empty() && _size > 0 && _texture_width > 0 && _texture_height > 0);
 
             if (_locale.empty()) {
                 std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> default_locale;
