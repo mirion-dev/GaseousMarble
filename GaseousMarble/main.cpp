@@ -12,8 +12,8 @@ import gm;
 
 using namespace gm;
 
-static std::vector<Real> real_stack;
-static std::vector<String> string_stack;
+static std::vector<f64> real_stack;
+static std::vector<std::string> string_stack;
 
 static std::unordered_map<std::string, Font> font_map;
 static Draw draw;
@@ -33,23 +33,23 @@ static auto internal_call_guard(usize real_count, usize string_count) {
     return guard;
 }
 
-API Real gm_internal_push_real(Real value) noexcept {
+API f64 gm_internal_push_real(f64 value) noexcept {
     real_stack.push_back(value);
     return S_OK;
 }
 
-API Real gm_internal_push_string(const char* value) noexcept {
+API f64 gm_internal_push_string(const char* value) noexcept {
     string_stack.push_back(value);
     return S_OK;
 }
 
-API Real gm_init() noexcept
+API f64 gm_init() noexcept
 try {
     return env::init() ? S_OK : S_FALSE;
 }
 CATCH_RETURN()
 
-API Real gm_internal_new_font() noexcept
+API f64 gm_internal_new_font() noexcept
 try {
     auto _{ internal_call_guard(4, 3) };
 
@@ -74,8 +74,8 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm_delete_font(const char* font_key_ptr) noexcept {
-    auto iter{ font_map.find(font_key_ptr) };
+API f64 gm_delete_font(const char* font_key) noexcept {
+    auto iter{ font_map.find(font_key) };
     if (iter == font_map.end()) {
         return S_FALSE;
     }
@@ -88,9 +88,9 @@ API Real gm_delete_font(const char* font_key_ptr) noexcept {
     return S_OK;
 }
 
-API Real gm_set_font(const char* font_key_ptr) noexcept
+API f64 gm_set_font(const char* font_key) noexcept
 try {
-    auto iter{ font_map.find(font_key_ptr) };
+    auto iter{ font_map.find(font_key) };
     if (iter == font_map.end()) {
         throw std::invalid_argument{ "Font not found." };
     }
@@ -105,9 +105,9 @@ API const char* gm_get_font() noexcept {
     return font == nullptr ? "" : font->first.data();
 }
 
-API Real gm_draw(Real x, Real y, const char* text_ptr) noexcept
+API f64 gm_draw(f64 x, f64 y, const char* text) noexcept
 try {
-    draw.text(static_cast<f32>(x), static_cast<f32>(y), String{ text_ptr });
+    draw.text(static_cast<f32>(x), static_cast<f32>(y), text);
     return S_OK;
 }
 CATCH_RETURN()
