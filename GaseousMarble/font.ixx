@@ -96,11 +96,6 @@ namespace gm {
 
     export class Font {
         struct Hash {
-            template <class T>
-            usize operator()(const T& value) const noexcept {
-                return gm::Hash{}(value);
-            }
-
             usize operator()(const GlyphId& value) const noexcept {
                 return gm::Hash::combine(value.face, value.size, value.gid);
             }
