@@ -64,7 +64,7 @@ namespace gm {
             }
 
             auto iter{ _data.emplace(_data.end(), text, std::forward<Fn>(func)()) };
-            _map.emplace(iter->first, iter);
+            _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {
                 _map.erase(_data.front().first);
@@ -83,15 +83,15 @@ namespace gm {
     class LayoutCollector : public winrt::implements<LayoutCollector, IDWriteTextRenderer/*1*/> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
-            return 0;
+            return S_OK;
         }
 
         STDMETHODIMP GetCurrentTransform(void*, DWRITE_MATRIX*) noexcept {
-            return 0;
+            return S_OK;
         }
 
         STDMETHODIMP GetPixelsPerDip(void*, FLOAT*) noexcept {
-            return 0;
+            return S_OK;
         }
 
         STDMETHODIMP DrawGlyphRun(
@@ -129,19 +129,19 @@ namespace gm {
                 }
             }
 
-            return 0;
+            return S_OK;
         }
 
         STDMETHODIMP DrawInlineObject(void*, FLOAT, FLOAT, IDWriteInlineObject*, BOOL, BOOL, IUnknown*) noexcept {
-            return 0;
+            return S_OK;
         }
 
         STDMETHODIMP DrawStrikethrough(void*, FLOAT, FLOAT, const DWRITE_STRIKETHROUGH*, IUnknown*) noexcept {
-            return 0;
+            return S_OK;
         }
 
         STDMETHODIMP DrawUnderline(void*, FLOAT, FLOAT, const DWRITE_UNDERLINE*, IUnknown*) noexcept {
-            return 0;
+            return S_OK;
         }
     };
 

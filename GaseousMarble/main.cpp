@@ -14,17 +14,9 @@ using namespace gm;
 static Draw draw;
 
 API Real gm_init() noexcept {
-    return wil::ResultFromException(
-        [&] {
-            env::init();
-        }
-    );
+    return wil::ResultFromException([&] { env::init(); });
 }
 
 API Real gm_draw(Real x, Real y, StringView text) noexcept {
-    return wil::ResultFromException(
-        [&] {
-            draw.text(static_cast<f32>(x), static_cast<f32>(y), text);
-        }
-    );
+    return wil::ResultFromException([&] { draw.text(static_cast<f32>(x), static_cast<f32>(y), text); });
 }

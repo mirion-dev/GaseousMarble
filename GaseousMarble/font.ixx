@@ -288,7 +288,7 @@ namespace gm {
                     }
                 }
 
-                result[i] = &_data.emplace(
+                result[i] = &_data.try_emplace(
                     std::move(id),
                     GlyphMeta{ _current_texture, x, y, w, h, bbox.left, bbox.top }
                 ).first->second;
