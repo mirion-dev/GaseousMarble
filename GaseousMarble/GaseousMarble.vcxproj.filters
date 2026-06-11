@@ -8,5 +8,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
+    <ClCompile Include="font.ixx" />
   </ItemGroup>
 </Project>
