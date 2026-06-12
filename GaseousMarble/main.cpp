@@ -80,6 +80,13 @@ API f64 gm_delete_font(const char* font_key) noexcept {
     return S_OK;
 }
 
+API f64 gm_draw(f64 x, f64 y, const char* text) noexcept
+try {
+    draw.text(static_cast<f32>(x), static_cast<f32>(y), text);
+    return S_OK;
+}
+CATCH_RETURN()
+
 API f64 gm_set_font(const char* font_key) noexcept
 try {
     auto iter{ font_map.find(font_key) };
@@ -92,14 +99,33 @@ try {
 }
 CATCH_RETURN()
 
+API f64 gm_set_max_width(f64 max_width) noexcept {
+    if (max_width <= 0 || max_width > std::numeric_limits<f32>::max()) {
+        max_width = std::numeric_limits<f32>::max();
+    }
+
+    draw.set_max_width(static_cast<f32>(max_width));
+    return S_OK;
+}
+
+API f64 gm_set_max_height(f64 max_height) noexcept {
+    if (max_height <= 0 || max_height > std::numeric_limits<f32>::max()) {
+        max_height = std::numeric_limits<f32>::max();
+    }
+
+    draw.set_max_height(static_cast<f32>(max_height));
+    return S_OK;
+}
+
 API const char* gm_get_font() noexcept {
     auto font{ draw.font() };
     return font == nullptr ? "" : font->first.data();
 }
 
-API f64 gm_draw(f64 x, f64 y, const char* text) noexcept
-try {
-    draw.text(static_cast<f32>(x), static_cast<f32>(y), text);
-    return S_OK;
+API f64 gm_get_max_width() noexcept {
+    return draw.max_width();
 }
-CATCH_RETURN()
+
+API f64 gm_get_max_height() noexcept {
+    return draw.max_height();
+}

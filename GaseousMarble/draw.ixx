@@ -107,12 +107,16 @@ namespace gm {
         // VerticalGlyphOrientation: unsupported
         // FontAxisValues          : unsupported
         // AutomaticFontAxes       : unsupported
-        // MaxWidth                : unimplemented
-        // MaxHeight               : unimplemented
+        f32 max_width{ std::numeric_limits<f32>::max() };
+        f32 max_height{ std::numeric_limits<f32>::max() };
         // CharacterSpacing        : unimplemented
         // PairKerning             : unimplemented
 
         friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
+
+        bool is_valid() const noexcept {
+            return font != nullptr && max_width > 0 && max_height > 0;
+        }
     };
 
     class LayoutCache {
@@ -138,9 +142,15 @@ namespace gm {
             }
         };
 
-        struct Hash {
-            usize operator()(const KeyRef& key) const noexcept {
-                return hash_combine(gm::Hash{}, key.text, key.option->font);
+        struct Hash : gm::Hash {
+            using gm::Hash::operator();
+
+            usize operator()(const DrawOption& value) const noexcept {
+                return hash_combine(Hash{}, value.font, value.max_width, value.max_height);
+            }
+
+            usize operator()(const KeyRef& value) const noexcept {
+                return hash_combine(Hash{}, value.text, *value.option);
             }
         };
 
@@ -172,7 +182,7 @@ namespace gm {
         }
 
         const Layout& get(std::wstring_view text, const DrawOption& option, wil::com_ptr<env::DwTextFormat> format) {
-            assert(*this && option.font != nullptr && format);
+            assert(*this && option.is_valid() && format);
 
             auto map_iter{ _map.find({ text, option }) };
             if (map_iter != _map.end()) {
@@ -201,6 +211,8 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStyle(option.font->second.style(), range));
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
+            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
+            THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
 
             Layout layout;
             wil::com_ptr<LayoutCollector> collector;
@@ -216,12 +228,6 @@ namespace gm {
             }
 
             return iter->second;
-        }
-
-        void clear() noexcept {
-            assert(*this);
-            _map.clear();
-            _data.clear();
         }
     };
 
@@ -268,14 +274,29 @@ namespace gm {
             return _option.font;
         }
 
+        f32 max_width() const noexcept {
+            return _option.max_width;
+        }
+
+        f32 max_height() const noexcept {
+            return _option.max_height;
+        }
+
         void set_font(std::pair<const std::string, Font>* font) noexcept {
             _option.font = font;
-            _layout.clear();
+        }
+
+        void set_max_width(f32 max_width) noexcept {
+            _option.max_width = max_width;
+        }
+
+        void set_max_height(f32 max_height) noexcept {
+            _option.max_height = max_height;
         }
 
         void text(f32 x, f32 y, std::string_view text) {
-            if (_option.font == nullptr) {
-                throw std::invalid_argument{ "Not bound to a font." };
+            if (!_option.is_valid()) {
+                throw std::invalid_argument{ "Invalid draw arguments." };
             }
 
             if (!_format) {
