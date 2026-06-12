@@ -111,13 +111,43 @@ namespace gm {
         // MaxHeight               : unimplemented
         // CharacterSpacing        : unimplemented
         // PairKerning             : unimplemented
+
+        friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
     };
 
     class LayoutCache {
+        struct Key {
+            std::wstring text;
+            DrawOption option;
+        };
+
+        struct KeyRef {
+            std::wstring_view text;
+            const DrawOption* option;
+
+            KeyRef(const Key& key) noexcept :
+                text{ key.text },
+                option{ &key.option } {}
+
+            KeyRef(std::wstring_view text, const DrawOption& option) noexcept :
+                text{ text },
+                option{ &option } {}
+
+            friend bool operator==(const KeyRef& left, const KeyRef& right) noexcept {
+                return left.text == right.text && *left.option == *right.option;
+            }
+        };
+
+        struct Hash {
+            usize operator()(const KeyRef& key) const noexcept {
+                return hash_combine(gm::Hash{}, key.text, key.option->font);
+            }
+        };
+
         usize _cache_size{};
 
-        std::list<std::pair<std::wstring, Layout>> _data;
-        std::unordered_map<std::wstring_view, decltype(_data)::iterator> _map;
+        std::list<std::pair<Key, Layout>> _data;
+        std::unordered_map<KeyRef, decltype(_data)::iterator, Hash> _map;
 
     public:
         LayoutCache() noexcept = default;
@@ -144,7 +174,7 @@ namespace gm {
         const Layout& get(std::wstring_view text, const DrawOption& option, wil::com_ptr<env::DwTextFormat> format) {
             assert(*this && option.font != nullptr && format);
 
-            auto map_iter{ _map.find(text) };
+            auto map_iter{ _map.find({ text, option }) };
             if (map_iter != _map.end()) {
                 auto iter{ map_iter->second };
                 _data.splice(_data.end(), _data, iter);
@@ -177,7 +207,7 @@ namespace gm {
             collector.attach(winrt::make_self<LayoutCollector>().detach());
             THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), 0, 0));
 
-            auto iter{ _data.emplace(_data.end(), text, std::move(layout)) };
+            auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(layout)) };
             _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {

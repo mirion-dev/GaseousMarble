@@ -79,9 +79,7 @@ namespace gm {
         f32 size;
         u16 gid;
 
-        friend bool operator==(const GlyphId& left, const GlyphId& right) noexcept {
-            return left.face.get() == right.face.get() && left.size == right.size && left.gid == right.gid;
-        }
+        friend bool operator==(const GlyphId& left, const GlyphId& right) noexcept = default;
     };
 
     export struct GlyphMeta {
@@ -97,7 +95,7 @@ namespace gm {
     export class Font {
         struct Hash {
             usize operator()(const GlyphId& value) const noexcept {
-                return gm::Hash::combine(value.face, value.size, value.gid);
+                return hash_combine(gm::Hash{}, value.face, value.size, value.gid);
             }
         };
 
@@ -310,7 +308,13 @@ namespace gm {
 
                 result[i] = &_data.try_emplace(
                     std::move(id),
-                    GlyphMeta{ _current_texture, x, y, w, h, bbox.left, bbox.top }
+                    _current_texture,
+                    x,
+                    y,
+                    w,
+                    h,
+                    bbox.left,
+                    bbox.top
                 ).first->second;
             }
 

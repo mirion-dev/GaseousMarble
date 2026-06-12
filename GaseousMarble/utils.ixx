@@ -24,12 +24,13 @@ namespace gm {
         usize operator()(wil::com_ptr<T> value) const noexcept {
             return std::hash<T*>{}(value.get());
         }
-
-        template <class... Args>
-        static usize combine(const Args&... values) noexcept {
-            usize result{};
-            return ((result = result ^ Hash{}(values) + 0x9e3779b9 + (result << 6) + (result >> 2)), ...);
-        }
     };
+
+    export template <class H, class... Args>
+    usize hash_combine(H&& hash, Args&&... values) noexcept {
+        usize result{};
+        return ((result ^=
+            std::forward<H>(hash)(std::forward<Args>(values)) + 0x9e3779b9 + (result << 6) + (result >> 2)), ...);
+    }
 
 }

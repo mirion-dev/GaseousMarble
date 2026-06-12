@@ -54,14 +54,12 @@ try {
 
     return font_map.try_emplace(
             std::move(key),
-            Font{
-                to_wstring(string_stack[1]),
-                static_cast<f32>(real_stack[0]),
-                static_cast<DWRITE_FONT_WEIGHT>(real_stack[1]),
-                static_cast<DWRITE_FONT_STYLE>(real_stack[2]),
-                static_cast<DWRITE_FONT_STRETCH>(real_stack[3]),
-                to_wstring(string_stack[2])
-            }
+            to_wstring(string_stack[1]),
+            static_cast<f32>(real_stack[0]),
+            static_cast<DWRITE_FONT_WEIGHT>(real_stack[1]),
+            static_cast<DWRITE_FONT_STYLE>(real_stack[2]),
+            static_cast<DWRITE_FONT_STRETCH>(real_stack[3]),
+            to_wstring(string_stack[2])
         ).second ?
         S_OK :
         S_FALSE;
