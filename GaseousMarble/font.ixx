@@ -271,6 +271,9 @@ namespace gm {
 
                 auto width{ static_cast<usize>(bbox.right - bbox.left) };
                 auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
+                if (width == 0 || height == 0) {
+                    continue;
+                }
                 if (width > _texture_width || height > _texture_height) {
                     throw std::runtime_error{ "Glyph too large." };
                 }

@@ -311,6 +311,10 @@ namespace gm {
                 )
             };
             for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
+                if (meta == nullptr) {
+                    continue;
+                }
+
                 f32 x1{ x + glyph.x + meta->offset_x - .5f };
                 f32 y1{ y + glyph.y + meta->offset_y - .5f };
                 f32 x2{ x1 + meta->width };
