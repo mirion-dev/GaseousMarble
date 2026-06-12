@@ -108,6 +108,7 @@ namespace gm {
         std::wstring _locale;
         usize _texture_width{};
         usize _texture_height{};
+        f32 _antialiasing_v_size{};
 
         std::unordered_map<GlyphId, GlyphMeta, Hash> _data;
         wil::com_ptr<IDirect3DTexture8> _current_texture;
@@ -140,7 +141,8 @@ namespace gm {
             DWRITE_FONT_STRETCH stretch = DWRITE_FONT_STRETCH_NORMAL,
             std::wstring_view locale = L"",
             usize texture_width = 1024,
-            usize texture_height = 1024
+            usize texture_height = 1024,
+            f32 antialiasing_v_size = 24
         ) :
             _name{ name },
             _size{ size },
@@ -149,7 +151,8 @@ namespace gm {
             _stretch{ stretch },
             _locale{ locale },
             _texture_width{ texture_width },
-            _texture_height{ texture_height } {
+            _texture_height{ texture_height },
+            _antialiasing_v_size{ antialiasing_v_size } {
 
             if (_name.empty() || _size <= 0 || _texture_width <= 0 || _texture_height <= 0) {
                 throw std::invalid_argument{ "Invalid font arguments." };
@@ -213,6 +216,11 @@ namespace gm {
             return _texture_height;
         }
 
+        f32 antialiasing_v_size() const noexcept {
+            assert(*this);
+            return _antialiasing_v_size;
+        }
+
         template <std::ranges::input_range R>
             requires std::same_as<std::ranges::range_value_t<R>, GlyphId>
         std::vector<const GlyphMeta*> get(R&& ids) {
@@ -256,7 +264,9 @@ namespace gm {
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
-                        DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
+                        id.size < _antialiasing_v_size
+                        ? DWRITE_RENDERING_MODE1_NATURAL
+                        : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
                         DWRITE_MEASURING_MODE_NATURAL,
                         DWRITE_GRID_FIT_MODE_DISABLED,
                         DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,

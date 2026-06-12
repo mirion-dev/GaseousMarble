@@ -255,7 +255,7 @@ namespace gm {
                     DWRITE_FONT_WEIGHT_NORMAL,
                     DWRITE_FONT_STYLE_NORMAL,
                     DWRITE_FONT_STRETCH_NORMAL,
-                    10,
+                    12,
                     L"en-US",
                     &format_base
                 )

@@ -48,9 +48,9 @@ try {
             static_cast<DWRITE_FONT_STYLE>(style),
             static_cast<DWRITE_FONT_STRETCH>(stretch),
             to_wstring(locale)
-        ).second ?
-        S_OK :
-        S_FALSE;
+        ).second
+        ? S_OK
+        : S_FALSE;
 }
 CATCH_RETURN()
 
