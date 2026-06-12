@@ -12,54 +12,42 @@ import gm;
 
 using namespace gm;
 
-static std::vector<f64> real_stack;
-static std::vector<std::string> string_stack;
-
 static std::unordered_map<std::string, Font> font_map;
 static Draw draw;
 
-static auto internal_call_guard(usize real_count, usize string_count) {
-    auto guard{ wil::scope_exit(
-        [&] {
-            real_stack.clear();
-            string_stack.clear();
-        }
-    ) };
-
-    if (real_stack.size() != real_count || string_stack.size() != string_count) {
-        throw std::invalid_argument{ "Unexpected argument count." };
-    }
-
-    return guard;
+const char* string_from_real(f64 real) noexcept {
+    return reinterpret_cast<const char*>(static_cast<usize>(real));
 }
 
-API f64 gm_internal_push_real(f64 value) noexcept {
-    real_stack.push_back(value);
-    return S_OK;
+API f64 gm_internal_string_to_real(const char* string) noexcept {
+    return reinterpret_cast<usize>(string);
 }
 
-API f64 gm_internal_push_string(const char* value) noexcept {
-    string_stack.push_back(value);
-    return S_OK;
-}
-
-API f64 gm_internal_new_font() noexcept
+API f64 gm_internal_new_font(
+    f64 key_real,
+    f64 name_real,
+    f64 size,
+    f64 weight,
+    f64 style,
+    f64 stretch,
+    f64 locale_real
+) noexcept
 try {
-    auto _{ internal_call_guard(4, 3) };
-
-    std::string key{ string_stack[0] };
+    std::string_view key{ string_from_real(key_real) };
+    std::string_view name{ string_from_real(name_real) };
+    std::string_view locale{ string_from_real(locale_real) };
     if (key.empty()) {
         throw std::invalid_argument{ "Font key must not be empty." };
     }
 
     return font_map.try_emplace(
-            std::move(key),
-            to_wstring(string_stack[1]),
-            static_cast<f32>(real_stack[0]),
-            static_cast<DWRITE_FONT_WEIGHT>(real_stack[1]),
-            static_cast<DWRITE_FONT_STYLE>(real_stack[2]),
-            static_cast<DWRITE_FONT_STRETCH>(real_stack[3]),
-            to_wstring(string_stack[2])
+            std::string{ key },
+            to_wstring(name),
+            static_cast<f32>(size),
+            static_cast<DWRITE_FONT_WEIGHT>(weight),
+            static_cast<DWRITE_FONT_STYLE>(style),
+            static_cast<DWRITE_FONT_STRETCH>(stretch),
+            to_wstring(locale)
         ).second ?
         S_OK :
         S_FALSE;
