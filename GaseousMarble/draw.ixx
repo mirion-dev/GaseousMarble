@@ -57,8 +57,9 @@ namespace gm {
             RETURN_IF_FAILED(face_base.query_to<env::DwFontFace>(&face));
 
             f32 size{ glyph_run->fontEmSize };
-            // Ignore isSideways: vertical writing mode is unsupported
+            // isSideways is unsupported
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
+
             for (usize i{}; i < glyph_run->glyphCount; ++i) {
                 u16 gid{ glyph_run->glyphIndices[i] };
                 f32 advance{ glyph_run->glyphAdvances[i] };
@@ -92,30 +93,62 @@ namespace gm {
     };
 
     export struct DrawOption {
-        std::pair<const std::string, Font>* font{};
-        // FlowDirection           : unsupported
-        // ReadingDirection        : unsupported
-        // TextAlignment           : unimplemented
-        // ParagraphAlignment      : unimplemented
+        enum Alignment : u8 {
+            alignment_left        = 0x0,
+            alignment_center_h    = 0x1,
+            alignment_right       = 0x2,
+            alignment_justified_h = 0x3,
+
+            alignment_top         = 0x0,
+            alignment_center_v    = 0x4,
+            alignment_bottom      = 0x8,
+            alignment_justified_v = 0xc,
+
+            alignment_mask_h = 0x3,
+            alignment_mask_v = 0xc,
+            alignment_mask   = 0xf
+        };
+
+        // IDWriteTextFormat
+        u8 alignment;
         // WordWrapping            : unimplemented
-        // LineSpacing             : unimplemented
-        // Trimming                : unsupported
+        // ReadingDirection        : unsupported
+        // FlowDirection           : unsupported
         // IncrementalTabStop      : unimplemented
-        // FontFallback            : unsupported
+        // Trimming                : unsupported
+        // LineSpacing             : unimplemented
+
+        // IDWriteTextFormat1
         // LastLineWrapping        : unsupported
-        // OpticalAlignment        : unsupported
         // VerticalGlyphOrientation: unsupported
+        // OpticalAlignment        : unsupported
+        // FontFallback            : unsupported
+
+        // IDWriteTextFormat2
+        // LineSpacing             : unimplemented
+
+        // IDWriteTextFormat3
         // FontAxisValues          : unsupported
         // AutomaticFontAxes       : unsupported
+
+        // IDWriteTextLayout
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
-        // CharacterSpacing        : unimplemented
+        std::pair<const std::string, Font>* font{};
+        // Underline               : unsupported
+        // Strikethrough           : unsupported
+        // DrawingEffect           : unsupported
+        // InlineObject            : unsupported
+        // Typography              : unsupported
+
+        // IDWriteTextLayout1
         // PairKerning             : unimplemented
+        // CharacterSpacing        : unimplemented
 
         friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
 
         bool is_valid() const noexcept {
-            return font != nullptr && max_width > 0 && max_height > 0;
+            return alignment <= alignment_mask && max_width > 0 && max_height > 0 && font != nullptr;
         }
     };
 
@@ -146,7 +179,7 @@ namespace gm {
             using gm::Hash::operator();
 
             usize operator()(const DrawOption& value) const noexcept {
-                return hash_combine(Hash{}, value.font, value.max_width, value.max_height);
+                return hash_combine(Hash{}, value.alignment, value.max_width, value.max_height, value.font);
             }
 
             usize operator()(const KeyRef& value) const noexcept {
@@ -204,6 +237,36 @@ namespace gm {
             );
             wil::com_ptr dw_layout{ dw_layout_base.query<env::DwTextLayout>() };
 
+            switch (option.alignment & option.alignment_mask_h) {
+            case DrawOption::alignment_left:
+                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
+                break;
+            case DrawOption::alignment_center_h:
+                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
+                break;
+            case DrawOption::alignment_right:
+                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING));
+                break;
+            case DrawOption::alignment_justified_h:
+                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_JUSTIFIED));
+                break;
+            }
+
+            switch (option.alignment & option.alignment_mask_v) {
+            case DrawOption::alignment_top:
+                THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
+                break;
+            case DrawOption::alignment_center_v:
+                THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
+                break;
+            case DrawOption::alignment_bottom:
+                THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR));
+                break;
+            }
+
+            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
+            THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
+
             DWRITE_TEXT_RANGE range{ 0, text.size() };
             THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font->second.name().data(), range));
             THROW_IF_FAILED(dw_layout->SetFontSize(option.font->second.size(), range));
@@ -211,8 +274,6 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStyle(option.font->second.style(), range));
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
-            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
-            THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
 
             Layout layout;
             wil::com_ptr<LayoutCollector> collector;
@@ -270,8 +331,8 @@ namespace gm {
 
         Draw& operator=(Draw&&) noexcept = default;
 
-        auto font() const noexcept {
-            return _option.font;
+        u8 alignment() const noexcept {
+            return _option.alignment;
         }
 
         f32 max_width() const noexcept {
@@ -282,8 +343,12 @@ namespace gm {
             return _option.max_height;
         }
 
-        void set_font(std::pair<const std::string, Font>* font) noexcept {
-            _option.font = font;
+        auto font() const noexcept {
+            return _option.font;
+        }
+
+        void set_alignment(u8 alignment) noexcept {
+            _option.alignment = alignment;
         }
 
         void set_max_width(f32 max_width) noexcept {
@@ -292,6 +357,10 @@ namespace gm {
 
         void set_max_height(f32 max_height) noexcept {
             _option.max_height = max_height;
+        }
+
+        void set_font(std::pair<const std::string, Font>* font) noexcept {
+            _option.font = font;
         }
 
         void text(f32 x, f32 y, std::string_view text) {

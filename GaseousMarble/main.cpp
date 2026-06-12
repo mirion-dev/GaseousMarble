@@ -75,17 +75,10 @@ try {
 }
 CATCH_RETURN()
 
-API f64 gm_set_font(const char* font_key) noexcept
-try {
-    auto iter{ font_map.find(font_key) };
-    if (iter == font_map.end()) {
-        throw std::invalid_argument{ "Font not found." };
-    }
-
-    draw.set_font(&*iter);
+API f64 gm_set_alignment(f64 alignment) noexcept {
+    draw.set_alignment(static_cast<u8>(static_cast<u8>(alignment) & DrawOption::alignment_mask));
     return S_OK;
 }
-CATCH_RETURN()
 
 API f64 gm_set_max_width(f64 max_width) noexcept {
     if (max_width <= 0 || max_width > std::numeric_limits<f32>::max()) {
@@ -105,9 +98,20 @@ API f64 gm_set_max_height(f64 max_height) noexcept {
     return S_OK;
 }
 
-API const char* gm_get_font() noexcept {
-    auto font{ draw.font() };
-    return font == nullptr ? "" : font->first.data();
+API f64 gm_set_font(const char* font_key) noexcept
+try {
+    auto iter{ font_map.find(font_key) };
+    if (iter == font_map.end()) {
+        throw std::invalid_argument{ "Font not found." };
+    }
+
+    draw.set_font(&*iter);
+    return S_OK;
+}
+CATCH_RETURN()
+
+API f64 gm_get_alignment() noexcept {
+    return draw.alignment();
 }
 
 API f64 gm_get_max_width() noexcept {
@@ -116,4 +120,9 @@ API f64 gm_get_max_width() noexcept {
 
 API f64 gm_get_max_height() noexcept {
     return draw.max_height();
+}
+
+API const char* gm_get_font() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? "" : font->first.data();
 }
