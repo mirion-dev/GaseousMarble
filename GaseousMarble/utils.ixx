@@ -9,7 +9,7 @@ import gm.types;
 
 namespace gm {
 
-    export std::wstring to_wstring(std::string_view str) noexcept {
+    export std::wstring to_wstring(std::string_view str) {
         std::u8string str_u8{ str.begin(), str.end() };
         return std::filesystem::path{ str_u8 }.wstring();
     }
