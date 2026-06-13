@@ -20,20 +20,8 @@ namespace gm {
         f32 y;
     };
 
-    struct Line {
-        std::vector<Glyph> glyphs;
-    };
-
     struct Layout {
-        std::vector<Line> lines;
-    };
-
-    struct LayoutCollectorContext {
-        Layout* layout;
-        const std::vector<DWRITE_LINE_METRICS1>* line_metrics;
-
-        Line line;
-        usize char_num;
+        std::vector<Glyph> glyphs;
     };
 
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
@@ -64,11 +52,7 @@ namespace gm {
         ) noexcept {
             assert(client_drawing_context != nullptr);
 
-            auto& [layout, line_metrics, line, char_num]{
-                *static_cast<LayoutCollectorContext*>(client_drawing_context)
-            };
-            auto& metrics{ (*line_metrics)[layout->lines.size()] };
-
+            auto& glyphs{ static_cast<Layout*>(client_drawing_context)->glyphs };
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
@@ -87,20 +71,13 @@ namespace gm {
                 };
 
                 if (is_ltr) {
-                    line.glyphs.emplace_back(GlyphId{ face, size, gid }, x + offset_x, y - offset_y);
+                    glyphs.emplace_back(GlyphId{ face, size, gid }, x + offset_x, y - offset_y);
                     x += advance;
                 }
                 else {
-                    line.glyphs.emplace_back(GlyphId{ face, size, gid }, x - offset_x, y - offset_y);
+                    glyphs.emplace_back(GlyphId{ face, size, gid }, x - offset_x, y - offset_y);
                     x -= advance;
                 }
-            }
-
-            char_num += glyph_run_description->stringLength;
-            if (char_num >= metrics.length) {
-                layout->lines.emplace_back(std::move(line));
-                line.glyphs.clear();
-                char_num = 0;
             }
 
             return S_OK;
@@ -121,15 +98,15 @@ namespace gm {
 
     export struct DrawOption {
         enum Alignment : u8 {
-            alignment_left        = 0x0,
-            alignment_center_h    = 0x1,
-            alignment_right       = 0x2,
-            alignment_justified_h = 0x3,
+            alignment_left      = 0x0,
+            alignment_center    = 0x1,
+            alignment_right     = 0x2,
+            alignment_justified = 0x3,
 
-            alignment_top         = 0x0,
-            alignment_center_v    = 0x4,
-            alignment_bottom      = 0x8,
-            alignment_justified_v = 0xc,
+            alignment_top     = 0x0,
+            alignment_horizon = 0x4,
+            alignment_bottom  = 0x8,
+            alignment_invalid = 0xc,
 
             alignment_mask_h = 0x3,
             alignment_mask_v = 0xc,
@@ -175,7 +152,8 @@ namespace gm {
         friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
 
         bool is_valid() const noexcept {
-            return alignment <= alignment_mask && max_width > 0 && max_height > 0 && font != nullptr;
+            return alignment <= alignment_mask && (alignment & alignment_mask_v) != alignment_invalid
+                && max_width > 0 && max_height > 0 && font != nullptr;
         }
     };
 
@@ -268,13 +246,13 @@ namespace gm {
             case DrawOption::alignment_left:
                 THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
                 break;
-            case DrawOption::alignment_center_h:
+            case DrawOption::alignment_center:
                 THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
                 break;
             case DrawOption::alignment_right:
                 THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING));
                 break;
-            case DrawOption::alignment_justified_h:
+            case DrawOption::alignment_justified:
                 THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_JUSTIFIED));
                 break;
             }
@@ -283,7 +261,7 @@ namespace gm {
             case DrawOption::alignment_top:
                 THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
                 break;
-            case DrawOption::alignment_center_v:
+            case DrawOption::alignment_horizon:
                 THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
                 break;
             case DrawOption::alignment_bottom:
@@ -302,17 +280,10 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
-            usize line_num;
-            dw_layout->GetLineMetrics(static_cast<DWRITE_LINE_METRICS1*>(nullptr), 0, &line_num);
-
-            std::vector<DWRITE_LINE_METRICS1> line_metrics(line_num);
-            THROW_IF_FAILED(dw_layout->GetLineMetrics(line_metrics.data(), line_num, &line_num));
-
             Layout layout;
-            LayoutCollectorContext context{ &layout, &line_metrics };
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            THROW_IF_FAILED(dw_layout->Draw(&context, collector.get(), 0, 0));
+            THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), 0, 0));
 
             auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(layout)) };
             _map.try_emplace(iter->first, iter);
@@ -406,11 +377,7 @@ namespace gm {
                 _format = _new_format();
             }
 
-            auto glyphs{
-                _layout.get(to_wstring(text), _option, _format).lines
-                | std::views::transform(&Line::glyphs)
-                | std::views::join
-            };
+            auto glyphs{ _layout.get(to_wstring(text), _option, _format).glyphs };
             auto glyph_meta{
                 _option.font->second.get(
                     glyphs
