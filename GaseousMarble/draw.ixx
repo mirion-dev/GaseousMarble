@@ -29,9 +29,11 @@ namespace gm {
     };
 
     struct LayoutCollectorContext {
-        Layout layout;
+        Layout* layout;
+        const std::vector<DWRITE_LINE_METRICS1>* line_metrics;
+
         Line line;
-        std::vector<usize>::iterator line_end;
+        usize char_num;
     };
 
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
@@ -62,7 +64,11 @@ namespace gm {
         ) noexcept {
             assert(client_drawing_context != nullptr);
 
-            auto& [layout, line, line_end]{ *static_cast<LayoutCollectorContext*>(client_drawing_context) };
+            auto& [layout, line_metrics, line, char_num]{
+                *static_cast<LayoutCollectorContext*>(client_drawing_context)
+            };
+            auto& metrics{ (*line_metrics)[layout->lines.size()] };
+
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
@@ -90,10 +96,11 @@ namespace gm {
                 }
             }
 
-            if (glyph_run_description->textPosition + glyph_run_description->stringLength >= *line_end) {
-                layout.lines.emplace_back(std::move(line));
+            char_num += glyph_run_description->stringLength;
+            if (char_num >= metrics.length) {
+                layout->lines.emplace_back(std::move(line));
                 line.glyphs.clear();
-                ++line_end;
+                char_num = 0;
             }
 
             return S_OK;
@@ -301,21 +308,13 @@ namespace gm {
             std::vector<DWRITE_LINE_METRICS1> line_metrics(line_num);
             THROW_IF_FAILED(dw_layout->GetLineMetrics(line_metrics.data(), line_num, &line_num));
 
-            std::vector<usize> line_ends(line_num);
-            std::transform_inclusive_scan(
-                line_metrics.begin(),
-                line_metrics.end(),
-                line_ends.begin(),
-                std::plus{},
-                std::mem_fn(&DWRITE_LINE_METRICS1::length)
-            );
-
-            LayoutCollectorContext context{ .line_end = line_ends.begin() };
+            Layout layout;
+            LayoutCollectorContext context{ &layout, &line_metrics };
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
             THROW_IF_FAILED(dw_layout->Draw(&context, collector.get(), 0, 0));
 
-            auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(context.layout)) };
+            auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(layout)) };
             _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {
