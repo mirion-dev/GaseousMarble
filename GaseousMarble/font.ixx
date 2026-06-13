@@ -108,13 +108,16 @@ namespace gm {
         std::wstring _locale;
         usize _texture_width{};
         usize _texture_height{};
-        f32 _antialiasing_v_size{};
+        usize _max_texture_num{};
+        f32 _min_antialiasing_v_size{};
 
         std::unordered_map<GlyphId, GlyphMeta, Hash> _data;
+
+        usize _texture_num{};
         wil::com_ptr<IDirect3DTexture8> _current_texture;
         rectpack2D::empty_spaces<false> _current_bin{ {} };
 
-        auto _new_texture() const {
+        auto _new_texture() {
             wil::com_ptr<IDirect3DTexture8> texture;
             THROW_IF_FAILED(
                 env::d3d_device()->CreateTexture(
@@ -127,6 +130,7 @@ namespace gm {
                     &texture
                 )
             );
+            ++_texture_num;
             return texture;
         }
 
@@ -142,7 +146,8 @@ namespace gm {
             std::wstring_view locale = L"",
             usize texture_width = 1024,
             usize texture_height = 1024,
-            f32 antialiasing_v_size = 24
+            usize max_texture_num = 16,
+            f32 min_antialiasing_v_size = 24
         ) :
             _name{ name },
             _size{ size },
@@ -152,9 +157,10 @@ namespace gm {
             _locale{ locale },
             _texture_width{ texture_width },
             _texture_height{ texture_height },
-            _antialiasing_v_size{ antialiasing_v_size } {
+            _max_texture_num{ max_texture_num },
+            _min_antialiasing_v_size{ min_antialiasing_v_size } {
 
-            if (_name.empty() || _size <= 0 || _texture_width <= 0 || _texture_height <= 0) {
+            if (_name.empty() || _size <= 0 || _texture_width <= 0 || _texture_height <= 0 || _max_texture_num == 0) {
                 throw std::invalid_argument{ "Invalid font arguments." };
             }
 
@@ -216,9 +222,14 @@ namespace gm {
             return _texture_height;
         }
 
-        f32 antialiasing_v_size() const noexcept {
+        usize max_texture_num() const noexcept {
             assert(*this);
-            return _antialiasing_v_size;
+            return _max_texture_num;
+        }
+
+        f32 min_antialiasing_v_size() const noexcept {
+            assert(*this);
+            return _min_antialiasing_v_size;
         }
 
         template <std::ranges::input_range R>
@@ -264,7 +275,7 @@ namespace gm {
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
-                        id.size < _antialiasing_v_size
+                        id.size < _min_antialiasing_v_size
                         ? DWRITE_RENDERING_MODE1_NATURAL
                         : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
                         DWRITE_MEASURING_MODE_NATURAL,
@@ -300,6 +311,10 @@ namespace gm {
 
                 auto insert_result{ _current_bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
                 if (!insert_result) {
+                    if (_texture_num >= _max_texture_num) {
+                        throw std::runtime_error{ "Too many textures." };
+                    }
+
                     wil::com_ptr texture{ _new_texture() };
                     lock = { texture, 0, 0, _texture_width, _texture_height };
 
