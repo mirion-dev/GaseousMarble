@@ -75,9 +75,10 @@ namespace gm {
 
             for (usize i{}; i < glyph_run->glyphCount; ++i) {
                 u16 gid{ glyph_run->glyphIndices[i] };
-                f32 advance{ glyph_run->glyphAdvances[i] };
-                f32 offset_x{ glyph_run->glyphOffsets[i].advanceOffset };
-                f32 offset_y{ glyph_run->glyphOffsets[i].ascenderOffset };
+                f32 advance{ glyph_run->glyphAdvances == nullptr ? 0 : glyph_run->glyphAdvances[i] };
+                auto [offset_x, offset_y]{
+                    glyph_run->glyphOffsets == nullptr ? DWRITE_GLYPH_OFFSET{} : glyph_run->glyphOffsets[i]
+                };
 
                 if (is_ltr) {
                     line.glyphs.emplace_back(GlyphId{ face, size, gid }, x + offset_x, y - offset_y);

@@ -266,10 +266,8 @@ namespace gm {
                 _current_bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
             }
 
-            f32 advance{};
-            DWRITE_GLYPH_OFFSET offsets{};
             for (auto& [i, id] : missing) {
-                DWRITE_GLYPH_RUN run{ id.face.get(), id.size, 1, &id.gid, &advance, &offsets };
+                DWRITE_GLYPH_RUN run{ id.face.get(), id.size, 1, &id.gid };
                 wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
                 THROW_IF_FAILED(
                     env::dw_factory()->CreateGlyphRunAnalysis(
