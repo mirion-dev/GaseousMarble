@@ -54,8 +54,8 @@ try {
 }
 CATCH_RETURN()
 
-API f64 gm_delete_font(const char* font_key) noexcept {
-    auto iter{ font_map.find(font_key) };
+API f64 gm_delete_font(const char* key) noexcept {
+    auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
         return S_FALSE;
     }
@@ -68,7 +68,7 @@ API f64 gm_delete_font(const char* font_key) noexcept {
     return S_OK;
 }
 
-API f64 gm_draw(f64 x, f64 y, const char* text) noexcept
+API f64 gm_draw_text(f64 x, f64 y, const char* text) noexcept
 try {
     draw.text(static_cast<f32>(x), static_cast<f32>(y), text);
     return S_OK;
@@ -98,9 +98,9 @@ API f64 gm_set_max_height(f64 max_height) noexcept {
     return S_OK;
 }
 
-API f64 gm_set_font(const char* font_key) noexcept
+API f64 gm_set_font(const char* key) noexcept
 try {
-    auto iter{ font_map.find(font_key) };
+    auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
         throw std::invalid_argument{ "Font not found." };
     }

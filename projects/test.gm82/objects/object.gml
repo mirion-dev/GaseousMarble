@@ -8,7 +8,7 @@ var dll_path{ dll_path = parameter_string(1) }
 global.gm_internal_string_to_real = external_define(dll_path, "gm_internal_string_to_real", dll_cdecl, ty_real, 1, ty_string)
 global.gm_internal_new_font       = external_define(dll_path, "gm_internal_new_font", dll_cdecl, ty_real, 7, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
 global.gm_delete_font             = external_define(dll_path, "gm_delete_font", dll_cdecl, ty_real, 1, ty_string)
-global.gm_draw                    = external_define(dll_path, "gm_draw", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
+global.gm_draw_text               = external_define(dll_path, "gm_draw_text", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm_set_alignment           = external_define(dll_path, "gm_set_alignment", dll_cdecl, ty_real, 1, ty_real)
 global.gm_set_max_width           = external_define(dll_path, "gm_set_max_width", dll_cdecl, ty_real, 1, ty_real)
 global.gm_set_max_height          = external_define(dll_path, "gm_set_max_height", dll_cdecl, ty_real, 1, ty_real)
@@ -62,7 +62,7 @@ applies_to=self
 draw_set_color(c_white)
 draw_text(0, 0, fps)
 
-var error{ error = external_call(global.gm_draw, 0, 0, "
+var error{ error = external_call(global.gm_draw_text, 0, 0, "
 在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源创建（不管是在 GM 设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平及垂直坐标。
 
 文本的绘制涉及以下函数：
@@ -86,5 +86,5 @@ string_height(string) 当前字体及将要通过 draw_text() 函数绘制的字
 string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
 string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。") }
 if (error < 0) {
-    show_error("gm_draw error code: " + string(error), true)
+    show_error("gm_draw_text error code: " + string(error), true)
 }
