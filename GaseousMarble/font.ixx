@@ -239,7 +239,7 @@ namespace gm {
 
             std::vector<const GlyphMeta*> result;
             std::vector<std::pair<usize, GlyphId>> missing;
-            for (auto&& [i, id] : std::forward<R>(ids) | std::views::enumerate) {
+            for (auto [i, id] : std::forward<R>(ids) | std::views::enumerate) {
                 auto iter{ _data.find(id) };
                 if (iter != _data.end()) {
                     result.push_back(&iter->second);

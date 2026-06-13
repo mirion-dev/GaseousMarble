@@ -30,21 +30,24 @@ namespace gm {
 
     struct LayoutCollectorContext {
         Layout layout;
-        f32 current_baseline{};
-        Line current_line;
+        Line line;
+        std::vector<usize>::iterator line_end;
     };
 
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
     public:
-        STDMETHODIMP IsPixelSnappingDisabled(void*, BOOL*) noexcept {
+        STDMETHODIMP IsPixelSnappingDisabled(void* client_drawing_context, BOOL* is_disabled) noexcept {
+            *is_disabled = true;
             return S_OK;
         }
 
-        STDMETHODIMP GetCurrentTransform(void*, DWRITE_MATRIX*) noexcept {
+        STDMETHODIMP GetCurrentTransform(void* client_drawing_context, DWRITE_MATRIX* transform) noexcept {
+            *transform = { 1, 0, 0, 1, 0, 0 };
             return S_OK;
         }
 
-        STDMETHODIMP GetPixelsPerDip(void*, FLOAT*) noexcept {
+        STDMETHODIMP GetPixelsPerDip(void* client_drawing_context, FLOAT* pixels_per_dip) noexcept {
+            *pixels_per_dip = 1;
             return S_OK;
         }
 
@@ -59,15 +62,7 @@ namespace gm {
         ) noexcept {
             assert(client_drawing_context != nullptr);
 
-            auto& [layout, current_baseline, current_line]{
-                *static_cast<LayoutCollectorContext*>(client_drawing_context)
-            };
-            if (current_baseline != baseline_origin_y && !current_line.glyphs.empty()) {
-                layout.lines.emplace_back(std::move(current_line));
-                current_baseline = baseline_origin_y;
-                current_line.glyphs.clear();
-            }
-
+            auto& [layout, line, line_end]{ *static_cast<LayoutCollectorContext*>(client_drawing_context) };
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
@@ -85,13 +80,19 @@ namespace gm {
                 f32 offset_y{ glyph_run->glyphOffsets[i].ascenderOffset };
 
                 if (is_ltr) {
-                    current_line.glyphs.emplace_back(GlyphId{ face, size, gid }, x + offset_x, y - offset_y);
+                    line.glyphs.emplace_back(GlyphId{ face, size, gid }, x + offset_x, y - offset_y);
                     x += advance;
                 }
                 else {
-                    current_line.glyphs.emplace_back(GlyphId{ face, size, gid }, x - offset_x, y - offset_y);
+                    line.glyphs.emplace_back(GlyphId{ face, size, gid }, x - offset_x, y - offset_y);
                     x -= advance;
                 }
+            }
+
+            if (glyph_run_description->textPosition + glyph_run_description->stringLength >= *line_end) {
+                layout.lines.emplace_back(std::move(line));
+                line.glyphs.clear();
+                ++line_end;
             }
 
             return S_OK;
@@ -293,14 +294,25 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
-            LayoutCollectorContext context;
+            usize line_num;
+            dw_layout->GetLineMetrics(static_cast<DWRITE_LINE_METRICS1*>(nullptr), 0, &line_num);
+
+            std::vector<DWRITE_LINE_METRICS1> line_metrics(line_num);
+            THROW_IF_FAILED(dw_layout->GetLineMetrics(line_metrics.data(), line_num, &line_num));
+
+            std::vector<usize> line_ends(line_num);
+            std::transform_inclusive_scan(
+                line_metrics.begin(),
+                line_metrics.end(),
+                line_ends.begin(),
+                std::plus{},
+                std::mem_fn(&DWRITE_LINE_METRICS1::length)
+            );
+
+            LayoutCollectorContext context{ .line_end = line_ends.begin() };
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
             THROW_IF_FAILED(dw_layout->Draw(&context, collector.get(), 0, 0));
-
-            if (!context.current_line.glyphs.empty()) {
-                context.layout.lines.emplace_back(std::move(context.current_line));
-            }
 
             auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(context.layout)) };
             _map.try_emplace(iter->first, iter);
@@ -407,7 +419,7 @@ namespace gm {
             };
 
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
-            for (auto&& [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
+            for (auto [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
                 if (meta == nullptr) {
                     continue;
                 }
