@@ -242,32 +242,29 @@ namespace gm {
             );
             wil::com_ptr dw_layout{ dw_layout_base.query<env::DwTextLayout>() };
 
-            switch (option.alignment & option.alignment_mask_h) {
-            case DrawOption::alignment_left:
-                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
-                break;
-            case DrawOption::alignment_center:
-                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
-                break;
-            case DrawOption::alignment_right:
-                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING));
-                break;
-            case DrawOption::alignment_justified:
-                THROW_IF_FAILED(dw_layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_JUSTIFIED));
-                break;
-            }
+            u8 alignment_h{ static_cast<u8>(option.alignment & option.alignment_mask_h) };
+            u8 alignment_v{ static_cast<u8>(option.alignment & option.alignment_mask_v) };
+            THROW_IF_FAILED(
+                dw_layout->SetTextAlignment(
+                    alignment_h == DrawOption::alignment_left
+                    ? DWRITE_TEXT_ALIGNMENT_LEADING
+                    : alignment_h == DrawOption::alignment_center
+                    ? DWRITE_TEXT_ALIGNMENT_CENTER
+                    : alignment_h == DrawOption::alignment_right
+                    ? DWRITE_TEXT_ALIGNMENT_TRAILING
+                    : DWRITE_TEXT_ALIGNMENT_JUSTIFIED
+                )
+            );
+            THROW_IF_FAILED(
+                dw_layout->SetParagraphAlignment(
+                    alignment_v == DrawOption::alignment_top
+                    ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR
+                    : alignment_v == DrawOption::alignment_horizon
+                    ? DWRITE_PARAGRAPH_ALIGNMENT_CENTER
+                    : DWRITE_PARAGRAPH_ALIGNMENT_FAR
+                )
+            );
 
-            switch (option.alignment & option.alignment_mask_v) {
-            case DrawOption::alignment_top:
-                THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
-                break;
-            case DrawOption::alignment_horizon:
-                THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
-                break;
-            case DrawOption::alignment_bottom:
-                THROW_IF_FAILED(dw_layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_FAR));
-                break;
-            }
 
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
