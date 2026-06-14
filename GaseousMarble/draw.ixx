@@ -75,8 +75,8 @@ namespace gm {
                     x += advance;
                 }
                 else {
-                    glyphs.emplace_back(GlyphRasterization{ { face, gid }, size }, x - offset_x, y - offset_y);
                     x -= advance;
+                    glyphs.emplace_back(GlyphRasterization{ { face, gid }, size }, x - offset_x, y - offset_y);
                 }
             }
 
