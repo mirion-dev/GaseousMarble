@@ -19,9 +19,14 @@ Removed
 - v1: `gm_clear()`
 - Reason: Originally used to clean up fonts before a game restart but later became unnecessary.
 
-`gm_draw_text(x, y, text)`
+`gm_draw_text(x, y, text)`<br>
+`gm_text_width(text)`<br>
+`gm_text_height(text)`
 
-- v1: `gm_draw()`
+- v1: <br>
+  `gm_draw()`<br>
+  `gm_width()`<br>
+  `gm_height()`
 - New: Supports RTL languages.
 
 `gm_set_alignment(alignment)`<br>
@@ -42,7 +47,7 @@ Removed
 
 `gm_set_max_height(max_height)`
 
-- v1: None
+- New
 
 `gm_set_font(key)`
 
@@ -63,7 +68,7 @@ Removed
 
 `gm_get_max_height()`
 
-- v1: None
+- New
 
 `gm_get_font()`
 

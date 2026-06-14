@@ -22,6 +22,8 @@ namespace gm {
 
     struct Layout {
         std::vector<Glyph> glyphs;
+        f32 width;
+        f32 height;
     };
 
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
@@ -281,6 +283,12 @@ namespace gm {
             collector.attach(winrt::make_self<LayoutCollector>().detach());
             THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), 0, 0));
 
+            DWRITE_TEXT_METRICS metrics;
+            THROW_IF_FAILED(dw_layout->GetMetrics(&metrics));
+
+            layout.width = metrics.width;
+            layout.height = metrics.height;
+
             auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(layout)) };
             _map.try_emplace(iter->first, iter);
 
@@ -308,21 +316,29 @@ namespace gm {
         wil::com_ptr<env::DwTextFormat> _format;
         LayoutCache _layout{ 1024 };
 
-        static wil::com_ptr<env::DwTextFormat> _new_format() {
-            wil::com_ptr<env::DwTextFormatBase> format_base;
-            THROW_IF_FAILED(
-                env::dw_factory()->CreateTextFormat(
-                    L"Arial",
-                    nullptr,
-                    DWRITE_FONT_WEIGHT_NORMAL,
-                    DWRITE_FONT_STYLE_NORMAL,
-                    DWRITE_FONT_STRETCH_NORMAL,
-                    12,
-                    L"en-US",
-                    &format_base
-                )
-            );
-            return format_base.query<env::DwTextFormat>();
+        const Layout& _text_layout(std::string_view text) {
+            if (!_option.is_valid()) {
+                throw std::invalid_argument{ "Invalid draw options." };
+            }
+
+            if (!_format) {
+                wil::com_ptr<env::DwTextFormatBase> format_base;
+                THROW_IF_FAILED(
+                    env::dw_factory()->CreateTextFormat(
+                        L"Arial",
+                        nullptr,
+                        DWRITE_FONT_WEIGHT_NORMAL,
+                        DWRITE_FONT_STYLE_NORMAL,
+                        DWRITE_FONT_STRETCH_NORMAL,
+                        12,
+                        L"en-US",
+                        &format_base
+                    )
+                );
+                _format = format_base.query<env::DwTextFormat>();
+            }
+
+            return _layout.get(to_wstring(text), _option, _format);
         }
 
     public:
@@ -365,15 +381,7 @@ namespace gm {
         }
 
         void text(f32 x, f32 y, std::string_view text) {
-            if (!_option.is_valid()) {
-                throw std::invalid_argument{ "Invalid draw options." };
-            }
-
-            if (!_format) {
-                _format = _new_format();
-            }
-
-            auto glyphs{ _layout.get(to_wstring(text), _option, _format).glyphs };
+            auto glyphs{ _text_layout(text).glyphs };
             auto glyph_meta{
                 _option.font->second.get(
                     glyphs,
@@ -430,6 +438,14 @@ namespace gm {
                     )
                 );
             }
+        }
+
+        f32 text_width(std::string_view text) {
+            return _text_layout(text).width;
+        }
+
+        f32 text_height(std::string_view text) {
+            return _text_layout(text).height;
         }
     };
 

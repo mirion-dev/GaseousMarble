@@ -76,6 +76,18 @@ try {
 }
 CATCH_RETURN()
 
+API Real gm_text_width(String text) noexcept
+try {
+    return draw.text_width(text);
+}
+CATCH_RETURN()
+
+API Real gm_text_height(String text) noexcept
+try {
+    return draw.text_height(text);
+}
+CATCH_RETURN()
+
 API Real gm_set_alignment(Real alignment_real) noexcept {
     u8 alignment{ static_cast<u8>(saturating_cast<u8>(alignment_real) & DrawOption::alignment_mask) };
     if ((alignment & DrawOption::alignment_mask_v) == DrawOption::alignment_invalid) {
