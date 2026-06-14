@@ -76,10 +76,13 @@ namespace gm {
 
     export struct GlyphId {
         wil::com_ptr<env::DwFontFace> face;
-        f32 size;
         u16 gid;
 
-        friend bool operator==(const GlyphId& left, const GlyphId& right) noexcept = default;
+        friend bool operator==(GlyphId left, GlyphId right) noexcept = default;
+    };
+
+    export struct GlyphRasterization : GlyphId {
+        f32 size;
     };
 
     export struct GlyphMeta {
@@ -94,8 +97,8 @@ namespace gm {
 
     export class Font {
         struct Hash {
-            usize operator()(const GlyphId& value) const noexcept {
-                return hash_combine(gm::Hash{}, value.face, value.size, value.gid);
+            usize operator()(GlyphId value) const noexcept {
+                return hash_combine(gm::Hash{}, value.face, value.gid);
             }
         };
 
@@ -232,21 +235,20 @@ namespace gm {
             return _min_antialiasing_v_size;
         }
 
-        template <std::ranges::input_range R>
-            requires std::same_as<std::ranges::range_value_t<R>, GlyphId>
-        std::vector<const GlyphMeta*> get(R&& ids) {
+        template <std::ranges::input_range R, class KeyFn, class DataFn>
+        std::vector<const GlyphMeta*> get(R&& items, KeyFn&& key_func, DataFn&& data_func) {
             assert(*this);
 
             std::vector<const GlyphMeta*> result;
-            std::vector<std::pair<usize, GlyphId>> missing;
-            for (auto [i, id] : std::forward<R>(ids) | std::views::enumerate) {
-                auto iter{ _data.find(id) };
+            std::vector<std::pair<usize, GlyphRasterization>> missing;
+            for (auto [i, item] : std::forward<R>(items) | std::views::enumerate) {
+                auto iter{ _data.find(std::forward<KeyFn>(key_func)(item)) };
                 if (iter != _data.end()) {
                     result.push_back(&iter->second);
                 }
                 else {
                     result.push_back(nullptr);
-                    missing.emplace_back(i, id);
+                    missing.emplace_back(i, std::forward<DataFn>(data_func)(item));
                 }
             }
 
@@ -266,14 +268,14 @@ namespace gm {
                 _current_bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
             }
 
-            for (auto& [i, id] : missing) {
-                DWRITE_GLYPH_RUN run{ id.face.get(), id.size, 1, &id.gid };
+            for (auto& [i, data] : missing) {
+                DWRITE_GLYPH_RUN run{ data.face.get(), data.size, 1, &data.gid };
                 wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
                 THROW_IF_FAILED(
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
-                        id.size < _min_antialiasing_v_size
+                        data.size < _min_antialiasing_v_size
                         ? DWRITE_RENDERING_MODE1_NATURAL
                         : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
                         DWRITE_MEASURING_MODE_NATURAL,
@@ -333,7 +335,7 @@ namespace gm {
                 }
 
                 result[i] = &_data.try_emplace(
-                    std::move(id),
+                    std::move(static_cast<GlyphId>(data)),
                     _current_texture,
                     x,
                     y,

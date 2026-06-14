@@ -15,7 +15,7 @@ import gm.font;
 
 namespace gm {
 
-    struct Glyph : GlyphId {
+    struct Glyph : GlyphRasterization {
         f32 x;
         f32 y;
     };
@@ -71,11 +71,11 @@ namespace gm {
                 };
 
                 if (is_ltr) {
-                    glyphs.emplace_back(GlyphId{ face, size, gid }, x + offset_x, y - offset_y);
+                    glyphs.emplace_back(GlyphRasterization{ { face, gid }, size }, x + offset_x, y - offset_y);
                     x += advance;
                 }
                 else {
-                    glyphs.emplace_back(GlyphId{ face, size, gid }, x - offset_x, y - offset_y);
+                    glyphs.emplace_back(GlyphRasterization{ { face, gid }, size }, x - offset_x, y - offset_y);
                     x -= advance;
                 }
             }
@@ -377,8 +377,9 @@ namespace gm {
             auto glyphs{ _layout.get(to_wstring(text), _option, _format).glyphs };
             auto glyph_meta{
                 _option.font->second.get(
-                    glyphs
-                    | std::views::transform([](const Glyph& glyph) -> const GlyphId& { return glyph; })
+                    glyphs,
+                    [](const Glyph& glyph) -> const GlyphId& { return glyph; },
+                    [](const Glyph& glyph) -> const GlyphRasterization& { return glyph; }
                 )
             };
 
