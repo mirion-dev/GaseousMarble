@@ -385,7 +385,7 @@ namespace gm {
 
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
             for (auto [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
-                if (meta == nullptr) {
+                if (!meta->texture) {
                     continue;
                 }
 

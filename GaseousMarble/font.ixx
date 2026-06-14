@@ -293,6 +293,16 @@ namespace gm {
                 auto width{ static_cast<usize>(bbox.right - bbox.left) };
                 auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
                 if (width == 0 || height == 0) {
+                    result[i] = &_data.try_emplace(
+                        std::move(static_cast<GlyphId>(data)),
+                        nullptr,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ).first->second;
                     continue;
                 }
                 if (width > _texture_width || height > _texture_height) {
