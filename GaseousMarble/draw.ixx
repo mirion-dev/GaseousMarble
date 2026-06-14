@@ -265,7 +265,6 @@ namespace gm {
                 )
             );
 
-
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
 
@@ -367,7 +366,7 @@ namespace gm {
 
         void text(f32 x, f32 y, std::string_view text) {
             if (!_option.is_valid()) {
-                throw std::invalid_argument{ "Invalid draw arguments." };
+                throw std::invalid_argument{ "Invalid draw options." };
             }
 
             if (!_format) {
