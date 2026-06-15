@@ -2,12 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="draw.ixx" />
-    <ClCompile Include="engine.ixx" />
     <ClCompile Include="env.ixx" />
     <ClCompile Include="gm.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
     <ClCompile Include="font.ixx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
   </ItemGroup>
 </Project>

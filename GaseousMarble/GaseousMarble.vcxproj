@@ -19,6 +19,9 @@
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

@@ -103,6 +103,7 @@ namespace gm {
         static constexpr int ALIGNMENT_H_OFFSET{};
         static constexpr u8 ALIGNMENT_V_MASK{ 0xc };
         static constexpr int ALIGNMENT_V_OFFSET{ 2 };
+        static constexpr u8 ALIGNMENT_MASK{ 0xf };
 
         // IDWriteTextFormat
         u8 alignment;
@@ -142,7 +143,7 @@ namespace gm {
         friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
 
         bool is_valid() const noexcept {
-            return alignment <= 0xf && max_width > 0 && max_height > 0 && font != nullptr;
+            return alignment <= ALIGNMENT_MASK && max_width > 0 && max_height > 0 && font != nullptr;
         }
     };
 

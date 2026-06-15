@@ -89,7 +89,7 @@ try {
 CATCH_RETURN()
 
 API Real gm_set_alignment(Real alignment_real) noexcept {
-    draw.set_alignment(static_cast<u8>(saturating_cast<u8>(alignment_real) & 0xf));
+    draw.set_alignment(static_cast<u8>(saturating_cast<u8>(alignment_real) & DrawOption::ALIGNMENT_MASK));
     return S_OK;
 }
 
@@ -150,11 +150,11 @@ API Real gm_get_alignment() noexcept {
 }
 
 API Real gm_get_alignment_h() noexcept {
-    return draw.alignment() & 0x3;
+    return draw.alignment() & DrawOption::ALIGNMENT_H_MASK;
 }
 
 API Real gm_get_alignment_v() noexcept {
-    return draw.alignment() & 0xc;
+    return draw.alignment() & DrawOption::ALIGNMENT_V_MASK;
 }
 
 API Real gm_get_max_width() noexcept {
