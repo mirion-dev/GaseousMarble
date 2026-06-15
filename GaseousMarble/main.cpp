@@ -18,7 +18,7 @@ static Draw draw;
 using Real = f64;
 using String = const char*;
 
-API Real gm_internal_to_real(String string) noexcept {
+API Real gm2_internal_to_real(String string) noexcept {
     return reinterpret_cast<usize>(string);
 }
 
@@ -26,7 +26,7 @@ String internal_from_real(Real real) noexcept {
     return reinterpret_cast<const char*>(static_cast<usize>(real));
 }
 
-API Real gm_internal_new_font(
+API Real gm2_internal_new_font(
     Real key_real,
     Real name_real,
     Real size_real,
@@ -55,7 +55,7 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm_delete_font(String key) noexcept {
+API Real gm2_delete_font(String key) noexcept {
     auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
         return S_FALSE;
@@ -69,31 +69,31 @@ API Real gm_delete_font(String key) noexcept {
     return S_OK;
 }
 
-API Real gm_draw_text(Real x_real, Real y_real, String text) noexcept
+API Real gm2_draw_text(Real x_real, Real y_real, String text) noexcept
 try {
     draw.text(saturating_cast<f32>(x_real), saturating_cast<f32>(y_real), text);
     return S_OK;
 }
 CATCH_RETURN()
 
-API Real gm_text_width(String text) noexcept
+API Real gm2_text_width(String text) noexcept
 try {
     return draw.text_width(text);
 }
 CATCH_RETURN()
 
-API Real gm_text_height(String text) noexcept
+API Real gm2_text_height(String text) noexcept
 try {
     return draw.text_height(text);
 }
 CATCH_RETURN()
 
-API Real gm_set_alignment(Real alignment_real) noexcept {
+API Real gm2_set_alignment(Real alignment_real) noexcept {
     draw.set_alignment(static_cast<u8>(saturating_cast<u8>(alignment_real) & DrawOption::ALIGNMENT_MASK));
     return S_OK;
 }
 
-API Real gm_set_alignment_h(Real alignment_real) noexcept {
+API Real gm2_set_alignment_h(Real alignment_real) noexcept {
     draw.set_alignment(
         static_cast<u8>(
             draw.alignment() & ~DrawOption::ALIGNMENT_H_MASK
@@ -103,7 +103,7 @@ API Real gm_set_alignment_h(Real alignment_real) noexcept {
     return S_OK;
 }
 
-API Real gm_set_alignment_v(Real alignment_real) noexcept {
+API Real gm2_set_alignment_v(Real alignment_real) noexcept {
     draw.set_alignment(
         static_cast<u8>(
             draw.alignment() & ~DrawOption::ALIGNMENT_V_MASK
@@ -113,7 +113,7 @@ API Real gm_set_alignment_v(Real alignment_real) noexcept {
     return S_OK;
 }
 
-API Real gm_set_max_width(Real max_width_real) noexcept {
+API Real gm2_set_max_width(Real max_width_real) noexcept {
     f32 max_width{ saturating_cast<f32>(max_width_real) };
     if (max_width <= 0) {
         max_width = std::numeric_limits<f32>::max();
@@ -123,7 +123,7 @@ API Real gm_set_max_width(Real max_width_real) noexcept {
     return S_OK;
 }
 
-API Real gm_set_max_height(Real max_height_real) noexcept {
+API Real gm2_set_max_height(Real max_height_real) noexcept {
     f32 max_height{ saturating_cast<f32>(max_height_real) };
     if (max_height <= 0) {
         max_height = std::numeric_limits<f32>::max();
@@ -133,7 +133,7 @@ API Real gm_set_max_height(Real max_height_real) noexcept {
     return S_OK;
 }
 
-API Real gm_set_font(String key) noexcept
+API Real gm2_set_font(String key) noexcept
 try {
     auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
@@ -145,63 +145,63 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm_set_line_spacing(Real line_height_real, Real baseline_real) noexcept {
+API Real gm2_set_line_spacing(Real line_height_real, Real baseline_real) noexcept {
     draw.set_fixed_line_spacing(false);
     draw.set_line_height(saturating_cast<f32>(line_height_real));
     draw.set_baseline(saturating_cast<f32>(baseline_real));
     return S_OK;
 }
 
-API Real gm_set_fixed_line_spacing(Real line_height_real, Real baseline_real) noexcept {
+API Real gm2_set_fixed_line_spacing(Real line_height_real, Real baseline_real) noexcept {
     draw.set_fixed_line_spacing(true);
     draw.set_line_height(saturating_cast<f32>(line_height_real));
     draw.set_baseline(saturating_cast<f32>(baseline_real));
     return S_OK;
 }
 
-API Real gm_set_line_height(Real line_height_real) noexcept {
+API Real gm2_set_line_height(Real line_height_real) noexcept {
     draw.set_line_height(saturating_cast<f32>(line_height_real));
     return S_OK;
 }
 
-API Real gm_set_baseline(Real baseline_real) noexcept {
+API Real gm2_set_baseline(Real baseline_real) noexcept {
     draw.set_baseline(saturating_cast<f32>(baseline_real));
     return S_OK;
 }
 
-API Real gm_get_alignment() noexcept {
+API Real gm2_get_alignment() noexcept {
     return draw.alignment();
 }
 
-API Real gm_get_alignment_h() noexcept {
+API Real gm2_get_alignment_h() noexcept {
     return draw.alignment() & DrawOption::ALIGNMENT_H_MASK;
 }
 
-API Real gm_get_alignment_v() noexcept {
+API Real gm2_get_alignment_v() noexcept {
     return draw.alignment() & DrawOption::ALIGNMENT_V_MASK;
 }
 
-API Real gm_get_max_width() noexcept {
+API Real gm2_get_max_width() noexcept {
     return draw.max_width();
 }
 
-API Real gm_get_max_height() noexcept {
+API Real gm2_get_max_height() noexcept {
     return draw.max_height();
 }
 
-API String gm_get_font() noexcept {
+API String gm2_get_font() noexcept {
     auto font{ draw.font() };
     return font == nullptr ? "" : font->first.data();
 }
 
-API Real gm_is_fixed_line_spacing() noexcept {
+API Real gm2_is_fixed_line_spacing() noexcept {
     return draw.is_fixed_line_spacing();
 }
 
-API Real gm_get_line_height() noexcept {
+API Real gm2_get_line_height() noexcept {
     return draw.line_height();
 }
 
-API Real gm_get_baseline() noexcept {
+API Real gm2_get_baseline() noexcept {
     return draw.baseline();
 }

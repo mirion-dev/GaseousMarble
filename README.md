@@ -4,36 +4,35 @@
 
 ## Functions
 
-`gm_new_font(key, name, size, properties, locale, min_antialiasing_h_size, min_antialiasing_v_size)`
+`gm2_new_font(key, name, size, properties, locale, min_antialiasing_h_size, min_antialiasing_v_size)`
 
 - v1: <br>
   `gm_font()`<br>
   `generate_font(): font_path, sprite_path, font_size, charset, dense, smoothing`
-- New: Dynamically creates fonts and supports more font properties.
-- To be implemented: Support loading from font files.
+- New: Creates fonts dynamically and supports more font properties.
+- Dropped: Loads fonts from images.
 
-`gm_delete_font(key)`
+`gm2_delete_font(key)`
 
 - v1: `gm_free()`
 
-Removed
+~~`gm_clear()`~~
 
-- v1: `gm_clear()`
-- Reason: Originally used to clean up fonts before a game restart but later became unnecessary.
+- Removed: Originally used to clean up fonts before a game restart but later became unnecessary.
 
-`gm_draw_text(x, y, text)`<br>
-`gm_text_width(text)`<br>
-`gm_text_height(text)`
+`gm2_draw_text(x, y, text)`<br>
+`gm2_text_width(text)`<br>
+`gm2_text_height(text)`
 
 - v1: <br>
   `gm_draw()`<br>
   `gm_width()`<br>
   `gm_height()`
-- New: Supports RTL languages.
+- New: Prefessional typography based on DirectWrite.
 
-`gm_set_alignment(alignment)`<br>
-`gm_set_alignment_h(alignment)`<br>
-`gm_set_alignment_v(alignment)`
+`gm2_set_alignment(alignment)`<br>
+`gm2_set_alignment_h(alignment)`<br>
+`gm2_set_alignment_v(alignment)`
 
 - v1: <br>
   `gm_set_halign()`<br>
@@ -41,54 +40,55 @@ Removed
   `gm_set_justified()`<br>
   `gm_set_align()`<br>
   `gm_set_align3()`
-- Changes: Based on the text box instead of the drawing point. `justified` is no longer independent of `left`/`center`/`right`.
+- New: Vertical alignment.
+- Dropped: `justified` is no longer independent of `left`/`center`/`right`.
 
-`gm_set_max_width(max_width)`
+`gm2_set_max_width(max_width)`
 
 - v1: `gm_set_max_line_length()`
 
-`gm_set_max_height(max_height)`
+`gm2_set_max_height(max_height)`
 
 - New
 
-`gm_set_font(key)`
+`gm2_set_font(key)`
 
 - v1: `gm_set_font()`
 
-`gm_set_line_spacing(line_height, baseline)`<br>
-`gm_set_fixed_line_spacing(line_height, baseline)`<br>
-`gm_set_line_height(line_height)`<br>
-`gm_set_baseline(baseline)`
+`gm2_set_line_spacing(line_height, baseline)`<br>
+`gm2_set_fixed_line_spacing(line_height, baseline)`<br>
+`gm2_set_line_height(line_height)`<br>
+`gm2_set_baseline(baseline)`
 
 - v1: <br>
   `gm_set_line_height()`<br>
   `gm_set_paragraph_spacing()`
 - New: Supports proportional line height.
 
-`gm_get_alignment()`<br>
-`gm_get_alignment_h()`<br>
-`gm_get_alignment_v()`
+`gm2_get_alignment()`<br>
+`gm2_get_alignment_h()`<br>
+`gm2_get_alignment_v()`
 
 - v1: <br>
   `gm_get_halign()`<br>
   `gm_get_valign()`<br>
   `gm_is_justified()`
 
-`gm_get_max_width()`
+`gm2_get_max_width()`
 
 - v1: `gm_get_max_line_length()`
 
-`gm_get_max_height()`
+`gm2_get_max_height()`
 
 - New
 
-`gm_get_font()`
+`gm2_get_font()`
 
 - v1: `gm_get_font()`
 
-`gm_is_fixed_line_spacing()`<br>
-`gm_get_line_height()`<br>
-`gm_get_baseline()`
+`gm2_is_fixed_line_spacing()`<br>
+`gm2_get_line_height()`<br>
+`gm2_get_baseline()`
 
 - v1: <br>
   `gm_get_line_height()`<br>

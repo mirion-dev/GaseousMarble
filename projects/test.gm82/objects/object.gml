@@ -5,59 +5,59 @@ action_id=603
 applies_to=self
 */
 var dll_path{ dll_path = parameter_string(1) }
-global.gm_internal_to_real       = external_define(dll_path, "gm_internal_to_real", dll_cdecl, ty_real, 1, ty_string)
-global.gm_internal_new_font      = external_define(dll_path, "gm_internal_new_font", dll_cdecl, ty_real, 7, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
-global.gm_delete_font            = external_define(dll_path, "gm_delete_font", dll_cdecl, ty_real, 1, ty_string)
-global.gm_draw_text              = external_define(dll_path, "gm_draw_text", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
-global.gm_text_width             = external_define(dll_path, "gm_text_width", dll_cdecl, ty_real, 1, ty_string)
-global.gm_text_height            = external_define(dll_path, "gm_text_height", dll_cdecl, ty_real, 1, ty_string)
-global.gm_set_alignment          = external_define(dll_path, "gm_set_alignment", dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_alignment_h        = external_define(dll_path, "gm_set_alignment_h", dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_alignment_v        = external_define(dll_path, "gm_set_alignment_v", dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_max_width          = external_define(dll_path, "gm_set_max_width", dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_max_height         = external_define(dll_path, "gm_set_max_height", dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_font               = external_define(dll_path, "gm_set_font", dll_cdecl, ty_real, 1, ty_string)
-global.gm_set_line_spacing       = external_define(dll_path, "gm_set_line_spacing", dll_cdecl, ty_real, 2, ty_real, ty_real)
-global.gm_set_fixed_line_spacing = external_define(dll_path, "gm_set_fixed_line_spacing", dll_cdecl, ty_real, 2, ty_real, ty_real)
-global.gm_set_line_height        = external_define(dll_path, "gm_set_line_height", dll_cdecl, ty_real, 1, ty_real)
-global.gm_set_baseline           = external_define(dll_path, "gm_set_baseline", dll_cdecl, ty_real, 1, ty_real)
-global.gm_get_alignment          = external_define(dll_path, "gm_get_alignment", dll_cdecl, ty_real, 0)
-global.gm_get_alignment_h        = external_define(dll_path, "gm_get_alignment_h", dll_cdecl, ty_real, 0)
-global.gm_get_alignment_v        = external_define(dll_path, "gm_get_alignment_v", dll_cdecl, ty_real, 0)
-global.gm_get_max_width          = external_define(dll_path, "gm_get_max_width", dll_cdecl, ty_real, 0)
-global.gm_get_max_height         = external_define(dll_path, "gm_get_max_height", dll_cdecl, ty_real, 0)
-global.gm_get_font               = external_define(dll_path, "gm_get_font", dll_cdecl, ty_string, 0)
-global.gm_is_fixed_line_spacing  = external_define(dll_path, "gm_is_fixed_line_spacing", dll_cdecl, ty_real, 0)
-global.gm_get_line_height        = external_define(dll_path, "gm_get_line_height", dll_cdecl, ty_real, 0)
-global.gm_get_baseline           = external_define(dll_path, "gm_get_baseline", dll_cdecl, ty_real, 0)
+global.gm2_internal_to_real       = external_define(dll_path, "gm2_internal_to_real", dll_cdecl, ty_real, 1, ty_string)
+global.gm2_internal_new_font      = external_define(dll_path, "gm2_internal_new_font", dll_cdecl, ty_real, 7, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
+global.gm2_delete_font            = external_define(dll_path, "gm2_delete_font", dll_cdecl, ty_real, 1, ty_string)
+global.gm2_draw_text              = external_define(dll_path, "gm2_draw_text", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
+global.gm2_text_width             = external_define(dll_path, "gm2_text_width", dll_cdecl, ty_real, 1, ty_string)
+global.gm2_text_height            = external_define(dll_path, "gm2_text_height", dll_cdecl, ty_real, 1, ty_string)
+global.gm2_set_alignment          = external_define(dll_path, "gm2_set_alignment", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_alignment_h        = external_define(dll_path, "gm2_set_alignment_h", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_alignment_v        = external_define(dll_path, "gm2_set_alignment_v", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_max_width          = external_define(dll_path, "gm2_set_max_width", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_max_height         = external_define(dll_path, "gm2_set_max_height", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_font               = external_define(dll_path, "gm2_set_font", dll_cdecl, ty_real, 1, ty_string)
+global.gm2_set_line_spacing       = external_define(dll_path, "gm2_set_line_spacing", dll_cdecl, ty_real, 2, ty_real, ty_real)
+global.gm2_set_fixed_line_spacing = external_define(dll_path, "gm2_set_fixed_line_spacing", dll_cdecl, ty_real, 2, ty_real, ty_real)
+global.gm2_set_line_height        = external_define(dll_path, "gm2_set_line_height", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_baseline           = external_define(dll_path, "gm2_set_baseline", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_get_alignment          = external_define(dll_path, "gm2_get_alignment", dll_cdecl, ty_real, 0)
+global.gm2_get_alignment_h        = external_define(dll_path, "gm2_get_alignment_h", dll_cdecl, ty_real, 0)
+global.gm2_get_alignment_v        = external_define(dll_path, "gm2_get_alignment_v", dll_cdecl, ty_real, 0)
+global.gm2_get_max_width          = external_define(dll_path, "gm2_get_max_width", dll_cdecl, ty_real, 0)
+global.gm2_get_max_height         = external_define(dll_path, "gm2_get_max_height", dll_cdecl, ty_real, 0)
+global.gm2_get_font               = external_define(dll_path, "gm2_get_font", dll_cdecl, ty_string, 0)
+global.gm2_is_fixed_line_spacing  = external_define(dll_path, "gm2_is_fixed_line_spacing", dll_cdecl, ty_real, 0)
+global.gm2_get_line_height        = external_define(dll_path, "gm2_get_line_height", dll_cdecl, ty_real, 0)
+global.gm2_get_baseline           = external_define(dll_path, "gm2_get_baseline", dll_cdecl, ty_real, 0)
 
 error = external_call(
-    global.gm_internal_new_font,
-    external_call(global.gm_internal_to_real, "default"),
-    external_call(global.gm_internal_to_real, "SimSun"),
+    global.gm2_internal_new_font,
+    external_call(global.gm2_internal_to_real, "default"),
+    external_call(global.gm2_internal_to_real, "SimSun"),
     18,
     400 | 0 << 10 | 5 << 12,
-    external_call(global.gm_internal_to_real, ""),
+    external_call(global.gm2_internal_to_real, ""),
     0,
     24
 )
 if (error < 0) {
-    show_error("gm_internal_new_font error code: " + string(error), true)
+    show_error("gm2_internal_new_font error code: " + string(error), true)
 }
 
-error = external_call(global.gm_set_font, "default")
+error = external_call(global.gm2_set_font, "default")
 if (error < 0) {
-    show_error("gm_set_font error code: " + string(error), true)
+    show_error("gm2_set_font error code: " + string(error), true)
 }
 
-error = external_call(global.gm_set_max_width, room_width)
+error = external_call(global.gm2_set_max_width, room_width)
 if (error < 0) {
-    show_error("gm_set_max_width error code: " + string(error), true)
+    show_error("gm2_set_max_width error code: " + string(error), true)
 }
 
-error = external_call(global.gm_set_max_height, room_height)
+error = external_call(global.gm2_set_max_height, room_height)
 if (error < 0) {
-    show_error("gm_set_max_height error code: " + string(error), true)
+    show_error("gm2_set_max_height error code: " + string(error), true)
 }
 #define Keyboard_82
 /*"/*'/**//* YYD ACTION
@@ -75,7 +75,7 @@ applies_to=self
 draw_set_color(c_white)
 draw_text(0, 0, fps)
 
-var error{ error = external_call(global.gm_draw_text, 0, 0, "
+var error{ error = external_call(global.gm2_draw_text, 0, 0, "
 在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源创建（不管是在 GM 设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平及垂直坐标。
 
 文本的绘制涉及以下函数：
@@ -99,5 +99,5 @@ string_height(string) 当前字体及将要通过 draw_text() 函数绘制的字
 string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
 string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。") }
 if (error < 0) {
-    show_error("gm_draw_text error code: " + string(error), true)
+    show_error("gm2_draw_text error code: " + string(error), true)
 }
