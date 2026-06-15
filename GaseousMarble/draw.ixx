@@ -124,8 +124,8 @@ namespace gm {
         // Typography              : unsupported
 
         // IDWriteTextLayout1
-        // PairKerning             : unimplemented
-        // CharacterSpacing        : unimplemented
+        // PairKerning             : unsupported
+        f32 letter_spacing{};
 
         // IDWriteTextLayout2
         // VerticalGlyphOrientation: unsupported
@@ -182,6 +182,7 @@ namespace gm {
                     value.max_width,
                     value.max_height,
                     value.font,
+                    value.letter_spacing,
                     value.is_fixed_line_spacing,
                     value.line_height,
                     value.baseline
@@ -243,6 +244,9 @@ namespace gm {
             );
             wil::com_ptr dw_layout{ dw_layout_base.query<env::DwTextLayout>() };
 
+            f32 x{}, y{};
+            DWRITE_TEXT_RANGE range{ 0, text.size() };
+
             auto alignment_h{ static_cast<DWRITE_TEXT_ALIGNMENT>(
                 (option.alignment & DrawOption::ALIGNMENT_H_MASK) >> DrawOption::ALIGNMENT_H_OFFSET
             ) };
@@ -252,8 +256,7 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetTextAlignment(alignment_h));
             THROW_IF_FAILED(dw_layout->SetParagraphAlignment(alignment_v));
 
-            DWRITE_TEXT_RANGE range{ 0, text.size() };
-            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
+            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
             THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font->second.name().data(), range));
             THROW_IF_FAILED(dw_layout->SetFontSize(option.font->second.size(), range));
@@ -261,6 +264,25 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStyle(option.font->second.style(), range));
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
+
+            if (alignment_h == DWRITE_TEXT_ALIGNMENT_LEADING) {
+                THROW_IF_FAILED(dw_layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
+            }
+            else if (alignment_h == DWRITE_TEXT_ALIGNMENT_TRAILING) {
+                THROW_IF_FAILED(dw_layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
+                x -= option.letter_spacing;
+            }
+            else {
+                THROW_IF_FAILED(
+                    dw_layout->SetCharacterSpacing(
+                        option.letter_spacing / 2,
+                        option.letter_spacing / 2,
+                        0,
+                        range
+                    )
+                );
+                x -= option.letter_spacing / 2;
+            }
 
             DWRITE_LINE_SPACING line_spacing{
                 option.is_fixed_line_spacing
@@ -276,12 +298,12 @@ namespace gm {
             Layout layout;
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), 0, 0));
+            THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), x, y));
 
             DWRITE_TEXT_METRICS metrics;
             THROW_IF_FAILED(dw_layout->GetMetrics(&metrics));
 
-            layout.width = metrics.width;
+            layout.width = std::max(metrics.width - option.letter_spacing, 0.f);
             layout.height = metrics.height;
 
             auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(layout)) };
@@ -359,6 +381,10 @@ namespace gm {
             return _option.font;
         }
 
+        f32 letter_spacing() const noexcept {
+            return _option.letter_spacing;
+        }
+
         bool is_fixed_line_spacing() const noexcept {
             return _option.is_fixed_line_spacing;
         }
@@ -385,6 +411,10 @@ namespace gm {
 
         void set_font(std::pair<const std::string, Font>* font) noexcept {
             _option.font = font;
+        }
+
+        void set_letter_spacing(f32 letter_spacing) noexcept {
+            _option.letter_spacing = letter_spacing;
         }
 
         void set_fixed_line_spacing(bool is_fixed_line_spacing) noexcept {

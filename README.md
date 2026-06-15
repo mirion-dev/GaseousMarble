@@ -55,6 +55,14 @@
 
 - v1: `gm_set_font()`
 
+`gm2_set_letter_spacing(letter_spacing)`
+
+- v1: `gm_set_letter_spacing()`
+
+~~`gm_set_word_spacing()`~~
+
+- Removed: Not useful.
+
 `gm2_set_line_spacing(line_height, baseline)`<br>
 `gm2_set_fixed_line_spacing(line_height, baseline)`<br>
 `gm2_set_line_height(line_height)`<br>
@@ -85,6 +93,14 @@
 `gm2_get_font()`
 
 - v1: `gm_get_font()`
+
+`gm2_get_letter_spacing()`
+
+- v1: `gm_get_letter_spacing()`
+
+~~`gm_get_word_spacing()`~~
+
+- Removed: Not useful.
 
 `gm2_is_fixed_line_spacing()`<br>
 `gm2_get_line_height()`<br>

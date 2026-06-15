@@ -145,6 +145,11 @@ try {
 }
 CATCH_RETURN()
 
+API Real gm2_set_letter_spacing(Real letter_spacing_real) noexcept {
+    draw.set_letter_spacing(saturating_cast<f32>(letter_spacing_real));
+    return S_OK;
+}
+
 API Real gm2_set_line_spacing(Real line_height_real, Real baseline_real) noexcept {
     draw.set_fixed_line_spacing(false);
     draw.set_line_height(saturating_cast<f32>(line_height_real));
@@ -192,6 +197,10 @@ API Real gm2_get_max_height() noexcept {
 API String gm2_get_font() noexcept {
     auto font{ draw.font() };
     return font == nullptr ? "" : font->first.data();
+}
+
+API Real gm2_get_letter_spacing() noexcept {
+    return draw.letter_spacing();
 }
 
 API Real gm2_is_fixed_line_spacing() noexcept {
