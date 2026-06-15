@@ -98,7 +98,7 @@ namespace gm {
         }
     };
 
-    export struct DrawOption {
+    struct LayoutOption {
         static constexpr u8 ALIGNMENT_H_MASK{ 0x3 };
         static constexpr int ALIGNMENT_H_OFFSET{};
         static constexpr u8 ALIGNMENT_V_MASK{ 0xc };
@@ -142,7 +142,7 @@ namespace gm {
         // FontAxisValues          : unsupported
         // AutomaticFontAxes       : unsupported
 
-        friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
+        friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
 
         bool is_valid() const noexcept {
             return alignment <= ALIGNMENT_MASK && max_width > 0 && max_height > 0 && font != nullptr;
@@ -152,18 +152,18 @@ namespace gm {
     class LayoutCache {
         struct Key {
             std::wstring text;
-            DrawOption option;
+            LayoutOption option;
         };
 
         struct KeyRef {
             std::wstring_view text;
-            const DrawOption* option;
+            const LayoutOption* option;
 
             KeyRef(const Key& key) noexcept :
                 text{ key.text },
                 option{ &key.option } {}
 
-            KeyRef(std::wstring_view text, const DrawOption& option) noexcept :
+            KeyRef(std::wstring_view text, const LayoutOption& option) noexcept :
                 text{ text },
                 option{ &option } {}
 
@@ -175,7 +175,7 @@ namespace gm {
         struct Hash : gm::Hash {
             using gm::Hash::operator();
 
-            usize operator()(const DrawOption& value) const noexcept {
+            usize operator()(const LayoutOption& value) const noexcept {
                 return hash_combine(
                     Hash{},
                     value.alignment,
@@ -221,7 +221,7 @@ namespace gm {
             return _cache_size;
         }
 
-        const Layout& get(std::wstring_view text, const DrawOption& option, wil::com_ptr<env::DwTextFormat> format) {
+        const Layout& get(std::wstring_view text, const LayoutOption& option, wil::com_ptr<env::DwTextFormat> format) {
             assert(*this && option.is_valid() && format);
 
             auto map_iter{ _map.find({ text, option }) };
@@ -248,10 +248,10 @@ namespace gm {
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
             auto alignment_h{ static_cast<DWRITE_TEXT_ALIGNMENT>(
-                (option.alignment & DrawOption::ALIGNMENT_H_MASK) >> DrawOption::ALIGNMENT_H_OFFSET
+                (option.alignment & LayoutOption::ALIGNMENT_H_MASK) >> LayoutOption::ALIGNMENT_H_OFFSET
             ) };
             auto alignment_v{ static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(
-                (option.alignment & DrawOption::ALIGNMENT_V_MASK) >> DrawOption::ALIGNMENT_V_OFFSET
+                (option.alignment & LayoutOption::ALIGNMENT_V_MASK) >> LayoutOption::ALIGNMENT_V_OFFSET
             ) };
             THROW_IF_FAILED(dw_layout->SetTextAlignment(alignment_h));
             THROW_IF_FAILED(dw_layout->SetParagraphAlignment(alignment_v));
@@ -317,6 +317,8 @@ namespace gm {
             return iter->second;
         }
     };
+
+    export struct DrawOption : LayoutOption {};
 
     export class Draw {
         struct Vertex {
