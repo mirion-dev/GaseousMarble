@@ -145,6 +145,30 @@ try {
 }
 CATCH_RETURN()
 
+API Real gm_set_line_spacing(Real line_height_real, Real baseline_real) noexcept {
+    draw.set_fixed_line_spacing(false);
+    draw.set_line_height(saturating_cast<f32>(line_height_real));
+    draw.set_baseline(saturating_cast<f32>(baseline_real));
+    return S_OK;
+}
+
+API Real gm_set_fixed_line_spacing(Real line_height_real, Real baseline_real) noexcept {
+    draw.set_fixed_line_spacing(true);
+    draw.set_line_height(saturating_cast<f32>(line_height_real));
+    draw.set_baseline(saturating_cast<f32>(baseline_real));
+    return S_OK;
+}
+
+API Real gm_set_line_height(Real line_height_real) noexcept {
+    draw.set_line_height(saturating_cast<f32>(line_height_real));
+    return S_OK;
+}
+
+API Real gm_set_baseline(Real baseline_real) noexcept {
+    draw.set_baseline(saturating_cast<f32>(baseline_real));
+    return S_OK;
+}
+
 API Real gm_get_alignment() noexcept {
     return draw.alignment();
 }
@@ -168,4 +192,16 @@ API Real gm_get_max_height() noexcept {
 API String gm_get_font() noexcept {
     auto font{ draw.font() };
     return font == nullptr ? "" : font->first.data();
+}
+
+API Real gm_is_fixed_line_spacing() noexcept {
+    return draw.is_fixed_line_spacing();
+}
+
+API Real gm_get_line_height() noexcept {
+    return draw.line_height();
+}
+
+API Real gm_get_baseline() noexcept {
+    return draw.baseline();
 }

@@ -55,6 +55,16 @@ Removed
 
 - v1: `gm_set_font()`
 
+`gm_set_line_spacing(line_height, baseline)`<br>
+`gm_set_fixed_line_spacing(line_height, baseline)`<br>
+`gm_set_line_height(line_height)`<br>
+`gm_set_baseline(baseline)`
+
+- v1: <br>
+  `gm_set_line_height()`<br>
+  `gm_set_paragraph_spacing()`
+- New: Supports proportional line height.
+
 `gm_get_alignment()`<br>
 `gm_get_alignment_h()`<br>
 `gm_get_alignment_v()`
@@ -75,6 +85,14 @@ Removed
 `gm_get_font()`
 
 - v1: `gm_get_font()`
+
+`gm_is_fixed_line_spacing()`<br>
+`gm_get_line_height()`<br>
+`gm_get_baseline()`
+
+- v1: <br>
+  `gm_get_line_height()`<br>
+  `gm_get_paragraph_spacing()`
 
 ## Development
 

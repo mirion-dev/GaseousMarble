@@ -134,7 +134,9 @@ namespace gm {
         // FontFallback            : unsupported
 
         // IDWriteTextLayout3
-        // LineSpacing             : unimplemented
+        bool is_fixed_line_spacing{};
+        f32 line_height{ 1 };
+        f32 baseline{ 1 };
 
         // IDWriteTextLayout4
         // FontAxisValues          : unsupported
@@ -174,7 +176,16 @@ namespace gm {
             using gm::Hash::operator();
 
             usize operator()(const DrawOption& value) const noexcept {
-                return hash_combine(Hash{}, value.alignment, value.max_width, value.max_height, value.font);
+                return hash_combine(
+                    Hash{},
+                    value.alignment,
+                    value.max_width,
+                    value.max_height,
+                    value.font,
+                    value.is_fixed_line_spacing,
+                    value.line_height,
+                    value.baseline
+                );
             }
 
             usize operator()(const KeyRef& value) const noexcept {
@@ -250,6 +261,17 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStyle(option.font->second.style(), range));
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
+
+            DWRITE_LINE_SPACING line_spacing{
+                option.is_fixed_line_spacing
+                ? DWRITE_LINE_SPACING_METHOD_UNIFORM
+                : DWRITE_LINE_SPACING_METHOD_PROPORTIONAL,
+                option.line_height,
+                option.baseline,
+                0, // leadingBefore is unsupported
+                DWRITE_FONT_LINE_GAP_USAGE_ENABLED
+            };
+            THROW_IF_FAILED(dw_layout->SetLineSpacing(&line_spacing));
 
             Layout layout;
             wil::com_ptr<LayoutCollector> collector;
@@ -337,6 +359,18 @@ namespace gm {
             return _option.font;
         }
 
+        bool is_fixed_line_spacing() const noexcept {
+            return _option.is_fixed_line_spacing;
+        }
+
+        f32 line_height() const noexcept {
+            return _option.line_height;
+        }
+
+        f32 baseline() const noexcept {
+            return _option.baseline;
+        }
+
         void set_alignment(u8 alignment) noexcept {
             _option.alignment = alignment;
         }
@@ -351,6 +385,18 @@ namespace gm {
 
         void set_font(std::pair<const std::string, Font>* font) noexcept {
             _option.font = font;
+        }
+
+        void set_fixed_line_spacing(bool is_fixed_line_spacing) noexcept {
+            _option.is_fixed_line_spacing = is_fixed_line_spacing;
+        }
+
+        void set_line_height(f32 line_height) noexcept {
+            _option.line_height = line_height;
+        }
+
+        void set_baseline(f32 baseline) noexcept {
+            _option.baseline = baseline;
         }
 
         void text(f32 x, f32 y, std::string_view text) {
