@@ -25,10 +25,10 @@ error = external_call(
     external_call(global.gm_internal_to_real, "default"),
     external_call(global.gm_internal_to_real, "SimSun"),
     18,
-    400,
+    400 | 0 << 10 | 5 << 12,
+    external_call(global.gm_internal_to_real, ""),
     0,
-    5,
-    external_call(global.gm_internal_to_real, "")
+    24
 )
 if (error < 0) {
     show_error("gm_internal_new_font error code: " + string(error), true)

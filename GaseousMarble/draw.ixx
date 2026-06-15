@@ -99,21 +99,10 @@ namespace gm {
     };
 
     export struct DrawOption {
-        enum Alignment : u8 {
-            alignment_left      = 0x0,
-            alignment_center    = 0x1,
-            alignment_right     = 0x2,
-            alignment_justified = 0x3,
-
-            alignment_top     = 0x0,
-            alignment_horizon = 0x4,
-            alignment_bottom  = 0x8,
-            alignment_invalid = 0xc,
-
-            alignment_mask_h = 0x3,
-            alignment_mask_v = 0xc,
-            alignment_mask   = 0xf
-        };
+        static constexpr u8 ALIGNMENT_H_MASK{ 0x3 };
+        static constexpr int ALIGNMENT_H_OFFSET{};
+        static constexpr u8 ALIGNMENT_V_MASK{ 0xc };
+        static constexpr int ALIGNMENT_V_OFFSET{ 2 };
 
         // IDWriteTextFormat
         u8 alignment;
@@ -154,8 +143,7 @@ namespace gm {
         friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
 
         bool is_valid() const noexcept {
-            return alignment <= alignment_mask && (alignment & alignment_mask_v) != alignment_invalid
-                && max_width > 0 && max_height > 0 && font != nullptr;
+            return alignment <= 0xf && max_width > 0 && max_height > 0 && font != nullptr;
         }
     };
 
@@ -244,33 +232,18 @@ namespace gm {
             );
             wil::com_ptr dw_layout{ dw_layout_base.query<env::DwTextLayout>() };
 
-            u8 alignment_h{ static_cast<u8>(option.alignment & option.alignment_mask_h) };
-            u8 alignment_v{ static_cast<u8>(option.alignment & option.alignment_mask_v) };
-            THROW_IF_FAILED(
-                dw_layout->SetTextAlignment(
-                    alignment_h == DrawOption::alignment_left
-                    ? DWRITE_TEXT_ALIGNMENT_LEADING
-                    : alignment_h == DrawOption::alignment_center
-                    ? DWRITE_TEXT_ALIGNMENT_CENTER
-                    : alignment_h == DrawOption::alignment_right
-                    ? DWRITE_TEXT_ALIGNMENT_TRAILING
-                    : DWRITE_TEXT_ALIGNMENT_JUSTIFIED
-                )
-            );
-            THROW_IF_FAILED(
-                dw_layout->SetParagraphAlignment(
-                    alignment_v == DrawOption::alignment_top
-                    ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR
-                    : alignment_v == DrawOption::alignment_horizon
-                    ? DWRITE_PARAGRAPH_ALIGNMENT_CENTER
-                    : DWRITE_PARAGRAPH_ALIGNMENT_FAR
-                )
-            );
-
-            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
-            THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
+            auto alignment_h{ static_cast<DWRITE_TEXT_ALIGNMENT>(
+                (option.alignment & DrawOption::ALIGNMENT_H_MASK) >> DrawOption::ALIGNMENT_H_OFFSET
+            ) };
+            auto alignment_v{ static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(
+                (option.alignment & DrawOption::ALIGNMENT_V_MASK) >> DrawOption::ALIGNMENT_V_OFFSET
+            ) };
+            THROW_IF_FAILED(dw_layout->SetTextAlignment(alignment_h));
+            THROW_IF_FAILED(dw_layout->SetParagraphAlignment(alignment_v));
 
             DWRITE_TEXT_RANGE range{ 0, text.size() };
+            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width));
+            THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
             THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font->second.name().data(), range));
             THROW_IF_FAILED(dw_layout->SetFontSize(option.font->second.size(), range));
             THROW_IF_FAILED(dw_layout->SetFontWeight(option.font->second.weight(), range));

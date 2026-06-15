@@ -30,10 +30,10 @@ API Real gm_internal_new_font(
     Real key_real,
     Real name_real,
     Real size_real,
-    Real weight_real,
-    Real style_real,
-    Real stretch_real,
-    Real locale_real
+    Real properties_real,
+    Real locale_real,
+    Real min_antialiasing_h_size_real,
+    Real min_antialiasing_v_size_real
 ) noexcept
 try {
     std::string key{ internal_from_real(key_real) };
@@ -45,10 +45,10 @@ try {
             std::move(key),
             to_wstring(internal_from_real(name_real)),
             saturating_cast<f32>(size_real),
-            static_cast<DWRITE_FONT_WEIGHT>(saturating_cast<int>(weight_real)),
-            static_cast<DWRITE_FONT_STYLE>(saturating_cast<int>(style_real)),
-            static_cast<DWRITE_FONT_STRETCH>(saturating_cast<int>(stretch_real)),
-            to_wstring(internal_from_real(locale_real))
+            saturating_cast<u32>(properties_real),
+            to_wstring(internal_from_real(locale_real)),
+            saturating_cast<f32>(min_antialiasing_h_size_real),
+            saturating_cast<f32>(min_antialiasing_v_size_real)
         ).second
         ? S_OK
         : S_FALSE;
@@ -89,34 +89,27 @@ try {
 CATCH_RETURN()
 
 API Real gm_set_alignment(Real alignment_real) noexcept {
-    u8 alignment{ static_cast<u8>(saturating_cast<u8>(alignment_real) & DrawOption::alignment_mask) };
-    if ((alignment & DrawOption::alignment_mask_v) == DrawOption::alignment_invalid) {
-        alignment = alignment & ~DrawOption::alignment_mask_v | DrawOption::alignment_horizon;
-    }
-
-    draw.set_alignment(alignment);
+    draw.set_alignment(static_cast<u8>(saturating_cast<u8>(alignment_real) & 0xf));
     return S_OK;
 }
 
 API Real gm_set_alignment_h(Real alignment_real) noexcept {
-    u8 alignment{ static_cast<u8>(
-        draw.alignment() & ~DrawOption::alignment_mask_h
-        | saturating_cast<u8>(alignment_real) & DrawOption::alignment_mask_h
-    ) };
-    draw.set_alignment(alignment);
+    draw.set_alignment(
+        static_cast<u8>(
+            draw.alignment() & ~DrawOption::ALIGNMENT_H_MASK
+            | saturating_cast<u8>(alignment_real) & DrawOption::ALIGNMENT_H_MASK
+        )
+    );
     return S_OK;
 }
 
 API Real gm_set_alignment_v(Real alignment_real) noexcept {
-    u8 alignment{ static_cast<u8>(
-        draw.alignment() & ~DrawOption::alignment_mask_v
-        | saturating_cast<u8>(alignment_real) & DrawOption::alignment_mask_v
-    ) };
-    if ((alignment & DrawOption::alignment_mask_v) == DrawOption::alignment_invalid) {
-        alignment = alignment & ~DrawOption::alignment_mask_v | DrawOption::alignment_horizon;
-    }
-
-    draw.set_alignment(alignment);
+    draw.set_alignment(
+        static_cast<u8>(
+            draw.alignment() & ~DrawOption::ALIGNMENT_V_MASK
+            | saturating_cast<u8>(alignment_real) & DrawOption::ALIGNMENT_V_MASK
+        )
+    );
     return S_OK;
 }
 
@@ -157,11 +150,11 @@ API Real gm_get_alignment() noexcept {
 }
 
 API Real gm_get_alignment_h() noexcept {
-    return draw.alignment() & DrawOption::alignment_mask_h;
+    return draw.alignment() & 0x3;
 }
 
 API Real gm_get_alignment_v() noexcept {
-    return draw.alignment() & DrawOption::alignment_mask_v;
+    return draw.alignment() & 0xc;
 }
 
 API Real gm_get_max_width() noexcept {

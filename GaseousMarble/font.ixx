@@ -96,6 +96,15 @@ namespace gm {
     };
 
     export class Font {
+    public:
+        static constexpr u32 WEIGHT_MASK{ 0x3ff };
+        static constexpr int WEIGHT_OFFSET{};
+        static constexpr u32 STYLE_MASK{ 0xc00 };
+        static constexpr int STYLE_OFFSET{ 10 };
+        static constexpr u32 STRETCH_MASK{ 0xf000 };
+        static constexpr int STRETCH_OFFSET{ 12 };
+
+    private:
         struct Hash {
             usize operator()(GlyphId value) const noexcept {
                 return hash_combine(gm::Hash{}, value.face, value.gid);
@@ -105,14 +114,13 @@ namespace gm {
         // FontCollection is unimplemented; used for loading from font files
         std::wstring _name;
         f32 _size{};
-        DWRITE_FONT_WEIGHT _weight{};
-        DWRITE_FONT_STYLE _style{};
-        DWRITE_FONT_STRETCH _stretch{};
+        u32 _properties{};
         std::wstring _locale;
+        f32 _min_antialiasing_h_size{};
+        f32 _min_antialiasing_v_size{};
+        usize _max_texture_num{};
         usize _texture_width{};
         usize _texture_height{};
-        usize _max_texture_num{};
-        f32 _min_antialiasing_v_size{};
 
         std::unordered_map<GlyphId, GlyphMeta, Hash> _data;
 
@@ -143,27 +151,26 @@ namespace gm {
         Font(
             std::wstring_view name,
             f32 size,
-            DWRITE_FONT_WEIGHT weight = DWRITE_FONT_WEIGHT_NORMAL,
-            DWRITE_FONT_STYLE style = DWRITE_FONT_STYLE_NORMAL,
-            DWRITE_FONT_STRETCH stretch = DWRITE_FONT_STRETCH_NORMAL,
+            u32 properties = DWRITE_FONT_WEIGHT_NORMAL,
             std::wstring_view locale = L"",
-            usize texture_width = 1024,
-            usize texture_height = 1024,
+            f32 min_antialiasing_h_size = 0,
+            f32 min_antialiasing_v_size = 24,
             usize max_texture_num = 16,
-            f32 min_antialiasing_v_size = 24
+            usize texture_width = 1024,
+            usize texture_height = 1024
         ) :
             _name{ name },
             _size{ size },
-            _weight{ weight },
-            _style{ style },
-            _stretch{ stretch },
+            _properties{ properties },
             _locale{ locale },
-            _texture_width{ texture_width },
-            _texture_height{ texture_height },
+            _min_antialiasing_h_size{ min_antialiasing_h_size },
+            _min_antialiasing_v_size{ min_antialiasing_v_size },
             _max_texture_num{ max_texture_num },
-            _min_antialiasing_v_size{ min_antialiasing_v_size } {
+            _texture_width{ texture_width },
+            _texture_height{ texture_height } {
 
-            if (_name.empty() || _size <= 0 || _texture_width <= 0 || _texture_height <= 0 || _max_texture_num == 0) {
+            if (_name.empty() || _size <= 0 || weight() < 1 || weight() > 1000 || stretch() > 9
+                || _texture_width <= 0 || _texture_height <= 0 || _max_texture_num == 0) {
                 throw std::invalid_argument{ "Invalid font arguments." };
             }
 
@@ -197,22 +204,37 @@ namespace gm {
 
         DWRITE_FONT_WEIGHT weight() const noexcept {
             assert(*this);
-            return _weight;
+            return static_cast<DWRITE_FONT_WEIGHT>((_properties & WEIGHT_MASK) >> WEIGHT_OFFSET);
         }
 
         DWRITE_FONT_STYLE style() const noexcept {
             assert(*this);
-            return _style;
+            return static_cast<DWRITE_FONT_STYLE>((_properties & STYLE_MASK) >> STYLE_OFFSET);
         }
 
         DWRITE_FONT_STRETCH stretch() const noexcept {
             assert(*this);
-            return _stretch;
+            return static_cast<DWRITE_FONT_STRETCH>((_properties & STRETCH_MASK) >> STRETCH_OFFSET);
         }
 
         std::wstring_view locale() const noexcept {
             assert(*this);
             return _locale;
+        }
+
+        f32 min_antialiasing_h_size() const noexcept {
+            assert(*this);
+            return _min_antialiasing_h_size;
+        }
+
+        f32 min_antialiasing_v_size() const noexcept {
+            assert(*this);
+            return _min_antialiasing_v_size;
+        }
+
+        usize max_texture_num() const noexcept {
+            assert(*this);
+            return _max_texture_num;
         }
 
         usize texture_width() const noexcept {
@@ -223,16 +245,6 @@ namespace gm {
         usize texture_height() const noexcept {
             assert(*this);
             return _texture_height;
-        }
-
-        usize max_texture_num() const noexcept {
-            assert(*this);
-            return _max_texture_num;
-        }
-
-        f32 min_antialiasing_v_size() const noexcept {
-            assert(*this);
-            return _min_antialiasing_v_size;
         }
 
         template <std::ranges::input_range R, class KeyFn, class DataFn>
@@ -270,14 +282,19 @@ namespace gm {
 
             for (auto& [i, data] : missing) {
                 DWRITE_GLYPH_RUN run{ data.face.get(), data.size, 1, &data.gid };
+                DWRITE_RENDERING_MODE1 antialiasing{
+                    data.size < _min_antialiasing_h_size
+                    ? DWRITE_RENDERING_MODE1_ALIASED
+                    : data.size < _min_antialiasing_v_size
+                    ? DWRITE_RENDERING_MODE1_NATURAL
+                    : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC
+                };
                 wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
                 THROW_IF_FAILED(
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
-                        data.size < _min_antialiasing_v_size
-                        ? DWRITE_RENDERING_MODE1_NATURAL
-                        : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC,
+                        antialiasing,
                         DWRITE_MEASURING_MODE_NATURAL,
                         DWRITE_GRID_FIT_MODE_DISABLED,
                         DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,

@@ -4,9 +4,11 @@
 
 ## Functions
 
-`gm_new_font(key, name, size, weight, style, stretch, locale)`
+`gm_new_font(key, name, size, properties, locale, min_antialiasing_h_size, min_antialiasing_v_size)`
 
-- v1: `gm_font()`
+- v1: <br>
+  `gm_font()`<br>
+  `generate_font(): font_path, sprite_path, font_size, charset, dense, smoothing`
 - New: Dynamically creates fonts and supports more font properties.
 - To be implemented: Support loading from font files.
 
