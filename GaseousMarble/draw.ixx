@@ -111,20 +111,6 @@ namespace gm {
         // FlowDirection           : unsupported
         // IncrementalTabStop      : unimplemented
         // Trimming                : unsupported
-        // LineSpacing             : unimplemented
-
-        // IDWriteTextFormat1
-        // LastLineWrapping        : unsupported
-        // VerticalGlyphOrientation: unsupported
-        // OpticalAlignment        : unsupported
-        // FontFallback            : unsupported
-
-        // IDWriteTextFormat2
-        // LineSpacing             : unimplemented
-
-        // IDWriteTextFormat3
-        // FontAxisValues          : unsupported
-        // AutomaticFontAxes       : unsupported
 
         // IDWriteTextLayout
         f32 max_width{ std::numeric_limits<f32>::max() };
@@ -139,6 +125,19 @@ namespace gm {
         // IDWriteTextLayout1
         // PairKerning             : unimplemented
         // CharacterSpacing        : unimplemented
+
+        // IDWriteTextLayout2
+        // VerticalGlyphOrientation: unsupported
+        // LastLineWrapping        : unsupported
+        // OpticalAlignment        : unsupported
+        // FontFallback            : unsupported
+
+        // IDWriteTextLayout3
+        // LineSpacing             : unimplemented
+
+        // IDWriteTextLayout4
+        // FontAxisValues          : unsupported
+        // AutomaticFontAxes       : unsupported
 
         friend bool operator==(const DrawOption& left, const DrawOption& right) noexcept = default;
 
