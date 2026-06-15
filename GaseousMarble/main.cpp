@@ -43,10 +43,10 @@ try {
 
     return font_map.try_emplace(
             std::move(key),
-            to_wstring(internal_from_real(name_real)),
+            internal_from_real(name_real),
             saturating_cast<f32>(size_real),
             saturating_cast<u32>(properties_real),
-            to_wstring(internal_from_real(locale_real)),
+            internal_from_real(locale_real),
             saturating_cast<f32>(min_antialiasing_h_size_real),
             saturating_cast<f32>(min_antialiasing_v_size_real)
         ).second
