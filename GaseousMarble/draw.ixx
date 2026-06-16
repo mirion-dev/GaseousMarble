@@ -70,8 +70,7 @@ namespace gm {
         Text(std::string_view str, const TextOption& option) :
             _option{ option } {
 
-            _option.max_line_length = std::max(_option.max_line_length, 0.f);
-            if (_option.font == nullptr) {
+            if (_option.font == nullptr || _option.max_line_length < 0) {
                 throw TextError::invalid_option;
             }
 
@@ -91,6 +90,7 @@ namespace gm {
                     if (first == last) {
                         return;
                     }
+
                     if (!cont) {
                         ++justified_count;
                     }
@@ -191,10 +191,17 @@ namespace gm {
             if (!word_break_for_each(str, push_word)) {
                 throw TextError::failed_to_word_break;
             }
+
             push_line(true, true);
         }
 
+        operator bool() const noexcept {
+            return _option.font != nullptr;
+        }
+
         void draw(f32 x, f32 y, const DrawOption& draw_option) const {
+            assert(*this);
+
             if (draw_option.scale_x <= 0 || draw_option.scale_y <= 0) {
                 throw TextError::invalid_option;
             }
@@ -271,6 +278,7 @@ namespace gm {
                     )) {
                         throw TextError::failed_to_decode;
                     }
+
                     if (draw_option.justified && !continuous) {
                         cursor += justified_spacing;
                     }

@@ -14,23 +14,23 @@ static TextOption text_option;
 static DrawOption draw_option;
 static TextCache text_cache{ 1024 };
 
-API Real gm_font(StringRef raw_font_name, StringRef raw_sprite_path) noexcept {
-    std::string font_name{ raw_font_name };
-    if (font_name.empty()) {
+API Real gm_font(StringRef raw_key, StringRef raw_sprite_path) noexcept {
+    std::string key{ raw_key };
+    if (key.empty()) {
         return -100; // invalid argument
     }
 
     try {
         // font already exists
-        return font_map.try_emplace(std::move(font_name), raw_font_name, raw_sprite_path).second ? 0 : 1;
+        return font_map.try_emplace(std::move(key), raw_key, raw_sprite_path).second ? 0 : 1;
     }
     catch (FontError error) {
         return static_cast<int>(error);
     }
 }
 
-API Real gm_free(StringRef raw_font_name) noexcept {
-    auto iter{ font_map.find(raw_font_name) };
+API Real gm_free(StringRef raw_key) noexcept {
+    auto iter{ font_map.find(raw_key) };
     if (iter == font_map.end()) {
         return 1; // font not found
     }
@@ -79,8 +79,8 @@ API Real gm_height(StringRef raw_str) noexcept {
     }
 }
 
-API Real gm_set_font(StringRef raw_font_name) noexcept {
-    auto iter{ font_map.find(raw_font_name) };
+API Real gm_set_font(StringRef raw_key) noexcept {
+    auto iter{ font_map.find(raw_key) };
     if (iter == font_map.end()) {
         return -1; // font not found
     }
