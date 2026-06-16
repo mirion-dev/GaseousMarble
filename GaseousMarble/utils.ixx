@@ -39,7 +39,8 @@ namespace gm {
         }
     }
 
-    export bool unicode_for_each(std::string_view str, const auto& func) noexcept {
+    export template <class Fn>
+    bool unicode_for_each(std::string_view str, Fn&& func) noexcept {
         UErrorCode error{};
         Handle<UText*, utext_close> iter{ utext_openUTF8(nullptr, str.data(), str.size(), &error) };
         if (!iter) {
@@ -54,7 +55,8 @@ namespace gm {
         }
     }
 
-    export bool word_break_for_each(std::string_view str, const auto& func) noexcept {
+    export template <class Fn>
+    bool word_break_for_each(std::string_view str, Fn&& func) noexcept {
         UErrorCode error{};
         Handle<UText*, utext_close> iter{ utext_openUTF8(nullptr, str.data(), str.size(), &error) };
         if (!iter) {
