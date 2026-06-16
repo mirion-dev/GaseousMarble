@@ -1,5 +1,6 @@
 module;
 
+#include <cassert>
 #include <icu.h>
 
 export module gm.draw;
@@ -287,6 +288,61 @@ namespace gm {
 
         f32 height() const noexcept {
             return std::abs(_layout.height);
+        }
+    };
+
+    export class TextCache {
+        usize _cache_size{};
+
+        std::list<std::pair<std::string, Text>> _data;
+        std::unordered_map<std::string_view, decltype(_data)::iterator> _map;
+
+    public:
+        TextCache() noexcept = default;
+
+        TextCache(usize cache_size) noexcept :
+            _cache_size{ cache_size } {
+
+            assert(_cache_size > 0);
+        }
+
+        TextCache(TextCache&&) noexcept = default;
+
+        TextCache& operator=(TextCache&&) noexcept = default;
+
+        operator bool() const noexcept {
+            return _cache_size != 0;
+        }
+
+        usize cache_size() const noexcept {
+            assert(*this);
+            return _cache_size;
+        }
+
+        const Text& get(std::string_view text, const Text::Option& option) {
+            assert(*this);
+
+            auto map_iter{ _map.find(text) };
+            if (map_iter != _map.end()) {
+                auto iter{ map_iter->second };
+                _data.splice(_data.end(), _data, iter);
+                return iter->second;
+            }
+
+            auto iter{ _data.emplace(_data.end(), text, Text{ text, option }) };
+            _map.try_emplace(iter->first, iter);
+
+            if (_data.size() > _cache_size) {
+                _map.erase(_data.front().first);
+                _data.pop_front();
+            }
+
+            return iter->second;
+        }
+
+        void clear() noexcept {
+            _map.clear();
+            _data.clear();
         }
     };
 

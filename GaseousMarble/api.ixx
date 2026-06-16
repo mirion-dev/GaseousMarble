@@ -9,10 +9,10 @@ import gm;
 
 using namespace gm;
 
-static std::unordered_map<std::string, Font, Hash, std::equal_to<>> font_map;
+static std::unordered_map<std::string, Font> font_map;
 static Text::Option option;
 static Text::DrawOption draw_option;
-static Cache<std::string, Text, 1024> cache;
+static TextCache cache{ 1024 };
 
 API Real gm_font(StringRef raw_font_name, StringRef raw_sprite_path) noexcept {
     std::string font_name{ raw_font_name };
@@ -30,7 +30,7 @@ API Real gm_font(StringRef raw_font_name, StringRef raw_sprite_path) noexcept {
 }
 
 API Real gm_free(StringRef raw_font_name) noexcept {
-    auto iter{ font_map.find(std::string_view{ raw_font_name }) };
+    auto iter{ font_map.find(raw_font_name) };
     if (iter == font_map.end()) {
         return 1; // font not found
     }
@@ -53,8 +53,7 @@ API Real gm_clear() noexcept {
 
 API Real gm_draw(Real raw_x, Real raw_y, StringRef raw_str) noexcept {
     try {
-        cache.try_emplace(raw_str, raw_str, option).first->second
-            .draw(static_cast<f32>(raw_x), static_cast<f32>(raw_y), draw_option);
+        cache.get(raw_str, option).draw(static_cast<f32>(raw_x), static_cast<f32>(raw_y), draw_option);
         return 0;
     }
     catch (Text::Error error) {
@@ -64,7 +63,7 @@ API Real gm_draw(Real raw_x, Real raw_y, StringRef raw_str) noexcept {
 
 API Real gm_width(StringRef raw_str) noexcept {
     try {
-        return cache.try_emplace(raw_str, raw_str, option).first->second.width();
+        return cache.get(raw_str, option).width();
     }
     catch (Text::Error error) {
         return static_cast<int>(error);
@@ -73,7 +72,7 @@ API Real gm_width(StringRef raw_str) noexcept {
 
 API Real gm_height(StringRef raw_str) noexcept {
     try {
-        return cache.try_emplace(raw_str, raw_str, option).first->second.height();
+        return cache.get(raw_str, option).height();
     }
     catch (Text::Error error) {
         return static_cast<int>(error);
@@ -81,7 +80,7 @@ API Real gm_height(StringRef raw_str) noexcept {
 }
 
 API Real gm_set_font(StringRef raw_font_name) noexcept {
-    auto iter{ font_map.find(std::string_view{ raw_font_name }) };
+    auto iter{ font_map.find(raw_font_name) };
     if (iter == font_map.end()) {
         return -1; // font not found
     }

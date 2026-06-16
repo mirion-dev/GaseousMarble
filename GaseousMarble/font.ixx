@@ -83,7 +83,7 @@ namespace gm {
             for (usize i{}; i != size; ++i) {
                 u32 ch;
                 Glyph glyph;
-                throw_if_failed(read(ch) && read(glyph) && _glyphs.emplace(ch, glyph).second);
+                throw_if_failed(read(ch) && read(glyph) && _glyphs.try_emplace(ch, glyph).second);
             }
 
             throw_if_failed(file.peek() == std::char_traits<char>::eof());
