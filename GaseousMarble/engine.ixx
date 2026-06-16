@@ -9,91 +9,38 @@ import gm.types;
 
 namespace gm {
 
-    // https://docwiki.embarcadero.com/RADStudio/Athens/en/Unicode_in_RAD_Studio#New_String_Type:_UnicodeString
-
-    struct StringHeader {
-        u16 code_page;
-        u16 char_size;
-        u32 ref_count;
-        u32 size;
-    };
-
-    template <class C>
-    static constexpr u16 CODE_PAGE{ sizeof(C) == 1 ? 65001 : sizeof(C) == 2 ? 1200 : 12000 };
-
-    template <class C>
-    class EmptyString {
-        alignas(StringHeader) u8 _storage[sizeof(StringHeader) + sizeof(C)];
-        C* _data;
-
-    public:
-        EmptyString() noexcept {
-            *reinterpret_cast<StringHeader*>(_storage) = { CODE_PAGE<C>, sizeof(C), 1, 0 };
-            _data = reinterpret_cast<C*>(_storage + sizeof(StringHeader));
-            *_data = {};
-        }
-
-        C* data() noexcept {
-            return _data;
-        }
-
-        const C* data() const noexcept {
-            return _data;
-        }
-    };
-
-    template <class C>
-    static EmptyString<C> empty_string;
-
-    export template <class C>
-    class BasicStringView {
-        const C* _data{ empty_string<C>.data() };
-
-        auto _header() const noexcept {
-            return std::launder(
-                reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader))
-            );
-        }
-
-    public:
-        BasicStringView() noexcept = default;
-
-        BasicStringView(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept :
-            _data{ static_cast<std::basic_string_view<C>>(str).data() } {}
-
-        operator std::basic_string_view<C>() const noexcept {
-            return { _data, size() };
-        }
-
-        bool empty() const noexcept {
-            return size() == 0;
-        }
-
-        usize size() const noexcept {
-            return _header()->size;
-        }
-
-        usize ref_count() const noexcept {
-            return _header()->ref_count;
-        }
-
-        const C* data() const noexcept {
-            return _data;
-        }
-    };
-
+    // See https://docwiki.embarcadero.com/RADStudio/Athens/en/Unicode_in_RAD_Studio#New_String_Type:_UnicodeString
     export template <class C>
     class BasicString {
-        C* _data{ empty_string<C>.data() };
+        struct Header {
+            u16 code_page{ sizeof(C) == 1 ? 65001 : sizeof(C) == 2 ? 1200 : 12000 };
+            u16 char_size{ sizeof(C) };
+            u32 ref_count{ 1 };
+            u32 size{};
+        };
+
+        struct Empty {
+            C* data;
+
+            Empty() noexcept {
+                // WORKAROUND: Prevent _empty from being placed in .rdata.
+                auto storage{ new u8[sizeof(Header) + sizeof(C)] };
+                *reinterpret_cast<Header*>(storage) = {};
+                data = reinterpret_cast<C*>(storage + sizeof(Header));
+                *data = {};
+            }
+        };
+
+        static inline Empty _empty;
+
+        C* _data{ _empty.data };
 
         auto _header() noexcept {
-            return std::launder(reinterpret_cast<StringHeader*>(reinterpret_cast<u8*>(_data) - sizeof(StringHeader)));
+            return std::launder(reinterpret_cast<Header*>(reinterpret_cast<u8*>(_data) - sizeof(Header)));
         }
 
         auto _header() const noexcept {
-            return std::launder(
-                reinterpret_cast<const StringHeader*>(reinterpret_cast<const u8*>(_data) - sizeof(StringHeader))
-            );
+            return std::launder(reinterpret_cast<const Header*>(reinterpret_cast<const u8*>(_data) - sizeof(Header)));
         }
 
     public:
@@ -101,11 +48,12 @@ namespace gm {
             ++_header()->ref_count;
         }
 
-        BasicString(const std::convertible_to<std::basic_string_view<C>> auto& str) noexcept {
+        template <std::convertible_to<std::basic_string_view<C>> V>
+        BasicString(const V& str) noexcept {
             auto view{ static_cast<std::basic_string_view<C>>(str) };
-            auto storage{ new u8[sizeof(StringHeader) + (view.size() + 1) * sizeof(C)] };
-            *reinterpret_cast<StringHeader*>(storage) = { CODE_PAGE<C>, sizeof(C), 1, view.size() };
-            _data = reinterpret_cast<C*>(storage + sizeof(StringHeader));
+            auto storage{ new u8[sizeof(Header) + (view.size() + 1) * sizeof(C)] };
+            *reinterpret_cast<Header*>(storage) = { .size = view.size() };
+            _data = reinterpret_cast<C*>(storage + sizeof(Header));
             *std::ranges::copy(view, _data).out = {};
         }
 
@@ -115,25 +63,31 @@ namespace gm {
             ++_header()->ref_count;
         }
 
-        BasicString(BasicString&& other) noexcept {
-            swap(other);
+        BasicString(BasicString&& other) noexcept :
+            BasicString{} {
+
+            this->swap(other);
         }
 
         ~BasicString() noexcept {
             if (--_header()->ref_count == 0) {
-                delete[](reinterpret_cast<u8*>(_data) - sizeof(StringHeader));
+                delete[](reinterpret_cast<u8*>(_data) - sizeof(Header));
             }
         }
 
         BasicString& operator=(const BasicString& other) noexcept {
             BasicString temp{ other };
-            swap(temp);
+            this->swap(temp);
             return *this;
         }
 
         BasicString& operator=(BasicString&& other) noexcept {
-            swap(other);
+            this->swap(other);
             return *this;
+        }
+
+        operator std::basic_string_view<C>() const noexcept {
+            return { _data, size() };
         }
 
         void swap(BasicString& other) noexcept {
@@ -144,10 +98,6 @@ namespace gm {
             left.swap(right);
         }
 
-        operator std::basic_string_view<C>() const noexcept {
-            return { _data, size() };
-        }
-
         bool empty() const noexcept {
             return size() == 0;
         }
@@ -165,24 +115,17 @@ namespace gm {
         }
     };
 
-    export {
+    export using Real = f64;
+    export using String = BasicString<char>;
+    export using StringRef = const char*;
 
-        using Real = f64;
-
-        using String = BasicString<char>;
-        using StringView = BasicStringView<char>;
-
-    }
+    enum class ValueType {
+        real,
+        string
+    };
 
     class Value {
-    public:
-        enum class Type {
-            real,
-            string
-        };
-
-    private:
-        Type _type{};
+        ValueType _type{};
         Real _real{};
         String _string;
 
@@ -192,88 +135,87 @@ namespace gm {
         Value(Real real) noexcept :
             _real{ real } {}
 
-        Value(StringView string) noexcept :
-            _type{ Type::string },
+        Value(String string) noexcept :
+            _type{ ValueType::string },
             _string{ string } {}
 
         operator Real() const noexcept {
-            assert(_type == Type::real);
+            assert(_type == ValueType::real);
             return _real;
         }
 
         operator String() const noexcept {
-            assert(_type == Type::string);
+            assert(_type == ValueType::string);
             return _string;
         }
 
-        Type type() const noexcept {
+        ValueType type() const noexcept {
             return _type;
         }
     };
 
-    export class Function {
-        struct Data {
-            u8 name_size;
-            char name[67];
-            void* address;
-            u32 arg_count;
-            bool require_pro;
-        };
+    struct FunctionData {
+        u8 name_size;
+        char name[67];
+        void* address;
+        u32 arg_count;
+        bool require_pro;
+    };
 
-        struct Resource {
-            Data* data;
-            u32 count;
-        };
+    struct FunctionResource {
+        FunctionData* data;
+        u32 size;
+    };
 
-        static inline const auto _resource_ptr{ reinterpret_cast<Resource*>(0x00686b1c) };
+    static const auto function_resource{ reinterpret_cast<FunctionResource*>(0x00686b1c) };
 
-    public:
-        enum class Id {
+    export enum class FunctionId {
 #include "inc/FunctionId.inc"
-        };
+    };
 
+    export class Function {
+    public:
         static constexpr auto ARGS_VARIABLE{ static_cast<usize>(-1) };
 
     private:
-        Data* _data{};
+        FunctionData* _data{};
 
     public:
         Function() noexcept = default;
 
-        Function(Id id) noexcept {
-            assert(static_cast<usize>(id) < max_id());
-            _data = _resource_ptr->data + static_cast<usize>(id);
+        Function(FunctionId id) noexcept {
+            assert(static_cast<usize>(id) < function_resource->size);
+            _data = function_resource->data + static_cast<usize>(id);
         }
 
-        static usize max_id() noexcept {
-            return _resource_ptr->count;
-        }
-
-        bool empty() const noexcept {
-            return _data == nullptr;
+        operator bool() const noexcept {
+            return _data != nullptr;
         }
 
         std::string_view name() const noexcept {
-            assert(!empty());
+            assert(*this);
             return { _data->name, _data->name_size };
         }
 
         usize arg_count() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _data->arg_count;
         }
 
         void* address() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _data->address;
         }
 
-        Value operator()(auto&&... args) const noexcept {
-            assert(!empty());
+        template <class... Args>
+        Value operator()(Args&&... args) const noexcept {
+            assert(*this);
 
-            // this assertion may fail on game exit since GameMaker has already released function resources
+            // Cannot use assert() because GameMaker releases the function resource before unloading the DLL
             static constexpr usize ARGS_COUNT{ sizeof...(args) };
-            assert(arg_count() == ARGS_VARIABLE || arg_count() == ARGS_COUNT);
+            if (arg_count() != ARGS_VARIABLE && arg_count() != ARGS_COUNT) {
+                return {};
+            }
 
             std::array<Value, ARGS_COUNT> args_arr{ static_cast<Value>(args)... };
             Value res;

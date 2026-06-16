@@ -14,22 +14,23 @@ static Text::Option option;
 static Text::DrawOption draw_option;
 static Cache<std::string, Text, 1024> cache;
 
-API Real gm_font(StringView font_name, StringView sprite_path) noexcept {
+API Real gm_font(StringRef raw_font_name, StringRef raw_sprite_path) noexcept {
+    std::string font_name{ raw_font_name };
     if (font_name.empty()) {
         return -100; // invalid argument
     }
 
     try {
         // font already exists
-        return font_map.try_emplace(std::string{ font_name }, font_name, sprite_path).second ? 0 : 1;
+        return font_map.try_emplace(std::move(font_name), raw_font_name, raw_sprite_path).second ? 0 : 1;
     }
     catch (Font::Error error) {
         return static_cast<int>(error);
     }
 }
 
-API Real gm_free(StringView font_name) noexcept {
-    auto iter{ font_map.find(std::string_view{ font_name }) };
+API Real gm_free(StringRef raw_font_name) noexcept {
+    auto iter{ font_map.find(std::string_view{ raw_font_name }) };
     if (iter == font_map.end()) {
         return 1; // font not found
     }
@@ -50,10 +51,10 @@ API Real gm_clear() noexcept {
     return 0;
 }
 
-API Real gm_draw(Real x, Real y, StringView str) noexcept {
+API Real gm_draw(Real raw_x, Real raw_y, StringRef raw_str) noexcept {
     try {
-        cache.try_emplace(std::string{ str }, str, option).first->second
-            .draw(static_cast<f32>(x), static_cast<f32>(y), draw_option);
+        cache.try_emplace(raw_str, raw_str, option).first->second
+            .draw(static_cast<f32>(raw_x), static_cast<f32>(raw_y), draw_option);
         return 0;
     }
     catch (Text::Error error) {
@@ -61,26 +62,26 @@ API Real gm_draw(Real x, Real y, StringView str) noexcept {
     }
 }
 
-API Real gm_width(StringView str) noexcept {
+API Real gm_width(StringRef raw_str) noexcept {
     try {
-        return cache.try_emplace(std::string{ str }, str, option).first->second.width();
+        return cache.try_emplace(raw_str, raw_str, option).first->second.width();
     }
     catch (Text::Error error) {
         return static_cast<int>(error);
     }
 }
 
-API Real gm_height(StringView str) noexcept {
+API Real gm_height(StringRef raw_str) noexcept {
     try {
-        return cache.try_emplace(std::string{ str }, str, option).first->second.height();
+        return cache.try_emplace(raw_str, raw_str, option).first->second.height();
     }
     catch (Text::Error error) {
         return static_cast<int>(error);
     }
 }
 
-API Real gm_set_font(StringView font_name) noexcept {
-    auto iter{ font_map.find(std::string_view{ font_name }) };
+API Real gm_set_font(StringRef raw_font_name) noexcept {
+    auto iter{ font_map.find(std::string_view{ raw_font_name }) };
     if (iter == font_map.end()) {
         return -1; // font not found
     }
@@ -92,113 +93,113 @@ API Real gm_set_font(StringView font_name) noexcept {
     return 0;
 }
 
-API Real gm_set_halign(Real align) noexcept {
-    draw_option.halign = static_cast<i8>(align);
+API Real gm_set_halign(Real raw_align) noexcept {
+    draw_option.halign = static_cast<i8>(raw_align);
     return 0;
 }
 
-API Real gm_set_valign(Real align) noexcept {
-    draw_option.valign = static_cast<i8>(align);
+API Real gm_set_valign(Real raw_align) noexcept {
+    draw_option.valign = static_cast<i8>(raw_align);
     return 0;
 }
 
-API Real gm_set_justified(Real justified) noexcept {
-    draw_option.justified = static_cast<bool>(justified);
+API Real gm_set_justified(Real raw_justified) noexcept {
+    draw_option.justified = static_cast<bool>(raw_justified);
     return 0;
 }
 
-API Real gm_set_align(Real halign, Real valign) noexcept {
-    gm_set_halign(halign);
-    gm_set_valign(valign);
+API Real gm_set_align(Real raw_halign, Real raw_valign) noexcept {
+    gm_set_halign(raw_halign);
+    gm_set_valign(raw_valign);
     return 0;
 }
 
-API Real gm_set_align3(Real halign, Real valign, Real justified) noexcept {
-    gm_set_align(halign, valign);
-    gm_set_justified(justified);
+API Real gm_set_align3(Real raw_halign, Real raw_valign, Real raw_justified) noexcept {
+    gm_set_align(raw_halign, raw_valign);
+    gm_set_justified(raw_justified);
     return 0;
 }
 
-API Real gm_set_color2(Real color_top, Real color_bottom) noexcept {
-    draw_option.color_top = static_cast<u32>(color_top);
-    draw_option.color_bottom = static_cast<u32>(color_bottom);
+API Real gm_set_color2(Real raw_color_top, Real raw_color_bottom) noexcept {
+    draw_option.color_top = static_cast<u32>(raw_color_top);
+    draw_option.color_bottom = static_cast<u32>(raw_color_bottom);
     return 0;
 }
 
-API Real gm_set_color(Real color) noexcept {
-    gm_set_color2(color, color);
+API Real gm_set_color(Real raw_color) noexcept {
+    gm_set_color2(raw_color, raw_color);
     return 0;
 }
 
-API Real gm_set_alpha(Real alpha) noexcept {
-    draw_option.alpha = static_cast<f32>(alpha);
+API Real gm_set_alpha(Real raw_alpha) noexcept {
+    draw_option.alpha = static_cast<f32>(raw_alpha);
     return 0;
 }
 
-API Real gm_set_letter_spacing(Real spacing) noexcept {
-    if (option.letter_spacing != static_cast<f32>(spacing)) {
-        option.letter_spacing = static_cast<f32>(spacing);
+API Real gm_set_letter_spacing(Real raw_spacing) noexcept {
+    if (option.letter_spacing != static_cast<f32>(raw_spacing)) {
+        option.letter_spacing = static_cast<f32>(raw_spacing);
         cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_word_spacing(Real spacing) noexcept {
-    if (option.word_spacing != static_cast<f32>(spacing)) {
-        option.word_spacing = static_cast<f32>(spacing);
+API Real gm_set_word_spacing(Real raw_spacing) noexcept {
+    if (option.word_spacing != static_cast<f32>(raw_spacing)) {
+        option.word_spacing = static_cast<f32>(raw_spacing);
         cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_paragraph_spacing(Real spacing) noexcept {
-    if (option.paragraph_spacing != static_cast<f32>(spacing)) {
-        option.paragraph_spacing = static_cast<f32>(spacing);
+API Real gm_set_paragraph_spacing(Real raw_spacing) noexcept {
+    if (option.paragraph_spacing != static_cast<f32>(raw_spacing)) {
+        option.paragraph_spacing = static_cast<f32>(raw_spacing);
         cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_line_height(Real height) noexcept {
-    if (option.line_height != static_cast<f32>(height)) {
-        option.line_height = static_cast<f32>(height);
+API Real gm_set_line_height(Real raw_height) noexcept {
+    if (option.line_height != static_cast<f32>(raw_height)) {
+        option.line_height = static_cast<f32>(raw_height);
         cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_max_line_length(Real length) noexcept {
-    length = std::max(length, 0.);
-    if (option.max_line_length != static_cast<f32>(length)) {
-        option.max_line_length = static_cast<f32>(length);
+API Real gm_set_max_line_length(Real raw_length) noexcept {
+    raw_length = std::max(raw_length, 0.);
+    if (option.max_line_length != static_cast<f32>(raw_length)) {
+        option.max_line_length = static_cast<f32>(raw_length);
         cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_offset(Real x, Real y) noexcept {
-    draw_option.offset_x = static_cast<f32>(x);
-    draw_option.offset_y = static_cast<f32>(y);
+API Real gm_set_offset(Real raw_x, Real raw_y) noexcept {
+    draw_option.offset_x = static_cast<f32>(raw_x);
+    draw_option.offset_y = static_cast<f32>(raw_y);
     return 0;
 }
 
-API Real gm_set_scale(Real x, Real y) noexcept {
-    if (x <= 0 || y <= 0) {
+API Real gm_set_scale(Real raw_x, Real raw_y) noexcept {
+    if (raw_x <= 0 || raw_y <= 0) {
         return -1; // invalid argument(s)
     }
 
-    draw_option.scale_x = static_cast<f32>(x);
-    draw_option.scale_y = static_cast<f32>(y);
+    draw_option.scale_x = static_cast<f32>(raw_x);
+    draw_option.scale_y = static_cast<f32>(raw_y);
     return 0;
 }
 
-API Real gm_set_rotation(Real theta) noexcept {
-    draw_option.rotation = static_cast<f32>(theta);
+API Real gm_set_rotation(Real raw_theta) noexcept {
+    draw_option.rotation = static_cast<f32>(raw_theta);
     return 0;
 }
 
-API StringView gm_get_font() noexcept {
-    return option.font != nullptr ? option.font->name() : ""; // font unspecified
+API StringRef gm_get_font() noexcept {
+    return option.font != nullptr ? option.font->name().data() : ""; // font unspecified
 }
 
 API Real gm_get_halign() noexcept {

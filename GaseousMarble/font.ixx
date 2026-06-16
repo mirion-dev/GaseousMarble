@@ -29,7 +29,7 @@ namespace gm {
 
     private:
         static void _deleter(usize id) noexcept {
-            static Function sprite_delete{ Function::Id::sprite_delete };
+            static Function sprite_delete{ FunctionId::sprite_delete };
             sprite_delete(id);
         }
 
@@ -55,7 +55,7 @@ namespace gm {
             };
 
             error = Error::failed_to_load_sprite;
-            static Function sprite_add{ Function::Id::sprite_add };
+            static Function sprite_add{ FunctionId::sprite_add };
             _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             throw_if_failed(_sprite.is_valid());
 

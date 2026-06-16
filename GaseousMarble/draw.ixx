@@ -211,7 +211,7 @@ namespace gm {
                 y -= _layout.height;
             }
 
-            static Function draw_sprite_general{ Function::Id::draw_sprite_general };
+            static Function draw_sprite_general{ FunctionId::draw_sprite_general };
             u16 height{ _option.font->height() };
             usize sprite{ _option.font->sprite() };
             auto& glyphs{ _option.font->glyphs() };
