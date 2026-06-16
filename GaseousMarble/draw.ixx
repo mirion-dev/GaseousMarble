@@ -335,7 +335,7 @@ namespace gm {
         wil::com_ptr<env::DwTextFormat> _format;
         LayoutCache _layout{ 1024 };
 
-        const Layout& _text_layout(std::string_view text) {
+        const Layout& _text_layout(std::wstring_view text) {
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
@@ -357,7 +357,7 @@ namespace gm {
                 _format = format_base.query<env::DwTextFormat>();
             }
 
-            return _layout.get(to_wstring(text), _option, _format);
+            return _layout.get(text, _option, _format);
         }
 
     public:
@@ -431,7 +431,7 @@ namespace gm {
             _option.baseline = baseline;
         }
 
-        void text(f32 x, f32 y, std::string_view text) {
+        void text(f32 x, f32 y, std::wstring_view text) {
             auto glyphs{ _text_layout(text).glyphs };
             auto glyph_meta{
                 _option.font->second.get(
@@ -491,11 +491,11 @@ namespace gm {
             }
         }
 
-        f32 text_width(std::string_view text) {
+        f32 text_width(std::wstring_view text) {
             return _text_layout(text).width;
         }
 
-        f32 text_height(std::string_view text) {
+        f32 text_height(std::wstring_view text) {
             return _text_layout(text).height;
         }
     };

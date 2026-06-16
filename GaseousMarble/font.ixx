@@ -149,20 +149,20 @@ namespace gm {
         Font() noexcept = default;
 
         Font(
-            std::string_view name,
+            std::wstring_view name,
             f32 size,
             u32 properties = DWRITE_FONT_WEIGHT_NORMAL,
-            std::string_view locale = "",
+            std::wstring_view locale = L"",
             f32 min_antialiasing_h_size = 0,
             f32 min_antialiasing_v_size = 24,
             usize max_texture_num = 16,
             usize texture_width = 1024,
             usize texture_height = 1024
         ) :
-            _name{ to_wstring(name) },
+            _name{ name },
             _size{ size },
             _properties{ properties },
-            _locale{ to_wstring(locale) },
+            _locale{ locale },
             _min_antialiasing_h_size{ min_antialiasing_h_size },
             _min_antialiasing_v_size{ min_antialiasing_v_size },
             _max_texture_num{ max_texture_num },

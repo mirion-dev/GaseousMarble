@@ -43,10 +43,10 @@ try {
 
     return font_map.try_emplace(
             std::move(key),
-            internal_from_real(raw_name),
+            to_wstring(internal_from_real(raw_name)),
             saturating_cast<f32>(raw_size),
             saturating_cast<u32>(raw_properties),
-            internal_from_real(raw_locale),
+            to_wstring(internal_from_real(raw_locale)),
             saturating_cast<f32>(raw_min_antialiasing_h_size),
             saturating_cast<f32>(raw_min_antialiasing_v_size)
         ).second
@@ -71,20 +71,20 @@ API Real gm2_delete_font(StringRef raw_key) noexcept {
 
 API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept
 try {
-    draw.text(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), raw_text);
+    draw.text(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), to_wstring(raw_text));
     return S_OK;
 }
 CATCH_RETURN()
 
 API Real gm2_text_width(StringRef raw_text) noexcept
 try {
-    return draw.text_width(raw_text);
+    return draw.text_width(to_wstring(raw_text));
 }
 CATCH_RETURN()
 
 API Real gm2_text_height(StringRef raw_text) noexcept
 try {
-    return draw.text_height(raw_text);
+    return draw.text_height(to_wstring(raw_text));
 }
 CATCH_RETURN()
 
