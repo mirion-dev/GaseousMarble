@@ -111,7 +111,7 @@ namespace gm {
         // ReadingDirection        : unsupported
         // FlowDirection           : unsupported
         // IncrementalTabStop      : unimplemented
-        // Trimming                : unsupported
+        // Trimming                : unimplemented
 
         // IDWriteTextLayout
         f32 max_width{ std::numeric_limits<f32>::max() };

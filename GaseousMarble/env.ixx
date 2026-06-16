@@ -55,21 +55,20 @@ namespace gm::env {
 
     struct DwResource {
         wil::com_ptr<DwFactory> factory;
-    };
 
-    const DwResource& dw_resource() {
-        static DwResource resource;
-
-        if (!resource.factory) {
+        DwResource() {
             THROW_IF_FAILED(
                 DWriteCreateFactory(
                     DWRITE_FACTORY_TYPE_SHARED,
                     __uuidof(DwFactory),
-                    resource.factory.put_unknown()
+                    factory.put_unknown()
                 )
             );
         }
+    };
 
+    const DwResource& dw_resource() {
+        static DwResource resource;
         return resource;
     }
 
