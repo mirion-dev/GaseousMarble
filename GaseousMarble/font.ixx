@@ -11,30 +11,31 @@ import gm.engine;
 
 namespace gm {
 
+    export struct Glyph {
+        u16 x;
+        u16 y;
+        u16 width;
+        i16 advance;
+        i16 left;
+    };
+
+    export enum class FontError {
+        failed_to_open_file   = -1,
+        invalid_header        = -2,
+        data_corrupted        = -3,
+        failed_to_load_sprite = -4
+    };
+
     export class Font {
-    public:
-        struct Glyph {
-            u16 x, y;
-            u16 width;
-            i16 advance;
-            i16 left;
-        };
-
-        enum class Error {
-            failed_to_open_file   = -1,
-            invalid_header        = -2,
-            data_corrupted        = -3,
-            failed_to_load_sprite = -4
-        };
-
-    private:
         static void _deleter(usize id) noexcept {
             static Function sprite_delete{ FunctionId::sprite_delete };
             sprite_delete(id);
         }
 
+        using Sprite = Handle<usize, _deleter, -1>;
+
         std::string _name;
-        Handle<usize, _deleter, -1> _sprite;
+        Sprite _sprite;
         u16 _height;
         i16 _top;
         std::unordered_map<u32, Glyph> _glyphs;
@@ -45,24 +46,16 @@ namespace gm {
         Font(std::string_view name, std::string_view sprite_path) :
             _name{ name } {
 
-            Error error;
-            auto throw_if_failed{
-                [&](bool expr) {
-                    if (!expr) {
-                        throw error;
-                    }
-                }
-            };
-
-            error = Error::failed_to_load_sprite;
             static Function sprite_add{ FunctionId::sprite_add };
             _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
-            throw_if_failed(_sprite.is_valid());
+            if (!_sprite) {
+                throw FontError::failed_to_load_sprite;
+            }
 
-            error = Error::failed_to_open_file;
-            std::filesystem::path path{ std::u8string{ sprite_path.begin(), sprite_path.end() } };
-            std::ifstream file{ path.replace_extension(u8"gly"), std::ios::binary };
-            throw_if_failed(file.is_open());
+            std::ifstream file{ std::filesystem::path{ sprite_path }.replace_extension("gly"), std::ios::binary };
+            if (!file.is_open()) {
+                throw FontError::failed_to_open_file;
+            }
 
             auto read{
                 [&](auto& dest) noexcept {
@@ -70,51 +63,57 @@ namespace gm {
                 }
             };
 
-            error = Error::invalid_header;
             static constexpr std::array GLYPH_SIGN{ 'G', 'L', 'Y', '\1', '\1', '\0' };
             std::array<char, GLYPH_SIGN.size()> sign;
-            throw_if_failed(read(sign) && sign == GLYPH_SIGN);
+            if (!read(sign) || sign != GLYPH_SIGN) {
+                throw FontError::invalid_header;
+            }
 
-            error = Error::data_corrupted;
             u32 size;
-            throw_if_failed(read(_height) && read(_top) && read(size));
+            if (!read(_height) || !read(_top) || !read(size)) {
+                throw FontError::data_corrupted;
+            }
 
             _glyphs.reserve(size);
             for (usize i{}; i != size; ++i) {
                 u32 ch;
                 Glyph glyph;
-                throw_if_failed(read(ch) && read(glyph) && _glyphs.try_emplace(ch, glyph).second);
+                if (!read(ch) || !read(glyph) || !_glyphs.try_emplace(ch, std::move(glyph)).second) {
+                    throw FontError::data_corrupted;
+                }
             }
 
-            throw_if_failed(file.peek() == std::char_traits<char>::eof());
+            if (file.peek() != std::char_traits<char>::eof()) {
+                throw FontError::data_corrupted;
+            }
         }
 
-        bool empty() const noexcept {
-            return !_sprite;
-        }
-
-        u16 height() const noexcept {
-            assert(!empty());
-            return _height;
-        }
-
-        i16 top() const noexcept {
-            assert(!empty());
-            return _top;
+        operator bool() const noexcept {
+            return static_cast<bool>(_sprite);
         }
 
         std::string_view name() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _name;
         }
 
         usize sprite() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _sprite.get();
         }
 
+        u16 height() const noexcept {
+            assert(*this);
+            return _height;
+        }
+
+        i16 top() const noexcept {
+            assert(*this);
+            return _top;
+        }
+
         const auto& glyphs() const noexcept {
-            assert(!empty());
+            assert(*this);
             return _glyphs;
         }
     };

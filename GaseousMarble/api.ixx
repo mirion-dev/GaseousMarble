@@ -24,7 +24,7 @@ API Real gm_font(StringRef raw_font_name, StringRef raw_sprite_path) noexcept {
         // font already exists
         return font_map.try_emplace(std::move(font_name), raw_font_name, raw_sprite_path).second ? 0 : 1;
     }
-    catch (Font::Error error) {
+    catch (FontError error) {
         return static_cast<int>(error);
     }
 }
