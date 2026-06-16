@@ -16,13 +16,13 @@ static std::unordered_map<std::string, Font> font_map;
 static Draw draw;
 
 using Real = f64;
-using String = const char*;
+using StringRef = const char*;
 
-API Real gm2_internal_to_real(String string) noexcept {
+API Real gm2_internal_to_real(StringRef string) noexcept {
     return reinterpret_cast<usize>(string);
 }
 
-String internal_from_real(Real real) noexcept {
+StringRef internal_from_real(Real real) noexcept {
     return reinterpret_cast<const char*>(static_cast<usize>(real));
 }
 
@@ -55,7 +55,7 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm2_delete_font(String key) noexcept {
+API Real gm2_delete_font(StringRef key) noexcept {
     auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
         return S_FALSE;
@@ -69,20 +69,20 @@ API Real gm2_delete_font(String key) noexcept {
     return S_OK;
 }
 
-API Real gm2_draw_text(Real x_real, Real y_real, String text) noexcept
+API Real gm2_draw_text(Real x_real, Real y_real, StringRef text) noexcept
 try {
     draw.text(saturating_cast<f32>(x_real), saturating_cast<f32>(y_real), text);
     return S_OK;
 }
 CATCH_RETURN()
 
-API Real gm2_text_width(String text) noexcept
+API Real gm2_text_width(StringRef text) noexcept
 try {
     return draw.text_width(text);
 }
 CATCH_RETURN()
 
-API Real gm2_text_height(String text) noexcept
+API Real gm2_text_height(StringRef text) noexcept
 try {
     return draw.text_height(text);
 }
@@ -133,7 +133,7 @@ API Real gm2_set_max_height(Real max_height_real) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_font(String key) noexcept
+API Real gm2_set_font(StringRef key) noexcept
 try {
     auto iter{ font_map.find(key) };
     if (iter == font_map.end()) {
@@ -194,7 +194,7 @@ API Real gm2_get_max_height() noexcept {
     return draw.max_height();
 }
 
-API String gm2_get_font() noexcept {
+API StringRef gm2_get_font() noexcept {
     auto font{ draw.font() };
     return font == nullptr ? "" : font->first.data();
 }
