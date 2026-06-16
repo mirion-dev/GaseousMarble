@@ -1,14 +1,15 @@
 import math
 import os
 import struct
+from os import PathLike
 
-from fontTools.ttLib import TTFont
+from fontTools import ttLib
 from PIL import Image, ImageDraw, ImageFont
 
 
 def generate_font(
-    font_path: str | list[str],
-    sprite_path: str,
+    font_path: str | PathLike[str] | list[str | PathLike[str]],
+    sprite_path: str | PathLike[str],
     *,
     font_size: int = 16,
     charset: str | None = None,
@@ -28,39 +29,38 @@ def generate_font(
     if shadow_offset < 0:
         raise ValueError('The `shadow_offset` should be non-negative.')
 
-    if isinstance(font_path, str):
+    if not isinstance(font_path, list):
         font_path = [font_path]
 
     # assign fonts to every character in the charset
-    chars_map = dict[str, set[str]]()
-    assigned_chars = set[str]()
+    chars_map: dict[str, set[str]] = {}
+    assigned_chars: set[str] = set()
     for path in font_path:
-        with TTFont(path) as font:
+        with ttLib.TTFont(path, fontNumber=0) as font:
             code_points = font.getBestCmap()
         if code_points is None:
             continue
 
-        chars = set(filter(str.isprintable, map(chr, code_points.keys())))
-        chars_map[path] = chars - assigned_chars
-        assigned_chars |= chars_map[path]
+        chars = {c for c in map(chr, code_points.keys()) if c.isprintable()}
+        chars_map[str(path)] = chars - assigned_chars
+        assigned_chars |= chars_map[str(path)]
 
     if charset is not None:
-        needed_chars = set(filter(str.isprintable, charset))
-        if not needed_chars:
+        used_chars = {c for c in charset if c.isprintable()}
+        if not used_chars:
             raise ValueError('The `charset` should be non-empty.')
 
         for (path, chars) in list(chars_map.items()):
-            chars &= needed_chars
+            chars &= used_chars
             if chars:
-                needed_chars -= chars
+                used_chars -= chars
             else:
                 chars_map.pop(path)
 
-        if needed_chars:
-            raise ValueError(f'Unable to find a suitable font for following characters: {needed_chars}')
+        if used_chars:
+            raise ValueError(f'Unable to find a suitable font for following characters: {used_chars}')
 
-    chars_map = {path: ''.join(sorted(chars)) for (path, chars) in chars_map.items()}
-    fonts = [ImageFont.truetype(path, font_size) for path in chars_map.keys()]
+    charset_map = [(ImageFont.truetype(path, font_size), ''.join(sorted(chars))) for (path, chars) in chars_map.items()]
 
     # calculate the sprite size when in a single line
     def bbox(draw: ImageDraw.ImageDraw, ch: str, stroke_width: int = stroke_width, shadow_offset: int = shadow_offset):
@@ -79,7 +79,7 @@ def generate_font(
     min_glyph_top = 0
     max_glyph_bottom = 0
     max_glyph_width = 0
-    for (font, chars) in zip(fonts, chars_map.values()):
+    for (font, chars) in charset_map:
         draw0.font = font
         for ch in chars:
             (l, t, r, b) = bbox(draw0, ch)
@@ -97,7 +97,7 @@ def generate_font(
     line_width = 0
     line_num = 1
     max_line_width = 0
-    for (font, chars) in zip(fonts, chars_map.values()):
+    for (font, chars) in charset_map:
         draw0.font = font
         for ch in chars:
             (l, t, r, b) = bbox(draw0, ch)
@@ -125,7 +125,7 @@ def generate_font(
 
         x = 0
         y = 0
-        for (font, chars) in zip(fonts, chars_map.values()):
+        for (font, chars) in charset_map:
             draw.font = font
             for ch in chars:
                 (raw_l, _, raw_r, _) = bbox(draw, ch, 0, 0)

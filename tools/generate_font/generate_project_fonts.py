@@ -1,11 +1,11 @@
 import shutil
-from os.path import join
+from pathlib import Path
 
 from generate_font import generate_font
 
-FONT_PATH = 'simsun.ttf'
-TEST_DIR = '../projects/test.gm82/gm_fonts/'
-EXAMPLE_DIR = '../projects/example.gm82/gm_fonts/'
+FONT_PATH = Path('simsun.ttc')
+TEST_DIR = Path('../projects/test.gm82/gm_fonts')
+EXAMPLE_DIR = Path('../projects/example.gm82/gm_fonts')
 
 CHARSET = '''
 在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源创建（不管是在 GM 设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平及垂直坐标。
@@ -32,5 +32,5 @@ string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函
 string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
 '''
 
-generate_font(FONT_PATH, join(TEST_DIR, 'default.png'), font_size=18, charset=CHARSET, stroke_width=1)
+generate_font(FONT_PATH, TEST_DIR / 'default.png', font_size=18, charset=CHARSET, stroke_width=1)
 shutil.copytree(TEST_DIR, EXAMPLE_DIR, dirs_exist_ok=True)
