@@ -13,38 +13,36 @@ import gm.font;
 
 namespace gm {
 
+    export struct TextOption {
+        const Font* font{};
+        f32 letter_spacing{};
+        f32 word_spacing{};
+        f32 paragraph_spacing{};
+        f32 line_height{ 1 };
+        f32 max_line_length{};
+    };
+
+    export struct DrawOption {
+        i8 halign{ -1 };
+        i8 valign{ -1 };
+        bool justified{};
+        u32 color_top{ 0xffffff };
+        u32 color_bottom{ 0xffffff };
+        f32 alpha{ 1 };
+        f32 offset_x{};
+        f32 offset_y{};
+        f32 scale_x{ 1 };
+        f32 scale_y{ 1 };
+        f32 rotation{};
+    };
+
+    export enum class TextError {
+        failed_to_decode     = -1,
+        failed_to_word_break = -2,
+        invalid_option       = -3
+    };
+
     export class Text {
-    public:
-        struct Option {
-            const Font* font{};
-            f32 letter_spacing{};
-            f32 word_spacing{};
-            f32 paragraph_spacing{};
-            f32 line_height{ 1 };
-            f32 max_line_length{};
-        };
-
-        struct DrawOption {
-            i8 halign{ -1 };
-            i8 valign{ -1 };
-            bool justified{};
-            u32 color_top{ 0xffffff };
-            u32 color_bottom{ 0xffffff };
-            f32 alpha{ 1 };
-            f32 offset_x{};
-            f32 offset_y{};
-            f32 scale_x{ 1 };
-            f32 scale_y{ 1 };
-            f32 rotation{};
-        };
-
-        enum class Error {
-            failed_to_decode     = -1,
-            failed_to_word_break = -2,
-            invalid_option       = -3
-        };
-
-    private:
         struct Token {
             std::string str;
             bool continuous;
@@ -63,18 +61,18 @@ namespace gm {
             f32 height;
         };
 
-        Option _option;
+        TextOption _option;
         Layout _layout{};
 
     public:
         Text() noexcept = default;
 
-        Text(std::string_view str, const Option& option) :
+        Text(std::string_view str, const TextOption& option) :
             _option{ option } {
 
             _option.max_line_length = std::max(_option.max_line_length, 0.f);
             if (_option.font == nullptr) {
-                throw Error::invalid_option;
+                throw TextError::invalid_option;
             }
 
             auto height{ static_cast<f32>(_option.font->height()) };
@@ -177,7 +175,7 @@ namespace gm {
                             return true;
                         }
                     )) {
-                        throw Error::failed_to_decode;
+                        throw TextError::failed_to_decode;
                     }
 
                     if (!line_break) {
@@ -191,14 +189,14 @@ namespace gm {
             };
 
             if (!word_break_for_each(str, push_word)) {
-                throw Error::failed_to_word_break;
+                throw TextError::failed_to_word_break;
             }
             push_line(true, true);
         }
 
         void draw(f32 x, f32 y, const DrawOption& draw_option) const {
             if (draw_option.scale_x <= 0 || draw_option.scale_y <= 0) {
-                throw Error::invalid_option;
+                throw TextError::invalid_option;
             }
 
             x += draw_option.offset_x;
@@ -271,7 +269,7 @@ namespace gm {
                             return true;
                         }
                     )) {
-                        throw Error::failed_to_decode;
+                        throw TextError::failed_to_decode;
                     }
                     if (draw_option.justified && !continuous) {
                         cursor += justified_spacing;
@@ -319,7 +317,7 @@ namespace gm {
             return _cache_size;
         }
 
-        const Text& get(std::string_view text, const Text::Option& option) {
+        const Text& get(std::string_view text, const TextOption& option) {
             assert(*this);
 
             auto map_iter{ _map.find(text) };

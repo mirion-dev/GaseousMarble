@@ -10,9 +10,9 @@ import gm;
 using namespace gm;
 
 static std::unordered_map<std::string, Font> font_map;
-static Text::Option option;
-static Text::DrawOption draw_option;
-static TextCache cache{ 1024 };
+static TextOption text_option;
+static DrawOption draw_option;
+static TextCache text_cache{ 1024 };
 
 API Real gm_font(StringRef raw_font_name, StringRef raw_sprite_path) noexcept {
     std::string font_name{ raw_font_name };
@@ -35,9 +35,9 @@ API Real gm_free(StringRef raw_font_name) noexcept {
         return 1; // font not found
     }
 
-    if (option.font == &iter->second) {
-        option.font = {};
-        cache.clear();
+    if (text_option.font == &iter->second) {
+        text_option.font = {};
+        text_cache.clear();
     }
 
     font_map.erase(iter);
@@ -45,36 +45,36 @@ API Real gm_free(StringRef raw_font_name) noexcept {
 }
 
 API Real gm_clear() noexcept {
-    option.font = {};
-    cache.clear();
+    text_option.font = {};
+    text_cache.clear();
     font_map.clear();
     return 0;
 }
 
 API Real gm_draw(Real raw_x, Real raw_y, StringRef raw_str) noexcept {
     try {
-        cache.get(raw_str, option).draw(static_cast<f32>(raw_x), static_cast<f32>(raw_y), draw_option);
+        text_cache.get(raw_str, text_option).draw(static_cast<f32>(raw_x), static_cast<f32>(raw_y), draw_option);
         return 0;
     }
-    catch (Text::Error error) {
+    catch (TextError error) {
         return static_cast<int>(error);
     }
 }
 
 API Real gm_width(StringRef raw_str) noexcept {
     try {
-        return cache.get(raw_str, option).width();
+        return text_cache.get(raw_str, text_option).width();
     }
-    catch (Text::Error error) {
+    catch (TextError error) {
         return static_cast<int>(error);
     }
 }
 
 API Real gm_height(StringRef raw_str) noexcept {
     try {
-        return cache.get(raw_str, option).height();
+        return text_cache.get(raw_str, text_option).height();
     }
-    catch (Text::Error error) {
+    catch (TextError error) {
         return static_cast<int>(error);
     }
 }
@@ -85,9 +85,9 @@ API Real gm_set_font(StringRef raw_font_name) noexcept {
         return -1; // font not found
     }
 
-    if (option.font != &iter->second) {
-        option.font = &iter->second;
-        cache.clear();
+    if (text_option.font != &iter->second) {
+        text_option.font = &iter->second;
+        text_cache.clear();
     }
     return 0;
 }
@@ -136,42 +136,42 @@ API Real gm_set_alpha(Real raw_alpha) noexcept {
 }
 
 API Real gm_set_letter_spacing(Real raw_spacing) noexcept {
-    if (option.letter_spacing != static_cast<f32>(raw_spacing)) {
-        option.letter_spacing = static_cast<f32>(raw_spacing);
-        cache.clear();
+    if (text_option.letter_spacing != static_cast<f32>(raw_spacing)) {
+        text_option.letter_spacing = static_cast<f32>(raw_spacing);
+        text_cache.clear();
     }
     return 0;
 }
 
 API Real gm_set_word_spacing(Real raw_spacing) noexcept {
-    if (option.word_spacing != static_cast<f32>(raw_spacing)) {
-        option.word_spacing = static_cast<f32>(raw_spacing);
-        cache.clear();
+    if (text_option.word_spacing != static_cast<f32>(raw_spacing)) {
+        text_option.word_spacing = static_cast<f32>(raw_spacing);
+        text_cache.clear();
     }
     return 0;
 }
 
 API Real gm_set_paragraph_spacing(Real raw_spacing) noexcept {
-    if (option.paragraph_spacing != static_cast<f32>(raw_spacing)) {
-        option.paragraph_spacing = static_cast<f32>(raw_spacing);
-        cache.clear();
+    if (text_option.paragraph_spacing != static_cast<f32>(raw_spacing)) {
+        text_option.paragraph_spacing = static_cast<f32>(raw_spacing);
+        text_cache.clear();
     }
     return 0;
 }
 
 API Real gm_set_line_height(Real raw_height) noexcept {
-    if (option.line_height != static_cast<f32>(raw_height)) {
-        option.line_height = static_cast<f32>(raw_height);
-        cache.clear();
+    if (text_option.line_height != static_cast<f32>(raw_height)) {
+        text_option.line_height = static_cast<f32>(raw_height);
+        text_cache.clear();
     }
     return 0;
 }
 
 API Real gm_set_max_line_length(Real raw_length) noexcept {
     raw_length = std::max(raw_length, 0.);
-    if (option.max_line_length != static_cast<f32>(raw_length)) {
-        option.max_line_length = static_cast<f32>(raw_length);
-        cache.clear();
+    if (text_option.max_line_length != static_cast<f32>(raw_length)) {
+        text_option.max_line_length = static_cast<f32>(raw_length);
+        text_cache.clear();
     }
     return 0;
 }
@@ -198,7 +198,7 @@ API Real gm_set_rotation(Real raw_theta) noexcept {
 }
 
 API StringRef gm_get_font() noexcept {
-    return option.font != nullptr ? option.font->name().data() : ""; // font unspecified
+    return text_option.font != nullptr ? text_option.font->name().data() : ""; // font unspecified
 }
 
 API Real gm_get_halign() noexcept {
@@ -226,23 +226,23 @@ API Real gm_get_alpha() noexcept {
 }
 
 API Real gm_get_letter_spacing() noexcept {
-    return option.letter_spacing;
+    return text_option.letter_spacing;
 }
 
 API Real gm_get_word_spacing() noexcept {
-    return option.word_spacing;
+    return text_option.word_spacing;
 }
 
 API Real gm_get_paragraph_spacing() noexcept {
-    return option.paragraph_spacing;
+    return text_option.paragraph_spacing;
 }
 
 API Real gm_get_line_height() noexcept {
-    return option.line_height;
+    return text_option.line_height;
 }
 
 API Real gm_get_max_line_length() noexcept {
-    return option.max_line_length;
+    return text_option.max_line_length;
 }
 
 API Real gm_get_offset_x() noexcept {
