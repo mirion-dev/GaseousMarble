@@ -10,6 +10,49 @@ import gm.types;
 
 namespace gm {
 
+    template <class T>
+        requires std::is_arithmetic_v<T>
+    static constexpr int min_level{
+        std::signed_integral<T>
+        ? std::numeric_limits<T>::digits
+        : std::unsigned_integral<T>
+        ? std::numeric_limits<int>::min()
+        : std::numeric_limits<T>::max_exponent
+    };
+
+    template <class T>
+        requires std::is_arithmetic_v<T>
+    static constexpr int max_level{
+        std::integral<T>
+        ? std::numeric_limits<T>::digits
+        : std::numeric_limits<T>::max_exponent
+    };
+
+    export template <class R, class T>
+        requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
+    R saturating_cast(T num) noexcept {
+        static constexpr R min{ std::numeric_limits<R>::min() };
+        static constexpr R max{ std::numeric_limits<R>::max() };
+
+        if constexpr (std::floating_point<T>) {
+            if (std::isnan(num)) {
+                return R{};
+            }
+        }
+        if constexpr (min_level<T> > min_level<R>) {
+            if (num <= T{ min }) {
+                return min;
+            }
+        }
+        if constexpr (max_level<T> > max_level<R>) {
+            if (num >= T{ max }) {
+                return max;
+            }
+        }
+
+        return static_cast<R>(num);
+    }
+
     export template <class T, auto Deleter, T Null = {}>
     using Handle = wil::unique_any<T, decltype(Deleter), Deleter, wil::details::pointer_access_all, T, T, Null>;
 
