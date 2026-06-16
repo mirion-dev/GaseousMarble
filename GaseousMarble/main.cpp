@@ -27,36 +27,36 @@ StringRef internal_from_real(Real real) noexcept {
 }
 
 API Real gm2_internal_new_font(
-    Real key_real,
-    Real name_real,
-    Real size_real,
-    Real properties_real,
-    Real locale_real,
-    Real min_antialiasing_h_size_real,
-    Real min_antialiasing_v_size_real
+    Real raw_key,
+    Real raw_name,
+    Real raw_size,
+    Real raw_properties,
+    Real raw_locale,
+    Real raw_min_antialiasing_h_size,
+    Real raw_min_antialiasing_v_size
 ) noexcept
 try {
-    std::string key{ internal_from_real(key_real) };
+    std::string key{ internal_from_real(raw_key) };
     if (key.empty()) {
         throw std::invalid_argument{ "Font key must not be empty." };
     }
 
     return font_map.try_emplace(
             std::move(key),
-            internal_from_real(name_real),
-            saturating_cast<f32>(size_real),
-            saturating_cast<u32>(properties_real),
-            internal_from_real(locale_real),
-            saturating_cast<f32>(min_antialiasing_h_size_real),
-            saturating_cast<f32>(min_antialiasing_v_size_real)
+            internal_from_real(raw_name),
+            saturating_cast<f32>(raw_size),
+            saturating_cast<u32>(raw_properties),
+            internal_from_real(raw_locale),
+            saturating_cast<f32>(raw_min_antialiasing_h_size),
+            saturating_cast<f32>(raw_min_antialiasing_v_size)
         ).second
         ? S_OK
         : S_FALSE;
 }
 CATCH_RETURN()
 
-API Real gm2_delete_font(StringRef key) noexcept {
-    auto iter{ font_map.find(key) };
+API Real gm2_delete_font(StringRef raw_key) noexcept {
+    auto iter{ font_map.find(raw_key) };
     if (iter == font_map.end()) {
         return S_FALSE;
     }
@@ -69,52 +69,52 @@ API Real gm2_delete_font(StringRef key) noexcept {
     return S_OK;
 }
 
-API Real gm2_draw_text(Real x_real, Real y_real, StringRef text) noexcept
+API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept
 try {
-    draw.text(saturating_cast<f32>(x_real), saturating_cast<f32>(y_real), text);
+    draw.text(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), raw_text);
     return S_OK;
 }
 CATCH_RETURN()
 
-API Real gm2_text_width(StringRef text) noexcept
+API Real gm2_text_width(StringRef raw_text) noexcept
 try {
-    return draw.text_width(text);
+    return draw.text_width(raw_text);
 }
 CATCH_RETURN()
 
-API Real gm2_text_height(StringRef text) noexcept
+API Real gm2_text_height(StringRef raw_text) noexcept
 try {
-    return draw.text_height(text);
+    return draw.text_height(raw_text);
 }
 CATCH_RETURN()
 
-API Real gm2_set_alignment(Real alignment_real) noexcept {
-    draw.set_alignment(static_cast<u8>(saturating_cast<u8>(alignment_real) & DrawOption::ALIGNMENT_MASK));
+API Real gm2_set_alignment(Real raw_alignment) noexcept {
+    draw.set_alignment(static_cast<u8>(saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_MASK));
     return S_OK;
 }
 
-API Real gm2_set_alignment_h(Real alignment_real) noexcept {
+API Real gm2_set_alignment_h(Real raw_alignment) noexcept {
     draw.set_alignment(
         static_cast<u8>(
             draw.alignment() & ~DrawOption::ALIGNMENT_H_MASK
-            | saturating_cast<u8>(alignment_real) & DrawOption::ALIGNMENT_H_MASK
+            | saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_H_MASK
         )
     );
     return S_OK;
 }
 
-API Real gm2_set_alignment_v(Real alignment_real) noexcept {
+API Real gm2_set_alignment_v(Real raw_alignment) noexcept {
     draw.set_alignment(
         static_cast<u8>(
             draw.alignment() & ~DrawOption::ALIGNMENT_V_MASK
-            | saturating_cast<u8>(alignment_real) & DrawOption::ALIGNMENT_V_MASK
+            | saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_V_MASK
         )
     );
     return S_OK;
 }
 
-API Real gm2_set_max_width(Real max_width_real) noexcept {
-    f32 max_width{ saturating_cast<f32>(max_width_real) };
+API Real gm2_set_max_width(Real raw_max_width) noexcept {
+    f32 max_width{ saturating_cast<f32>(raw_max_width) };
     if (max_width <= 0) {
         max_width = std::numeric_limits<f32>::max();
     }
@@ -123,8 +123,8 @@ API Real gm2_set_max_width(Real max_width_real) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_max_height(Real max_height_real) noexcept {
-    f32 max_height{ saturating_cast<f32>(max_height_real) };
+API Real gm2_set_max_height(Real raw_max_height) noexcept {
+    f32 max_height{ saturating_cast<f32>(raw_max_height) };
     if (max_height <= 0) {
         max_height = std::numeric_limits<f32>::max();
     }
@@ -133,9 +133,9 @@ API Real gm2_set_max_height(Real max_height_real) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_font(StringRef key) noexcept
+API Real gm2_set_font(StringRef raw_key) noexcept
 try {
-    auto iter{ font_map.find(key) };
+    auto iter{ font_map.find(raw_key) };
     if (iter == font_map.end()) {
         throw std::invalid_argument{ "Font not found." };
     }
@@ -145,32 +145,32 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm2_set_letter_spacing(Real letter_spacing_real) noexcept {
-    draw.set_letter_spacing(saturating_cast<f32>(letter_spacing_real));
+API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
+    draw.set_letter_spacing(saturating_cast<f32>(raw_letter_spacing));
     return S_OK;
 }
 
-API Real gm2_set_line_spacing(Real line_height_real, Real baseline_real) noexcept {
+API Real gm2_set_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
     draw.set_fixed_line_spacing(false);
-    draw.set_line_height(saturating_cast<f32>(line_height_real));
-    draw.set_baseline(saturating_cast<f32>(baseline_real));
+    draw.set_line_height(saturating_cast<f32>(raw_line_height));
+    draw.set_baseline(saturating_cast<f32>(raw_baseline));
     return S_OK;
 }
 
-API Real gm2_set_fixed_line_spacing(Real line_height_real, Real baseline_real) noexcept {
+API Real gm2_set_fixed_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
     draw.set_fixed_line_spacing(true);
-    draw.set_line_height(saturating_cast<f32>(line_height_real));
-    draw.set_baseline(saturating_cast<f32>(baseline_real));
+    draw.set_line_height(saturating_cast<f32>(raw_line_height));
+    draw.set_baseline(saturating_cast<f32>(raw_baseline));
     return S_OK;
 }
 
-API Real gm2_set_line_height(Real line_height_real) noexcept {
-    draw.set_line_height(saturating_cast<f32>(line_height_real));
+API Real gm2_set_line_height(Real raw_line_height) noexcept {
+    draw.set_line_height(saturating_cast<f32>(raw_line_height));
     return S_OK;
 }
 
-API Real gm2_set_baseline(Real baseline_real) noexcept {
-    draw.set_baseline(saturating_cast<f32>(baseline_real));
+API Real gm2_set_baseline(Real raw_baseline) noexcept {
+    draw.set_baseline(saturating_cast<f32>(raw_baseline));
     return S_OK;
 }
 
