@@ -20,9 +20,6 @@
     <ClCompile Include="types.ixx" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="debugger\gm.natvis" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\README.md" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
