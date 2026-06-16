@@ -92,13 +92,13 @@ API Real gm_set_font(StringRef raw_key) noexcept {
     return 0;
 }
 
-API Real gm_set_halign(Real raw_align) noexcept {
-    draw_option.halign = static_cast<i8>(raw_align);
+API Real gm_set_halign(Real raw_halign) noexcept {
+    draw_option.halign = static_cast<i8>(raw_halign);
     return 0;
 }
 
-API Real gm_set_valign(Real raw_align) noexcept {
-    draw_option.valign = static_cast<i8>(raw_align);
+API Real gm_set_valign(Real raw_valign) noexcept {
+    draw_option.valign = static_cast<i8>(raw_valign);
     return 0;
 }
 
@@ -135,42 +135,42 @@ API Real gm_set_alpha(Real raw_alpha) noexcept {
     return 0;
 }
 
-API Real gm_set_letter_spacing(Real raw_spacing) noexcept {
-    if (text_option.letter_spacing != static_cast<f32>(raw_spacing)) {
-        text_option.letter_spacing = static_cast<f32>(raw_spacing);
+API Real gm_set_letter_spacing(Real raw_letter_spacing) noexcept {
+    if (text_option.letter_spacing != static_cast<f32>(raw_letter_spacing)) {
+        text_option.letter_spacing = static_cast<f32>(raw_letter_spacing);
         text_cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_word_spacing(Real raw_spacing) noexcept {
-    if (text_option.word_spacing != static_cast<f32>(raw_spacing)) {
-        text_option.word_spacing = static_cast<f32>(raw_spacing);
+API Real gm_set_word_spacing(Real raw_word_spacing) noexcept {
+    if (text_option.word_spacing != static_cast<f32>(raw_word_spacing)) {
+        text_option.word_spacing = static_cast<f32>(raw_word_spacing);
         text_cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_paragraph_spacing(Real raw_spacing) noexcept {
-    if (text_option.paragraph_spacing != static_cast<f32>(raw_spacing)) {
-        text_option.paragraph_spacing = static_cast<f32>(raw_spacing);
+API Real gm_set_paragraph_spacing(Real raw_paragraph_spacing) noexcept {
+    if (text_option.paragraph_spacing != static_cast<f32>(raw_paragraph_spacing)) {
+        text_option.paragraph_spacing = static_cast<f32>(raw_paragraph_spacing);
         text_cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_line_height(Real raw_height) noexcept {
-    if (text_option.line_height != static_cast<f32>(raw_height)) {
-        text_option.line_height = static_cast<f32>(raw_height);
+API Real gm_set_line_height(Real raw_line_height) noexcept {
+    if (text_option.line_height != static_cast<f32>(raw_line_height)) {
+        text_option.line_height = static_cast<f32>(raw_line_height);
         text_cache.clear();
     }
     return 0;
 }
 
-API Real gm_set_max_line_length(Real raw_length) noexcept {
-    raw_length = std::max(raw_length, 0.);
-    if (text_option.max_line_length != static_cast<f32>(raw_length)) {
-        text_option.max_line_length = static_cast<f32>(raw_length);
+API Real gm_set_max_line_length(Real raw_max_line_length) noexcept {
+    raw_max_line_length = std::max(raw_max_line_length, 0.);
+    if (text_option.max_line_length != static_cast<f32>(raw_max_line_length)) {
+        text_option.max_line_length = static_cast<f32>(raw_max_line_length);
         text_cache.clear();
     }
     return 0;
@@ -192,8 +192,8 @@ API Real gm_set_scale(Real raw_x, Real raw_y) noexcept {
     return 0;
 }
 
-API Real gm_set_rotation(Real raw_theta) noexcept {
-    draw_option.rotation = static_cast<f32>(raw_theta);
+API Real gm_set_rotation(Real raw_rotation) noexcept {
+    draw_option.rotation = static_cast<f32>(raw_rotation);
     return 0;
 }
 
