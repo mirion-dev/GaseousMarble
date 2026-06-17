@@ -183,6 +183,7 @@ namespace gm {
                 return hash_combine(
                     Hash{},
                     value.alignment,
+                    value.direction,
                     value.max_width,
                     value.max_height,
                     value.font,
