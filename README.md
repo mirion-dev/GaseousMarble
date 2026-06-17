@@ -1,5 +1,5 @@
 > [!note]
-> See [v2](https://github.com/mirion-dev/GaseousMarble/tree/v2) for current work.
+> v1 won't be developed further. See [v2](https://github.com/mirion-dev/GaseousMarble/tree/v2) for current work.
 
 # GaseousMarble
 
