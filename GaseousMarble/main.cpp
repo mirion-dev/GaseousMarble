@@ -12,11 +12,10 @@ import gm;
 
 using namespace gm;
 
+static String string_value;
+
 static std::unordered_map<std::string, Font> font_map;
 static Draw draw;
-
-using Real = f64;
-using StringRef = const char*;
 
 API Real gm2_internal_to_real(StringRef string) noexcept {
     return reinterpret_cast<usize>(string);
@@ -225,7 +224,8 @@ API Real gm2_get_max_height() noexcept {
 
 API StringRef gm2_get_font() noexcept {
     auto font{ draw.font() };
-    return font == nullptr ? "" : font->first.data();
+    string_value = font == nullptr ? String{} : String{ font->first };
+    return string_value.data();
 }
 
 API Real gm2_get_letter_spacing() noexcept {

@@ -16,6 +16,7 @@
     <ClCompile Include="font.ixx" />
     <ClCompile Include="gm.ixx" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="engine.ixx" />
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
   </ItemGroup>
