@@ -11,13 +11,15 @@
 | | ~~`gm_clear()`~~ | <ul><li>**Removed**: Originally used to clean up fonts before a game restart but later became unnecessary.</li></ul> |
 | `gm2_draw_text(x, y, text)`<br>`gm2_text_width(text)`<br>`gm2_text_height(text)` | `gm_draw()`<br>`gm_width()`<br>`gm_height()` | <ul><li>**New**: Professional typography based on DirectWrite.</li></ul> |
 | `gm2_set_alignment(alignment)`<br>`gm2_set_alignment_h(alignment)`<br>`gm2_set_alignment_v(alignment)` | `gm_set_halign()`<br>`gm_set_valign()`<br>`gm_set_justified()`<br>`gm_set_align()`<br>`gm_set_align3()` | <ul><li>**New**: Vertical alignment.</li><li>**Dropped**: `justified` is no longer independent of `left`/`center`/`right`.</li></ul> |
+| `gm2_set_direction(direction)`<br>`gm2_set_direction_h(direction)`<br>`gm2_set_direction_v(direction)` | | <ul><li>**New**</li></ul> |
 | `gm2_set_max_width(max_width)` | `gm_set_max_line_length()` | |
 | `gm2_set_max_height(max_height)` | | <ul><li>**New**</li></ul> |
 | `gm2_set_font(key)` | `gm_set_font()` | |
 | `gm2_set_letter_spacing(letter_spacing)` | `gm_set_letter_spacing()` | |
 | | ~~`gm_set_word_spacing()`~~ | <ul><li>**Removed**: Not useful.</li></ul> |
 | `gm2_set_line_spacing(line_height, baseline)`<br>`gm2_set_fixed_line_spacing(line_height, baseline)`<br>`gm2_set_line_height(line_height)`<br>`gm2_set_baseline(baseline)` | `gm_set_line_height()`<br>`gm_set_paragraph_spacing()` | <ul><li>**New**: Supports proportional line height.</li></ul> |
-| `gm2_get_alignment()`<br>`gm2_get_alignment_h()`<br>`gm2_get_alignment_v()` | `gm_get_halign()`<br>`gm_get_valign()`<br>`gm_is_justified()` | |
+| `gm2_get_alignment_h()`<br>`gm2_get_alignment_v()` | `gm_get_halign()`<br>`gm_get_valign()`<br>`gm_is_justified()` | |
+| `gm2_get_direction_h()`<br>`gm2_get_direction_v()` | | <ul><li>**New**</li></ul> |
 | `gm2_get_max_width()` | `gm_get_max_line_length()` | |
 | `gm2_get_max_height()` | | <ul><li>**New**</li></ul> |
 | `gm2_get_font()` | `gm_get_font()` | |

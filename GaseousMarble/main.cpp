@@ -113,6 +113,31 @@ API Real gm2_set_alignment_v(Real raw_alignment) noexcept {
     return S_OK;
 }
 
+API Real gm2_set_direction(Real raw_direction) noexcept {
+    draw.set_direction(saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_MASK);
+    return S_OK;
+}
+
+API Real gm2_set_direction_h(Real raw_direction) noexcept {
+    draw.set_direction(
+        static_cast<u8>(
+            draw.direction() & ~DrawOption::DIRECTION_H_MASK
+            | saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_H_MASK
+        )
+    );
+    return S_OK;
+}
+
+API Real gm2_set_direction_v(Real raw_direction) noexcept {
+    draw.set_direction(
+        static_cast<u8>(
+            draw.direction() & ~DrawOption::DIRECTION_V_MASK
+            | saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_V_MASK
+        )
+    );
+    return S_OK;
+}
+
 API Real gm2_set_max_width(Real raw_max_width) noexcept {
     f32 max_width{ saturating_cast<f32>(raw_max_width) };
     if (max_width <= 0) {
@@ -174,16 +199,20 @@ API Real gm2_set_baseline(Real raw_baseline) noexcept {
     return S_OK;
 }
 
-API Real gm2_get_alignment() noexcept {
-    return draw.alignment();
-}
-
 API Real gm2_get_alignment_h() noexcept {
     return draw.alignment() & DrawOption::ALIGNMENT_H_MASK;
 }
 
 API Real gm2_get_alignment_v() noexcept {
     return draw.alignment() & DrawOption::ALIGNMENT_V_MASK;
+}
+
+API Real gm2_get_direction_h() noexcept {
+    return draw.direction() & DrawOption::DIRECTION_H_MASK;
+}
+
+API Real gm2_get_direction_v() noexcept {
+    return draw.direction() & DrawOption::DIRECTION_V_MASK;
 }
 
 API Real gm2_get_max_width() noexcept {

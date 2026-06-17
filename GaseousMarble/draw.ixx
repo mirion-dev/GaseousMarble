@@ -105,11 +105,14 @@ namespace gm {
         static constexpr int ALIGNMENT_V_OFFSET{ 2 };
         static constexpr u8 ALIGNMENT_MASK{ 0xf };
 
+        static constexpr u8 DIRECTION_H_MASK{ 0x1 };
+        static constexpr u8 DIRECTION_V_MASK{ 0x2 };
+        static constexpr u8 DIRECTION_MASK{ 0x3 };
+
         // IDWriteTextFormat
-        u8 alignment;
+        u8 alignment{};
         // WordWrapping            : unimplemented
-        // ReadingDirection        : uninvestigated
-        // FlowDirection           : uninvestigated
+        u8 direction{};
         // IncrementalTabStop      : unimplemented
         // Trimming                : unimplemented
 
@@ -145,7 +148,8 @@ namespace gm {
         friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
 
         bool is_valid() const noexcept {
-            return alignment <= ALIGNMENT_MASK && max_width > 0 && max_height > 0 && font != nullptr;
+            return alignment <= ALIGNMENT_MASK && direction <= DIRECTION_MASK
+                && max_width > 0 && max_height > 0 && font != nullptr;
         }
     };
 
@@ -253,8 +257,20 @@ namespace gm {
             auto alignment_v{ static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(
                 (option.alignment & LayoutOption::ALIGNMENT_V_MASK) >> LayoutOption::ALIGNMENT_V_OFFSET
             ) };
+            DWRITE_READING_DIRECTION direction_h{
+                option.direction & LayoutOption::DIRECTION_H_MASK
+                ? DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
+                : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT
+            };
+            DWRITE_FLOW_DIRECTION direction_v{
+                option.direction & LayoutOption::DIRECTION_V_MASK
+                ? DWRITE_FLOW_DIRECTION_BOTTOM_TO_TOP
+                : DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM
+            };
             THROW_IF_FAILED(dw_layout->SetTextAlignment(alignment_h));
             THROW_IF_FAILED(dw_layout->SetParagraphAlignment(alignment_v));
+            THROW_IF_FAILED(dw_layout->SetReadingDirection(direction_h));
+            THROW_IF_FAILED(dw_layout->SetFlowDirection(direction_v));
 
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
@@ -371,6 +387,10 @@ namespace gm {
             return _option.alignment;
         }
 
+        u8 direction() const noexcept {
+            return _option.direction;
+        }
+
         f32 max_width() const noexcept {
             return _option.max_width;
         }
@@ -401,6 +421,10 @@ namespace gm {
 
         void set_alignment(u8 alignment) noexcept {
             _option.alignment = alignment;
+        }
+
+        void set_direction(u8 direction) noexcept {
+            _option.direction = direction;
         }
 
         void set_max_width(f32 max_width) noexcept {
