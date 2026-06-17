@@ -88,26 +88,22 @@ try {
 CATCH_RETURN()
 
 API Real gm2_set_alignment(Real raw_alignment) noexcept {
-    draw.set_alignment(static_cast<u8>(saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_MASK));
+    draw.set_alignment(saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_MASK);
     return S_OK;
 }
 
 API Real gm2_set_alignment_h(Real raw_alignment) noexcept {
     draw.set_alignment(
-        static_cast<u8>(
-            draw.alignment() & ~DrawOption::ALIGNMENT_H_MASK
-            | saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_H_MASK
-        )
+        draw.alignment() & ~DrawOption::ALIGNMENT_H_MASK
+        | saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_H_MASK
     );
     return S_OK;
 }
 
 API Real gm2_set_alignment_v(Real raw_alignment) noexcept {
     draw.set_alignment(
-        static_cast<u8>(
-            draw.alignment() & ~DrawOption::ALIGNMENT_V_MASK
-            | saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_V_MASK
-        )
+        draw.alignment() & ~DrawOption::ALIGNMENT_V_MASK
+        | saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_V_MASK
     );
     return S_OK;
 }
@@ -119,20 +115,16 @@ API Real gm2_set_direction(Real raw_direction) noexcept {
 
 API Real gm2_set_direction_h(Real raw_direction) noexcept {
     draw.set_direction(
-        static_cast<u8>(
-            draw.direction() & ~DrawOption::DIRECTION_H_MASK
-            | saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_H_MASK
-        )
+        draw.direction() & ~DrawOption::DIRECTION_H_MASK
+        | saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_H_MASK
     );
     return S_OK;
 }
 
 API Real gm2_set_direction_v(Real raw_direction) noexcept {
     draw.set_direction(
-        static_cast<u8>(
-            draw.direction() & ~DrawOption::DIRECTION_V_MASK
-            | saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_V_MASK
-        )
+        draw.direction() & ~DrawOption::DIRECTION_V_MASK
+        | saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_V_MASK
     );
     return S_OK;
 }
