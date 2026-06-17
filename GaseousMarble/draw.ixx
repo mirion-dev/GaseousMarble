@@ -61,8 +61,8 @@ namespace gm {
             wil::com_ptr<env::DwFontFace> face;
             RETURN_IF_FAILED(face_base.query_to<env::DwFontFace>(&face));
 
+            // Ignore isSideways because it's used for unsupported vertical writing mode
             f32 size{ glyph_run->fontEmSize };
-            // isSideways is unsupported
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
 
             for (usize i{}; i < glyph_run->glyphCount; ++i) {
@@ -108,8 +108,8 @@ namespace gm {
         // IDWriteTextFormat
         u8 alignment;
         // WordWrapping            : unimplemented
-        // ReadingDirection        : unsupported
-        // FlowDirection           : unsupported
+        // ReadingDirection        : uninvestigated
+        // FlowDirection           : uninvestigated
         // IncrementalTabStop      : unimplemented
         // Trimming                : unimplemented
 
@@ -117,21 +117,21 @@ namespace gm {
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
         std::pair<const std::string, Font>* font{};
-        // Underline               : unsupported
-        // Strikethrough           : unsupported
-        // DrawingEffect           : unsupported
-        // InlineObject            : unsupported
-        // Typography              : unsupported
+        // Underline               : Decoration is unsupported
+        // Strikethrough           : Decoration is unsupported
+        // DrawingEffect           : Decoration is unsupported
+        // InlineObject            : Inline objects are unsupported
+        // Typography              : uninvestigated
 
         // IDWriteTextLayout1
-        // PairKerning             : unsupported
+        // PairKerning             : uninvestigated
         f32 letter_spacing{};
 
         // IDWriteTextLayout2
-        // VerticalGlyphOrientation: unsupported
-        // LastLineWrapping        : unsupported
-        // OpticalAlignment        : unsupported
-        // FontFallback            : unsupported
+        // VerticalGlyphOrientation: Vertical writing mode is unsupported
+        // LastLineWrapping        : uninvestigated
+        // OpticalAlignment        : uninvestigated
+        // FontFallback            : uninvestigated
 
         // IDWriteTextLayout3
         bool is_fixed_line_spacing{};
@@ -139,8 +139,8 @@ namespace gm {
         f32 baseline{ 1 };
 
         // IDWriteTextLayout4
-        // FontAxisValues          : unsupported
-        // AutomaticFontAxes       : unsupported
+        // FontAxisValues          : VF is unsupported
+        // AutomaticFontAxes       : VF is unsupported
 
         friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
 
