@@ -49,7 +49,7 @@ namespace gm {
         }
 
         template <std::convertible_to<std::basic_string_view<C>> V>
-        BasicString(const V& str) noexcept {
+        explicit BasicString(const V& str) noexcept {
             auto view{ static_cast<std::basic_string_view<C>>(str) };
             auto storage{ new u8[sizeof(Header) + (view.size() + 1) * sizeof(C)] };
             *reinterpret_cast<Header*>(storage) = { .size = view.size() };
@@ -217,7 +217,9 @@ namespace gm {
                 return {};
             }
 
-            std::array<Value, ARGS_COUNT> args_arr{ static_cast<Value>(args)... };
+            std::array<Value, ARGS_COUNT> args_arr{ static_cast<Value>(
+                static_cast<std::conditional_t<std::convertible_to<Args, Real>, Real, String>>(args)
+            )... };
             Value res;
             Value* args_ptr{ args_arr.data() };
             Value* res_ptr{ &res };

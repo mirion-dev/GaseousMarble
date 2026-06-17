@@ -208,7 +208,7 @@ API Real gm_set_rotation(Real raw_rotation) noexcept {
 }
 
 API StringRef gm_get_font() noexcept {
-    string_value = text_option.font != nullptr ? String{ text_option.font->name() } : String{}; // font unspecified
+    string_value = text_option.font == nullptr ? String{} : String{ text_option.font->name() }; // font unspecified
     return string_value.data();
 }
 
