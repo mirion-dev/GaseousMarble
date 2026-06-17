@@ -127,7 +127,7 @@ namespace gm {
         // Typography              : uninvestigated
 
         // IDWriteTextLayout1
-        // PairKerning             : uninvestigated
+        bool use_pair_kerning{ true };
         f32 letter_spacing{};
 
         // IDWriteTextLayout2
@@ -187,6 +187,7 @@ namespace gm {
                     value.max_width,
                     value.max_height,
                     value.font,
+                    value.use_pair_kerning,
                     value.letter_spacing,
                     value.is_fixed_line_spacing,
                     value.line_height,
@@ -282,6 +283,7 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
+            THROW_IF_FAILED(dw_layout->SetPairKerning(option.use_pair_kerning, range));
             if (alignment_h == DWRITE_TEXT_ALIGNMENT_LEADING) {
                 THROW_IF_FAILED(dw_layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             }
@@ -404,6 +406,10 @@ namespace gm {
             return _option.font;
         }
 
+        bool use_pair_kerning() const noexcept {
+            return _option.use_pair_kerning;
+        }
+
         f32 letter_spacing() const noexcept {
             return _option.letter_spacing;
         }
@@ -438,6 +444,10 @@ namespace gm {
 
         void set_font(std::pair<const std::string, Font>* font) noexcept {
             _option.font = font;
+        }
+
+        void set_pair_kerning(bool use_pair_kerning) noexcept {
+            _option.use_pair_kerning = use_pair_kerning;
         }
 
         void set_letter_spacing(f32 letter_spacing) noexcept {

@@ -31,8 +31,8 @@ API Real gm2_internal_new_font(
     Real raw_size,
     Real raw_properties,
     Real raw_locale,
-    Real raw_min_antialiasing_h_size,
-    Real raw_min_antialiasing_v_size
+    Real raw_min_aa_h_size,
+    Real raw_min_aa_v_size
 ) noexcept
 try {
     std::string key{ internal_from_real(raw_key) };
@@ -46,8 +46,8 @@ try {
             saturating_cast<f32>(raw_size),
             saturating_cast<u32>(raw_properties),
             to_wstring(internal_from_real(raw_locale)),
-            saturating_cast<f32>(raw_min_antialiasing_h_size),
-            saturating_cast<f32>(raw_min_antialiasing_v_size)
+            saturating_cast<f32>(raw_min_aa_h_size),
+            saturating_cast<f32>(raw_min_aa_v_size)
         ).second
         ? S_OK
         : S_FALSE;
@@ -161,6 +161,11 @@ try {
 }
 CATCH_RETURN()
 
+API Real gm2_set_pair_kerning(Real raw_use_pair_kerning) noexcept {
+    draw.set_pair_kerning(saturating_cast<bool>(raw_use_pair_kerning));
+    return S_OK;
+}
+
 API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
     draw.set_letter_spacing(saturating_cast<f32>(raw_letter_spacing));
     return S_OK;
@@ -260,6 +265,10 @@ API Real gm2_get_font_min_aa_h_size() noexcept {
 API Real gm2_get_font_min_aa_v_size() noexcept {
     auto font{ draw.font() };
     return font == nullptr ? -1 : font->second.min_aa_v_size();
+}
+
+API Real gm2_use_pair_kerning() noexcept {
+    return draw.use_pair_kerning();
 }
 
 API Real gm2_get_letter_spacing() noexcept {

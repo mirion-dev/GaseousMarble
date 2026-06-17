@@ -282,7 +282,7 @@ namespace gm {
 
             for (auto& [i, data] : missing) {
                 DWRITE_GLYPH_RUN run{ data.face.get(), data.size, 1, &data.gid };
-                DWRITE_RENDERING_MODE1 antialiasing{
+                DWRITE_RENDERING_MODE1 aa{
                     data.size < _min_aa_h_size
                     ? DWRITE_RENDERING_MODE1_ALIASED
                     : data.size < _min_aa_v_size
@@ -294,7 +294,7 @@ namespace gm {
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
-                        antialiasing,
+                        aa,
                         DWRITE_MEASURING_MODE_NATURAL,
                         DWRITE_GRID_FIT_MODE_DISABLED,
                         DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
