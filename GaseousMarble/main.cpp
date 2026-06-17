@@ -9,6 +9,8 @@ import gm;
 
 using namespace gm;
 
+static String string_value;
+
 static std::unordered_map<std::string, Font> font_map;
 static TextOption text_option;
 static DrawOption draw_option;
@@ -206,7 +208,8 @@ API Real gm_set_rotation(Real raw_rotation) noexcept {
 }
 
 API StringRef gm_get_font() noexcept {
-    return text_option.font != nullptr ? text_option.font->name().data() : ""; // font unspecified
+    string_value = text_option.font != nullptr ? String{ text_option.font->name() } : String{}; // font unspecified
+    return string_value.data();
 }
 
 API Real gm_get_halign() noexcept {
