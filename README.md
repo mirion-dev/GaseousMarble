@@ -6,7 +6,7 @@
 
 | **Function** | **v1 Function** | **Description** |
 | :--: | :--: | -- |
-| `gm2_new_font(key, name, size, properties, locale, min_antialiasing_h_size, min_antialiasing_v_size)` | `gm_font()`<br>`generate_font()` | <ul><li>**New**: Creates fonts dynamically and supports more font properties.</li><li>**Dropped**: Loads fonts from images.</li></ul> |
+| `gm2_new_font(key, name, size, properties, locale, min_aa_h_size, min_aa_v_size)` | `gm_font()`<br>`generate_font()` | <ul><li>**New**: Creates fonts dynamically and supports more font properties.</li><li>**Dropped**: Loads fonts from images.</li></ul> |
 | `gm2_delete_font(key)` | `gm_free()` | |
 | | ~~`gm_clear()`~~ | <ul><li>**Removed**: Originally used to clean up fonts before a game restart but later became unnecessary.</li></ul> |
 | `gm2_draw_text(x, y, text)`<br>`gm2_text_width(text)`<br>`gm2_text_height(text)` | `gm_draw()`<br>`gm_width()`<br>`gm_height()` | <ul><li>**New**: Professional typography based on DirectWrite.</li></ul> |
@@ -23,6 +23,7 @@
 | `gm2_get_max_width()` | `gm_get_max_line_length()` | |
 | `gm2_get_max_height()` | | <ul><li>**New**</li></ul> |
 | `gm2_get_font()` | `gm_get_font()` | |
+| `gm2_get_font_name()`<br>`gm2_get_font_size()`<br>`gm2_get_font_weight()`<br>`gm2_get_font_style()`<br>`gm2_get_font_stretch()`<br>`gm2_get_font_locale()`<br>`gm2_get_font_min_aa_h_size()`<br>`gm2_get_font_min_aa_v_size()` | | <ul><li>**New**</li></ul> |
 | `gm2_get_letter_spacing()` | `gm_get_letter_spacing()` | |
 | | ~~`gm_get_word_spacing()`~~ | <ul><li>**Removed**: Not useful.</li></ul> |
 | `gm2_is_fixed_line_spacing()`<br>`gm2_get_line_height()`<br>`gm2_get_baseline()` | `gm_get_line_height()`<br>`gm_get_paragraph_spacing()` | |

@@ -116,8 +116,8 @@ namespace gm {
         f32 _size{};
         u32 _properties{};
         std::wstring _locale;
-        f32 _min_antialiasing_h_size{};
-        f32 _min_antialiasing_v_size{};
+        f32 _min_aa_h_size{};
+        f32 _min_aa_v_size{};
         usize _max_texture_num{};
         usize _texture_width{};
         usize _texture_height{};
@@ -153,8 +153,8 @@ namespace gm {
             f32 size,
             u32 properties = DWRITE_FONT_WEIGHT_NORMAL,
             std::wstring_view locale = L"",
-            f32 min_antialiasing_h_size = 0,
-            f32 min_antialiasing_v_size = 24,
+            f32 min_aa_h_size = 0,
+            f32 min_aa_v_size = 24,
             usize max_texture_num = 16,
             usize texture_width = 1024,
             usize texture_height = 1024
@@ -163,8 +163,8 @@ namespace gm {
             _size{ size },
             _properties{ properties },
             _locale{ locale },
-            _min_antialiasing_h_size{ min_antialiasing_h_size },
-            _min_antialiasing_v_size{ min_antialiasing_v_size },
+            _min_aa_h_size{ min_aa_h_size },
+            _min_aa_v_size{ min_aa_v_size },
             _max_texture_num{ max_texture_num },
             _texture_width{ texture_width },
             _texture_height{ texture_height } {
@@ -222,14 +222,14 @@ namespace gm {
             return _locale;
         }
 
-        f32 min_antialiasing_h_size() const noexcept {
+        f32 min_aa_h_size() const noexcept {
             assert(*this);
-            return _min_antialiasing_h_size;
+            return _min_aa_h_size;
         }
 
-        f32 min_antialiasing_v_size() const noexcept {
+        f32 min_aa_v_size() const noexcept {
             assert(*this);
-            return _min_antialiasing_v_size;
+            return _min_aa_v_size;
         }
 
         usize max_texture_num() const noexcept {
@@ -283,9 +283,9 @@ namespace gm {
             for (auto& [i, data] : missing) {
                 DWRITE_GLYPH_RUN run{ data.face.get(), data.size, 1, &data.gid };
                 DWRITE_RENDERING_MODE1 antialiasing{
-                    data.size < _min_antialiasing_h_size
+                    data.size < _min_aa_h_size
                     ? DWRITE_RENDERING_MODE1_ALIASED
-                    : data.size < _min_antialiasing_v_size
+                    : data.size < _min_aa_v_size
                     ? DWRITE_RENDERING_MODE1_NATURAL
                     : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC
                 };

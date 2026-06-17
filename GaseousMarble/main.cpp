@@ -228,6 +228,48 @@ API StringRef gm2_get_font() noexcept {
     return string_value.data();
 }
 
+API StringRef gm2_get_font_name() noexcept {
+    auto font{ draw.font() };
+    string_value = font == nullptr ? String{} : String{ to_string(font->second.name()) };
+    return string_value.data();
+}
+
+API Real gm2_get_font_size() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? -1 : font->second.size();
+}
+
+API Real gm2_get_font_weight() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? -1 : font->second.weight();
+}
+
+API Real gm2_get_font_style() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? -1 : font->second.style();
+}
+
+API Real gm2_get_font_stretch() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? -1 : font->second.stretch();
+}
+
+API StringRef gm2_get_font_locale() noexcept {
+    auto font{ draw.font() };
+    string_value = font == nullptr ? String{} : String{ to_string(font->second.locale()) };
+    return string_value.data();
+}
+
+API Real gm2_get_font_min_aa_h_size() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? -1 : font->second.min_aa_h_size();
+}
+
+API Real gm2_get_font_min_aa_v_size() noexcept {
+    auto font{ draw.font() };
+    return font == nullptr ? -1 : font->second.min_aa_v_size();
+}
+
 API Real gm2_get_letter_spacing() noexcept {
     return draw.letter_spacing();
 }
