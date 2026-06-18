@@ -35,7 +35,7 @@ namespace gm {
         }
 
         STDMETHODIMP GetCurrentTransform(void* client_drawing_context, DWRITE_MATRIX* transform) noexcept {
-            *transform = { 1, 0, 0, 1, 0, 0 };
+            *transform = { 1, 0, 0, 1 };
             return S_OK;
         }
 
@@ -351,7 +351,15 @@ namespace gm {
         }
     };
 
-    export struct DrawOption : LayoutOption {};
+    export struct DrawOption : LayoutOption {
+        // Unimplemented:
+        // generate_font(): fill, stroke_width, stroke_fill, shadow_offset, shadow_fill
+        // gm_set_color2(color_top, color_bottom)
+        // gm_set_alpha(alpha)
+        // gm_set_offset(x, y)
+        // gm_set_scale(x, y)
+        // gm_set_rotation(rotation)
+    };
 
     export class Draw {
         struct Vertex {
