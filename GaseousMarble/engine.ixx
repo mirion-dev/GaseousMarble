@@ -19,7 +19,7 @@ namespace gm {
             C* data;
 
             Empty() noexcept {
-                // WORKAROUND: Prevent _empty from being placed in .rdata.
+                // WORKAROUND: Prevent `_empty` from being placed in .rdata.
                 auto storage{ new u8[sizeof(Header) + sizeof(C)] };
                 *reinterpret_cast<Header*>(storage) = {};
                 data = reinterpret_cast<C*>(storage + sizeof(Header));

@@ -26,7 +26,7 @@ namespace gm {
         f32 height;
     };
 
-    // Ignore isSideways because it's used for unsupported vertical writing mode
+    // UNSUPPORTED: `DWRITE_GLYPH_RUN::isSideways`; used for vertical writing mode
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void* client_drawing_context, BOOL* is_disabled) noexcept {
@@ -113,44 +113,44 @@ namespace gm {
 
         // [IDWriteTextFormat]
         u8 alignment{};
-        // WRAP is unsupported because EMERGENCY_BREAK and WHOLE_WORD are more specific
+        // UNSUPPORTED: `WRAP`; `EMERGENCY_BREAK` and `WHOLE_WORD` are more specific
         DWRITE_WORD_WRAPPING word_wrapping{ DWRITE_WORD_WRAPPING_WHOLE_WORD };
-        // Enumerators used for vertical writing mode are unsupported
+        // UNSUPPORTED: Enumerators used for vertical writing mode
         u8 direction{};
         f32 tab_spacing{ 48 };
-        // trimmingSign is unsupported because it's an inline object. Delimiters are unsupported
+        // UNSUPPORTED: `trimmingSign`; inline object
+        // UNSUPPORTED: Delimiters
         DWRITE_TRIMMING_GRANULARITY trimming{};
 
         // [IDWriteTextLayout]
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
-        // FontCollection is unimplemented. It's used for loading from font files
+        // TODO: `FontCollection`; used for loading from font files
         std::pair<const std::string, Font>* font{};
-        // Underline               : Decoration is unsupported
-        // Strikethrough           : Decoration is unsupported
-        // DrawingEffect           : Decoration is unsupported
-        // InlineObject            : Inline objects are unsupported
-        // Typography              : Uninvestigated
+        // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
+        // UNSUPPORTED: `InlineObject`
+        // UNSUPPORTED: `Typography`                                 ; advanced typography properties
 
         // [IDWriteTextLayout1]
         // UNSUPPORTED: `PairKerning`; advanced typography property
-        f32 letter_spacing{}; // Simulated by CharacterSpacing
+        f32 letter_spacing{}; // Simulated by `CharacterSpacing`
 
         // [IDWriteTextLayout2]
-        // VerticalGlyphOrientation: Vertical writing mode is unsupported
-        // LastLineWrapping        : Uninvestigated
-        // OpticalAlignment        : Uninvestigated
-        // FontFallback            : Uninvestigated
+        // UNSUPPORTED: `VerticalGlyphOrientation`; used for vertical writing mode
+        // TODO: LastLineWrapping
+        // TODO: OpticalAlignment
+        // TODO: FontFallback
 
         // [IDWriteTextLayout3]
-        // DEFAULT is unsupported because PROPORTIONAL is superior. leadingBefore and fontLineGapUsage are unsupported
+        // UNSUPPORTED: `DEFAULT`                          ; `PROPORTIONAL` is superior
+        // UNSUPPORTED: `leadingBefore`, `fontLineGapUsage`; advanced typography properties
         DWRITE_LINE_SPACING_METHOD line_spacing_type{ DWRITE_LINE_SPACING_METHOD_PROPORTIONAL };
         f32 line_height{ 1 };
         f32 baseline{ 1 };
 
         // [IDWriteTextLayout4]
-        // FontAxisValues          : VF is unsupported
-        // AutomaticFontAxes       : VF is unsupported
+        // UNSUPPORTED: `FontAxisValues`   ; VF
+        // UNSUPPORTED: `AutomaticFontAxes`; VF
 
         DWRITE_TEXT_ALIGNMENT text_alignment() const noexcept {
             return static_cast<DWRITE_TEXT_ALIGNMENT>((alignment & TEXT_ALIGNMENT_MASK) >> TEXT_ALIGNMENT_OFFSET);
@@ -365,13 +365,12 @@ namespace gm {
     };
 
     export struct DrawOption : LayoutOption {
-        // Unimplemented:
-        // generate_font(): fill, stroke_width, stroke_fill, shadow_offset, shadow_fill
-        // gm_set_color2(color_top, color_bottom)
-        // gm_set_alpha(alpha)
-        // gm_set_offset(x, y)
-        // gm_set_scale(x, y)
-        // gm_set_rotation(rotation)
+        // TODO: generate_font(): fill, stroke_width, stroke_fill, shadow_offset, shadow_fill
+        // TODO: gm_set_color2(color_top, color_bottom)
+        // TODO: gm_set_alpha(alpha)
+        // TODO: gm_set_offset(x, y)
+        // TODO: gm_set_scale(x, y)
+        // TODO: gm_set_rotation(rotation)
     };
 
     export class Draw {
