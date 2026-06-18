@@ -96,7 +96,6 @@ namespace gm {
     };
 
     export class Font {
-    public:
         static constexpr u32 WEIGHT_MASK{ 0x3ff };
         static constexpr int WEIGHT_OFFSET{};
         static constexpr u32 STYLE_MASK{ 0xc00 };
@@ -104,7 +103,6 @@ namespace gm {
         static constexpr u32 STRETCH_MASK{ 0xf000 };
         static constexpr int STRETCH_OFFSET{ 12 };
 
-    private:
         struct Hash {
             usize operator()(GlyphId value) const noexcept {
                 return hash_combine(gm::Hash{}, value.face, value.gid);
@@ -150,7 +148,8 @@ namespace gm {
         Font(
             std::wstring_view name,
             f32 size,
-            u32 properties = DWRITE_FONT_WEIGHT_NORMAL,
+            u32 properties = DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
+                | DWRITE_FONT_STRETCH_NORMAL << STRETCH_OFFSET,
             std::wstring_view locale = L"",
             f32 min_aa_h_size = 0,
             f32 min_aa_v_size = 24,
@@ -169,17 +168,15 @@ namespace gm {
             _texture_height{ texture_height } {
 
             if (_name.empty() || _size <= 0 || weight() < 1 || weight() > 1000 || stretch() > 9
-                || _texture_width <= 0 || _texture_height <= 0 || _max_texture_num == 0) {
+                || _max_texture_num == 0 || _texture_width == 0 || _texture_height == 0) {
                 throw std::invalid_argument{ "Invalid font arguments." };
             }
 
             if (_locale.empty()) {
-                std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> default_locale;
-                usize default_locale_size{
-                    static_cast<usize>(GetUserDefaultLocaleName(default_locale.data(), default_locale.size()))
-                };
-                THROW_LAST_ERROR_IF(default_locale_size == 0);
-                _locale = { default_locale.data(), default_locale_size };
+                std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> locale;
+                auto size{ static_cast<usize>(GetUserDefaultLocaleName(locale.data(), locale.size())) };
+                THROW_LAST_ERROR_IF(size == 0);
+                _locale = { locale.data(), size };
             }
         }
 
