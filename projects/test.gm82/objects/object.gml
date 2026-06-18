@@ -41,9 +41,9 @@ global.gm2_get_font_stretch       = external_define(dll_path, "gm2_get_font_stre
 global.gm2_get_font_locale        = external_define(dll_path, "gm2_get_font_locale", dll_cdecl, ty_string, 0)
 global.gm2_get_font_min_aa_h_size = external_define(dll_path, "gm2_get_font_min_aa_h_size", dll_cdecl, ty_real, 0)
 global.gm2_get_font_min_aa_v_size = external_define(dll_path, "gm2_get_font_min_aa_v_size", dll_cdecl, ty_real, 0)
-global.gm2_use_pair_kerning       = external_define(dll_path, "gm2_use_pair_kerning", dll_cdecl, ty_real, 0)
+global.gm2_get_pair_kerning       = external_define(dll_path, "gm2_get_pair_kerning", dll_cdecl, ty_real, 0)
 global.gm2_get_letter_spacing     = external_define(dll_path, "gm2_get_letter_spacing", dll_cdecl, ty_real, 0)
-global.gm2_is_fixed_line_spacing  = external_define(dll_path, "gm2_is_fixed_line_spacing", dll_cdecl, ty_real, 0)
+global.gm2_get_line_spacing_type  = external_define(dll_path, "gm2_get_line_spacing_type", dll_cdecl, ty_real, 0)
 global.gm2_get_line_height        = external_define(dll_path, "gm2_get_line_height", dll_cdecl, ty_real, 0)
 global.gm2_get_baseline           = external_define(dll_path, "gm2_get_baseline", dll_cdecl, ty_real, 0)
 

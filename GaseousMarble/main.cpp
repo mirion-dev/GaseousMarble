@@ -161,8 +161,8 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm2_set_pair_kerning(Real raw_use_pair_kerning) noexcept {
-    draw.set_pair_kerning(saturating_cast<bool>(raw_use_pair_kerning));
+API Real gm2_set_pair_kerning(Real raw_pair_kerning) noexcept {
+    draw.set_pair_kerning(saturating_cast<bool>(raw_pair_kerning));
     return S_OK;
 }
 
@@ -172,14 +172,14 @@ API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
 }
 
 API Real gm2_set_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
-    draw.set_fixed_line_spacing(false);
+    draw.set_line_spacing_type(DWRITE_LINE_SPACING_METHOD_PROPORTIONAL);
     draw.set_line_height(saturating_cast<f32>(raw_line_height));
     draw.set_baseline(saturating_cast<f32>(raw_baseline));
     return S_OK;
 }
 
 API Real gm2_set_fixed_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
-    draw.set_fixed_line_spacing(true);
+    draw.set_line_spacing_type(DWRITE_LINE_SPACING_METHOD_UNIFORM);
     draw.set_line_height(saturating_cast<f32>(raw_line_height));
     draw.set_baseline(saturating_cast<f32>(raw_baseline));
     return S_OK;
@@ -267,16 +267,16 @@ API Real gm2_get_font_min_aa_v_size() noexcept {
     return font == nullptr ? -1 : font->second.min_aa_v_size();
 }
 
-API Real gm2_use_pair_kerning() noexcept {
-    return draw.use_pair_kerning();
+API Real gm2_get_pair_kerning() noexcept {
+    return draw.pair_kerning();
 }
 
 API Real gm2_get_letter_spacing() noexcept {
     return draw.letter_spacing();
 }
 
-API Real gm2_is_fixed_line_spacing() noexcept {
-    return draw.is_fixed_line_spacing();
+API Real gm2_get_line_spacing_type() noexcept {
+    return draw.line_spacing_type();
 }
 
 API Real gm2_get_line_height() noexcept {

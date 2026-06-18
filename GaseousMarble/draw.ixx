@@ -127,7 +127,7 @@ namespace gm {
         // Typography              : uninvestigated
 
         // IDWriteTextLayout1
-        bool use_pair_kerning{ true };
+        bool pair_kerning{ true };
         f32 letter_spacing{};
 
         // IDWriteTextLayout2
@@ -137,7 +137,7 @@ namespace gm {
         // FontFallback            : uninvestigated
 
         // IDWriteTextLayout3
-        bool is_fixed_line_spacing{};
+        DWRITE_LINE_SPACING_METHOD line_spacing_type{ DWRITE_LINE_SPACING_METHOD_PROPORTIONAL };
         f32 line_height{ 1 };
         f32 baseline{ 1 };
 
@@ -187,9 +187,9 @@ namespace gm {
                     value.max_width,
                     value.max_height,
                     value.font,
-                    value.use_pair_kerning,
+                    value.pair_kerning,
                     value.letter_spacing,
-                    value.is_fixed_line_spacing,
+                    value.line_spacing_type,
                     value.line_height,
                     value.baseline
                 );
@@ -283,7 +283,7 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
-            THROW_IF_FAILED(dw_layout->SetPairKerning(option.use_pair_kerning, range));
+            THROW_IF_FAILED(dw_layout->SetPairKerning(option.pair_kerning, range));
             if (alignment_h == DWRITE_TEXT_ALIGNMENT_LEADING) {
                 THROW_IF_FAILED(dw_layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             }
@@ -304,9 +304,7 @@ namespace gm {
             }
 
             DWRITE_LINE_SPACING line_spacing{
-                option.is_fixed_line_spacing
-                ? DWRITE_LINE_SPACING_METHOD_UNIFORM
-                : DWRITE_LINE_SPACING_METHOD_PROPORTIONAL,
+                option.line_spacing_type,
                 option.line_height,
                 option.baseline,
                 0, // leadingBefore is unsupported
@@ -406,16 +404,16 @@ namespace gm {
             return _option.font;
         }
 
-        bool use_pair_kerning() const noexcept {
-            return _option.use_pair_kerning;
+        bool pair_kerning() const noexcept {
+            return _option.pair_kerning;
         }
 
         f32 letter_spacing() const noexcept {
             return _option.letter_spacing;
         }
 
-        bool is_fixed_line_spacing() const noexcept {
-            return _option.is_fixed_line_spacing;
+        DWRITE_LINE_SPACING_METHOD line_spacing_type() const noexcept {
+            return _option.line_spacing_type;
         }
 
         f32 line_height() const noexcept {
@@ -446,16 +444,16 @@ namespace gm {
             _option.font = font;
         }
 
-        void set_pair_kerning(bool use_pair_kerning) noexcept {
-            _option.use_pair_kerning = use_pair_kerning;
+        void set_pair_kerning(bool pair_kerning) noexcept {
+            _option.pair_kerning = pair_kerning;
         }
 
         void set_letter_spacing(f32 letter_spacing) noexcept {
             _option.letter_spacing = letter_spacing;
         }
 
-        void set_fixed_line_spacing(bool is_fixed_line_spacing) noexcept {
-            _option.is_fixed_line_spacing = is_fixed_line_spacing;
+        void set_line_spacing_type(DWRITE_LINE_SPACING_METHOD line_spacing_type) noexcept {
+            _option.line_spacing_type = line_spacing_type;
         }
 
         void set_line_height(f32 line_height) noexcept {
