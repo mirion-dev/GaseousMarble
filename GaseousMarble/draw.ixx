@@ -177,7 +177,8 @@ namespace gm {
                 && max_width >= 0
                 && max_height >= 0
                 && font != nullptr
-                && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT;
+                && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT
+                && line_height >= 0;
         }
 
         friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;

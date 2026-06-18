@@ -205,7 +205,7 @@ API Real gm2_set_fixed_line_spacing(Real raw_line_height, Real raw_baseline) noe
 }
 
 API Real gm2_set_line_height(Real raw_line_height) noexcept {
-    draw.option().line_height = saturating_cast<f32>(raw_line_height);
+    draw.option().line_height = saturating_cast<f32>(raw_line_height, 0, std::numeric_limits<f32>::max());
     return S_OK;
 }
 
