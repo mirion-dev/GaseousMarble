@@ -99,15 +99,17 @@ namespace gm {
     };
 
     struct LayoutOption {
-        static constexpr u8 ALIGNMENT_H_MASK{ 0x3 };
-        static constexpr int ALIGNMENT_H_OFFSET{};
-        static constexpr u8 ALIGNMENT_V_MASK{ 0xc };
-        static constexpr int ALIGNMENT_V_OFFSET{ 2 };
+        static constexpr u8 TEXT_ALIGNMENT_MASK{ 0x3 };
+        static constexpr int TEXT_ALIGNMENT_OFFSET{};
+        static constexpr u8 PAR_ALIGNMENT_MASK{ 0xc };
+        static constexpr int PAR_ALIGNMENT_OFFSET{ 2 };
         static constexpr u8 ALIGNMENT_MASK{ 0xf };
 
-        static constexpr u8 DIRECTION_H_MASK{ 0x1 };
-        static constexpr u8 DIRECTION_V_MASK{ 0x2 };
-        static constexpr u8 DIRECTION_MASK{ 0x3 };
+        static constexpr u8 TEXT_DIRECTION_MASK{ 0x3 };
+        static constexpr int TEXT_DIRECTION_OFFSET{};
+        static constexpr u8 PAR_DIRECTION_MASK{ 0xc };
+        static constexpr int PAR_DIRECTION_OFFSET{ 2 };
+        static constexpr u8 DIRECTION_MASK{ 0xf };
 
         // [IDWriteTextFormat]
         u8 alignment{};
@@ -254,26 +256,22 @@ namespace gm {
             f32 x{}, y{};
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
-            auto alignment_h{ static_cast<DWRITE_TEXT_ALIGNMENT>(
-                (option.alignment & LayoutOption::ALIGNMENT_H_MASK) >> LayoutOption::ALIGNMENT_H_OFFSET
+            auto text_alignment{ static_cast<DWRITE_TEXT_ALIGNMENT>(
+                (option.alignment & LayoutOption::TEXT_ALIGNMENT_MASK) >> LayoutOption::TEXT_ALIGNMENT_OFFSET
             ) };
-            auto alignment_v{ static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(
-                (option.alignment & LayoutOption::ALIGNMENT_V_MASK) >> LayoutOption::ALIGNMENT_V_OFFSET
+            auto par_alignment{ static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(
+                (option.alignment & LayoutOption::PAR_ALIGNMENT_MASK) >> LayoutOption::PAR_ALIGNMENT_OFFSET
             ) };
-            DWRITE_READING_DIRECTION direction_h{
-                option.direction & LayoutOption::DIRECTION_H_MASK
-                ? DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
-                : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT
-            };
-            DWRITE_FLOW_DIRECTION direction_v{
-                option.direction & LayoutOption::DIRECTION_V_MASK
-                ? DWRITE_FLOW_DIRECTION_BOTTOM_TO_TOP
-                : DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM
-            };
-            THROW_IF_FAILED(dw_layout->SetTextAlignment(alignment_h));
-            THROW_IF_FAILED(dw_layout->SetParagraphAlignment(alignment_v));
-            THROW_IF_FAILED(dw_layout->SetReadingDirection(direction_h));
-            THROW_IF_FAILED(dw_layout->SetFlowDirection(direction_v));
+            auto text_direction{ static_cast<DWRITE_READING_DIRECTION>(
+                (option.direction & LayoutOption::TEXT_DIRECTION_MASK) >> LayoutOption::TEXT_DIRECTION_OFFSET
+            ) };
+            auto par_direction{ static_cast<DWRITE_FLOW_DIRECTION>(
+                (option.direction & LayoutOption::PAR_DIRECTION_MASK) >> LayoutOption::PAR_DIRECTION_OFFSET
+            ) };
+            THROW_IF_FAILED(dw_layout->SetTextAlignment(text_alignment));
+            THROW_IF_FAILED(dw_layout->SetParagraphAlignment(par_alignment));
+            THROW_IF_FAILED(dw_layout->SetReadingDirection(text_direction));
+            THROW_IF_FAILED(dw_layout->SetFlowDirection(par_direction));
 
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
@@ -285,10 +283,10 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
             THROW_IF_FAILED(dw_layout->SetPairKerning(option.pair_kerning, range));
-            if (alignment_h == DWRITE_TEXT_ALIGNMENT_LEADING) {
+            if (text_alignment == DWRITE_TEXT_ALIGNMENT_LEADING) {
                 THROW_IF_FAILED(dw_layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             }
-            else if (alignment_h == DWRITE_TEXT_ALIGNMENT_TRAILING) {
+            else if (text_alignment == DWRITE_TEXT_ALIGNMENT_TRAILING) {
                 THROW_IF_FAILED(dw_layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
                 x -= option.letter_spacing;
             }
