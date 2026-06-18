@@ -113,20 +113,22 @@ namespace gm {
 
         // [IDWriteTextFormat]
         u8 alignment{};
-        // WordWrapping            : unimplemented
-        u8 direction{};
-        // IncrementalTabStop      : unimplemented
-        // Trimming                : unimplemented
+        // WRAP is unsupported because EMERGENCY_BREAK and WHOLE_WORD are more specific
+        DWRITE_WORD_WRAPPING word_wrapping{ DWRITE_WORD_WRAPPING_WHOLE_WORD };
+        u8 direction{}; // Enumerators used for vertical writing mode are unsupported
+        // IncrementalTabStop      : Unimplemented
+        // Trimming                : Unimplemented
 
         // [IDWriteTextLayout]
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
-        std::pair<const std::string, Font>* font{}; // FontCollection is unimplemented; used for loading from font files
+        // FontCollection is unimplemented. It's used for loading from font files
+        std::pair<const std::string, Font>* font{};
         // Underline               : Decoration is unsupported
         // Strikethrough           : Decoration is unsupported
         // DrawingEffect           : Decoration is unsupported
         // InlineObject            : Inline objects are unsupported
-        // Typography              : uninvestigated
+        // Typography              : Uninvestigated
 
         // [IDWriteTextLayout1]
         bool pair_kerning{ true };
@@ -134,12 +136,12 @@ namespace gm {
 
         // [IDWriteTextLayout2]
         // VerticalGlyphOrientation: Vertical writing mode is unsupported
-        // LastLineWrapping        : uninvestigated
-        // OpticalAlignment        : uninvestigated
-        // FontFallback            : uninvestigated
+        // LastLineWrapping        : Uninvestigated
+        // OpticalAlignment        : Uninvestigated
+        // FontFallback            : Uninvestigated
 
         // [IDWriteTextLayout3]
-        // DEFAULT and leadingBefore are unsupported
+        // DEFAULT is unsupported because PROPORTIONAL is superior. leadingBefore is unsupported
         DWRITE_LINE_SPACING_METHOD line_spacing_type{ DWRITE_LINE_SPACING_METHOD_PROPORTIONAL };
         f32 line_height{ 1 };
         f32 baseline{ 1 };
