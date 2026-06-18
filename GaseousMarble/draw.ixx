@@ -468,8 +468,8 @@ namespace gm {
             auto glyph_meta{
                 _option.font->second.get(
                     glyphs,
-                    [](const Glyph& glyph) -> const GlyphId& { return glyph; },
-                    [](const Glyph& glyph) -> const GlyphRasterization& { return glyph; }
+                    [](const Glyph& glyph) noexcept -> const GlyphId& { return glyph; },
+                    [](const Glyph& glyph) noexcept -> const GlyphRasterization& { return glyph; }
                 )
             };
 
@@ -503,11 +503,11 @@ namespace gm {
 
             DWORD old_fvf;
             THROW_IF_FAILED(device->GetVertexShader(&old_fvf));
-            auto fvf_guard{ wil::scope_exit([&] { device->SetVertexShader(old_fvf); }) };
+            auto fvf_guard{ wil::scope_exit([&] noexcept { device->SetVertexShader(old_fvf); }) };
 
             wil::com_ptr<IDirect3DBaseTexture8> old_texture;
             THROW_IF_FAILED(device->GetTexture(0, &old_texture));
-            auto texture_guard{ wil::scope_exit([&] { device->SetTexture(0, old_texture.get()); }) };
+            auto texture_guard{ wil::scope_exit([&] noexcept { device->SetTexture(0, old_texture.get()); }) };
 
             THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
             for (auto& [texture, vertices] : batches) {
