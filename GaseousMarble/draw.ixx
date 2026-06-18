@@ -150,12 +150,37 @@ namespace gm {
         // FontAxisValues          : VF is unsupported
         // AutomaticFontAxes       : VF is unsupported
 
-        friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
+        DWRITE_TEXT_ALIGNMENT text_alignment() const noexcept {
+            return static_cast<DWRITE_TEXT_ALIGNMENT>((alignment & TEXT_ALIGNMENT_MASK) >> TEXT_ALIGNMENT_OFFSET);
+        }
+
+        DWRITE_PARAGRAPH_ALIGNMENT par_alignment() const noexcept {
+            return static_cast<DWRITE_PARAGRAPH_ALIGNMENT>((alignment & PAR_ALIGNMENT_MASK) >> PAR_ALIGNMENT_OFFSET);
+        }
+
+        DWRITE_READING_DIRECTION text_direction() const noexcept {
+            return static_cast<DWRITE_READING_DIRECTION>((direction & TEXT_DIRECTION_MASK) >> TEXT_DIRECTION_OFFSET);
+        }
+
+        DWRITE_FLOW_DIRECTION par_direction() const noexcept {
+            return static_cast<DWRITE_FLOW_DIRECTION>((direction & PAR_DIRECTION_MASK) >> PAR_DIRECTION_OFFSET);
+        }
 
         bool is_valid() const noexcept {
-            return alignment <= ALIGNMENT_MASK && direction <= DIRECTION_MASK
-                && max_width > 0 && max_height > 0 && font != nullptr;
+            return alignment <= ALIGNMENT_MASK
+                && word_wrapping != DWRITE_WORD_WRAPPING_WRAP
+                && direction <= DIRECTION_MASK
+                && text_direction() != DWRITE_READING_DIRECTION_TOP_TO_BOTTOM
+                && text_direction() != DWRITE_READING_DIRECTION_BOTTOM_TO_TOP
+                && par_direction() != DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT
+                && par_direction() != DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT
+                && max_width > 0
+                && max_height > 0
+                && font != nullptr
+                && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT;
         }
+
+        friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
     };
 
     class LayoutCache {
@@ -188,6 +213,7 @@ namespace gm {
                 return hash_combine(
                     Hash{},
                     value.alignment,
+                    value.word_wrapping,
                     value.direction,
                     value.max_width,
                     value.max_height,
@@ -258,22 +284,11 @@ namespace gm {
             f32 x{}, y{};
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
-            auto text_alignment{ static_cast<DWRITE_TEXT_ALIGNMENT>(
-                (option.alignment & LayoutOption::TEXT_ALIGNMENT_MASK) >> LayoutOption::TEXT_ALIGNMENT_OFFSET
-            ) };
-            auto par_alignment{ static_cast<DWRITE_PARAGRAPH_ALIGNMENT>(
-                (option.alignment & LayoutOption::PAR_ALIGNMENT_MASK) >> LayoutOption::PAR_ALIGNMENT_OFFSET
-            ) };
-            auto text_direction{ static_cast<DWRITE_READING_DIRECTION>(
-                (option.direction & LayoutOption::TEXT_DIRECTION_MASK) >> LayoutOption::TEXT_DIRECTION_OFFSET
-            ) };
-            auto par_direction{ static_cast<DWRITE_FLOW_DIRECTION>(
-                (option.direction & LayoutOption::PAR_DIRECTION_MASK) >> LayoutOption::PAR_DIRECTION_OFFSET
-            ) };
-            THROW_IF_FAILED(dw_layout->SetTextAlignment(text_alignment));
-            THROW_IF_FAILED(dw_layout->SetParagraphAlignment(par_alignment));
-            THROW_IF_FAILED(dw_layout->SetReadingDirection(text_direction));
-            THROW_IF_FAILED(dw_layout->SetFlowDirection(par_direction));
+            THROW_IF_FAILED(dw_layout->SetTextAlignment(option.text_alignment()));
+            THROW_IF_FAILED(dw_layout->SetParagraphAlignment(option.par_alignment()));
+            THROW_IF_FAILED(dw_layout->SetWordWrapping(option.word_wrapping));
+            THROW_IF_FAILED(dw_layout->SetReadingDirection(option.text_direction()));
+            THROW_IF_FAILED(dw_layout->SetFlowDirection(option.par_direction()));
 
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
@@ -285,10 +300,10 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
             THROW_IF_FAILED(dw_layout->SetPairKerning(option.pair_kerning, range));
-            if (text_alignment == DWRITE_TEXT_ALIGNMENT_LEADING) {
+            if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
                 THROW_IF_FAILED(dw_layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             }
-            else if (text_alignment == DWRITE_TEXT_ALIGNMENT_TRAILING) {
+            else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
                 THROW_IF_FAILED(dw_layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
                 x -= option.letter_spacing;
             }
