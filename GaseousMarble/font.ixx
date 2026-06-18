@@ -31,7 +31,7 @@ namespace gm {
                 static_cast<isize>(x + width),
                 static_cast<isize>(y + height)
             };
-            THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, 0));
+            THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, D3DLOCK_NO_DIRTY_UPDATE));
 
             _texture = texture;
             _data = {
@@ -68,9 +68,21 @@ namespace gm {
             left.swap(right);
         }
 
-        const auto& data() const noexcept {
-            assert(*this);
-            return _data;
+        void update(usize x, usize y, const std::mdspan<u8, std::dextents<usize, 2>>& data) const {
+            usize height{ data.extents().extent(0) }, width{ data.extents().extent(1) };
+            RECT rect{
+                static_cast<isize>(x),
+                static_cast<isize>(y),
+                static_cast<isize>(x + width),
+                static_cast<isize>(y + height)
+            };
+            THROW_IF_FAILED(_texture->AddDirtyRect(&rect));
+
+            for (usize j{}; j < height; ++j) {
+                for (usize i{}; i < width; ++i) {
+                    _data[y + j, x + i] = D3DCOLOR_RGBA(0xff, 0xff, 0xff, (data[j, i]));
+                }
+            }
         }
     };
 
@@ -133,6 +145,11 @@ namespace gm {
         rectpack2D::empty_spaces<false> _current_bin{ {} };
 
         auto _new_texture() {
+            if (_texture_num >= _max_texture_num) {
+                throw std::runtime_error{ "Too many textures." };
+            }
+            ++_texture_num;
+
             wil::com_ptr<IDirect3DTexture8> texture;
             THROW_IF_FAILED(
                 env::d3d_device()->CreateTexture(
@@ -145,7 +162,6 @@ namespace gm {
                     &texture
                 )
             );
-            ++_texture_num;
             return texture;
         }
 
@@ -254,40 +270,20 @@ namespace gm {
             assert(*this);
 
             std::vector<const GlyphMeta*> result;
-            std::vector<std::pair<usize, GlyphRasterization>> missing;
-            for (auto [i, item] : std::forward<R>(items) | std::views::enumerate) {
+            TextureLock lock;
+            for (auto& item : std::forward<R>(items)) {
                 auto iter{ _data.find(std::forward<KeyFn>(key_func)(item)) };
                 if (iter != _data.end()) {
                     result.push_back(&iter->second);
+                    continue;
                 }
-                else {
-                    result.push_back(nullptr);
-                    missing.emplace_back(i, std::forward<DataFn>(data_func)(item));
-                }
-            }
 
-            if (missing.empty()) {
-                return result;
-            }
-
-            TextureLock lock;
-            if (_current_texture) {
-                lock = { _current_texture, 0, 0, _texture_width, _texture_height };
-            }
-            else {
-                auto texture{ _new_texture() };
-                lock = { texture, 0, 0, _texture_width, _texture_height };
-
-                _current_texture = texture;
-                _current_bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
-            }
-
-            for (auto& [i, data] : missing) {
-                DWRITE_GLYPH_RUN run{ data.face.get(), data.size, 1, &data.gid };
+                GlyphRasterization rasterization{ std::forward<DataFn>(data_func)(item) };
+                DWRITE_GLYPH_RUN run{ rasterization.face.get(), rasterization.size, 1, &rasterization.gid };
                 DWRITE_RENDERING_MODE1 aa{
-                    data.size < _min_aa_h_size
+                    rasterization.size < _min_aa_h_size
                     ? DWRITE_RENDERING_MODE1_ALIASED
-                    : data.size < _min_aa_v_size
+                    : rasterization.size < _min_aa_v_size
                     ? DWRITE_RENDERING_MODE1_NATURAL
                     : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC
                 };
@@ -312,18 +308,21 @@ namespace gm {
                 auto width{ static_cast<usize>(bbox.right - bbox.left) };
                 auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
                 if (width == 0 || height == 0) {
-                    result[i] = &_data.try_emplace(
-                        std::move(static_cast<GlyphId>(data)),
-                        nullptr,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ).first->second;
+                    result.push_back(
+                        &_data.try_emplace(
+                            std::move(static_cast<GlyphId>(rasterization)),
+                            nullptr,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ).first->second
+                    );
                     continue;
                 }
+
                 if (width > _texture_width || height > _texture_height) {
                     throw std::runtime_error{ "Glyph too large." };
                 }
@@ -338,41 +337,35 @@ namespace gm {
                     )
                 );
 
-                auto insert_result{ _current_bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
+                wil::com_ptr texture{ _current_texture };
+                rectpack2D::empty_spaces bin{ _current_bin };
+                auto insert_result{ bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
                 if (!insert_result) {
-                    if (_texture_num >= _max_texture_num) {
-                        throw std::runtime_error{ "Too many textures." };
-                    }
-
-                    wil::com_ptr texture{ _new_texture() };
+                    texture = _new_texture();
                     lock = { texture, 0, 0, _texture_width, _texture_height };
-
-                    _current_texture = texture;
-                    _current_bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
-
-                    insert_result = _current_bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
+                    bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
+                    insert_result = bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
                 }
 
                 auto x{ static_cast<usize>(insert_result->x) }, y{ static_cast<usize>(insert_result->y) };
                 auto w{ static_cast<usize>(insert_result->w) }, h{ static_cast<usize>(insert_result->h) };
-                std::mdspan src{ alpha.data(), h, w };
-                auto& dest{ lock.data() };
-                for (usize i{}; i < h; ++i) {
-                    for (usize j{}; j < w; ++j) {
-                        dest[y + i, x + j] = D3DCOLOR_RGBA(0xff, 0xff, 0xff, (src[i, j]));
-                    }
-                }
+                lock.update(x, y, std::mdspan{ alpha.data(), h, w });
 
-                result[i] = &_data.try_emplace(
-                    std::move(static_cast<GlyphId>(data)),
-                    _current_texture,
-                    x,
-                    y,
-                    w,
-                    h,
-                    bbox.left,
-                    bbox.top
-                ).first->second;
+                _current_texture = texture;
+                _current_bin = std::move(bin);
+
+                result.push_back(
+                    &_data.try_emplace(
+                        std::move(static_cast<GlyphId>(rasterization)),
+                        _current_texture,
+                        x,
+                        y,
+                        w,
+                        h,
+                        bbox.left,
+                        bbox.top
+                    ).first->second
+                );
             }
 
             return result;
