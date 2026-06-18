@@ -116,7 +116,7 @@ namespace gm {
         // WRAP is unsupported because EMERGENCY_BREAK and WHOLE_WORD are more specific
         DWRITE_WORD_WRAPPING word_wrapping{ DWRITE_WORD_WRAPPING_WHOLE_WORD };
         u8 direction{}; // Enumerators used for vertical writing mode are unsupported
-        // IncrementalTabStop      : Unimplemented
+        f32 tab_spacing{ 48 };
         // Trimming                : Unimplemented
 
         // [IDWriteTextLayout]
@@ -174,6 +174,7 @@ namespace gm {
                 && text_direction() != DWRITE_READING_DIRECTION_BOTTOM_TO_TOP
                 && par_direction() != DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT
                 && par_direction() != DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT
+                && tab_spacing >= 0
                 && max_width >= 0
                 && max_height >= 0
                 && font != nullptr
@@ -216,6 +217,7 @@ namespace gm {
                     value.alignment,
                     value.word_wrapping,
                     value.direction,
+                    value.tab_spacing,
                     value.max_width,
                     value.max_height,
                     value.font,
@@ -290,6 +292,7 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetWordWrapping(option.word_wrapping));
             THROW_IF_FAILED(dw_layout->SetReadingDirection(option.text_direction()));
             THROW_IF_FAILED(dw_layout->SetFlowDirection(option.par_direction()));
+            THROW_IF_FAILED(dw_layout->SetIncrementalTabStop(option.tab_spacing));
 
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));

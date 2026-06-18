@@ -104,6 +104,16 @@ API Real gm2_set_par_alignment(Real raw_alignment) noexcept {
     return S_OK;
 }
 
+API Real gm2_set_word_wrapping(Real raw_word_wrapping) noexcept {
+    int word_wrapping{ saturating_cast<u8>(raw_word_wrapping, DWRITE_WORD_WRAPPING_WHOLE_WORD) };
+    if (word_wrapping == DWRITE_WORD_WRAPPING_WRAP) {
+        word_wrapping = DWRITE_WORD_WRAPPING_WHOLE_WORD;
+    }
+
+    draw.option().word_wrapping = static_cast<DWRITE_WORD_WRAPPING>(word_wrapping);
+    return S_OK;
+}
+
 API Real gm2_set_text_direction(Real raw_direction) noexcept {
     int direction{ saturating_cast<u8>(raw_direction, 0) };
     if (direction == DWRITE_READING_DIRECTION_TOP_TO_BOTTOM) {
@@ -138,13 +148,8 @@ API Real gm2_set_direction(Real raw_direction) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_word_wrapping(Real raw_word_wrapping) noexcept {
-    int word_wrapping{ saturating_cast<u8>(raw_word_wrapping, DWRITE_WORD_WRAPPING_WHOLE_WORD) };
-    if (word_wrapping == DWRITE_WORD_WRAPPING_WRAP) {
-        word_wrapping = DWRITE_WORD_WRAPPING_WHOLE_WORD;
-    }
-
-    draw.option().word_wrapping = static_cast<DWRITE_WORD_WRAPPING>(word_wrapping);
+API Real gm2_set_tab_spacing(Real raw_tab_spacing) noexcept {
+    draw.option().tab_spacing = saturating_cast<f32>(raw_tab_spacing, 0, std::numeric_limits<f32>::max());
     return S_OK;
 }
 
@@ -222,6 +227,10 @@ API Real gm2_get_par_alignment() noexcept {
     return draw.option().alignment & DrawOption::PAR_ALIGNMENT_MASK;
 }
 
+API Real gm2_get_word_wrapping() noexcept {
+    return draw.option().word_wrapping;
+}
+
 API Real gm2_get_text_direction() noexcept {
     return draw.option().direction & DrawOption::TEXT_DIRECTION_MASK;
 }
@@ -230,8 +239,8 @@ API Real gm2_get_par_direction() noexcept {
     return draw.option().direction & DrawOption::PAR_DIRECTION_MASK;
 }
 
-API Real gm2_get_word_wrapping() noexcept {
-    return draw.option().word_wrapping;
+API Real gm2_get_tab_spacing() noexcept {
+    return draw.option().tab_spacing;
 }
 
 API Real gm2_get_max_width() noexcept {
