@@ -400,84 +400,12 @@ namespace gm {
 
         Draw& operator=(Draw&&) noexcept = default;
 
-        u8 alignment() const noexcept {
-            return _option.alignment;
+        const DrawOption& option() const noexcept {
+            return _option;
         }
 
-        u8 direction() const noexcept {
-            return _option.direction;
-        }
-
-        f32 max_width() const noexcept {
-            return _option.max_width;
-        }
-
-        f32 max_height() const noexcept {
-            return _option.max_height;
-        }
-
-        auto font() const noexcept {
-            return _option.font;
-        }
-
-        bool pair_kerning() const noexcept {
-            return _option.pair_kerning;
-        }
-
-        f32 letter_spacing() const noexcept {
-            return _option.letter_spacing;
-        }
-
-        DWRITE_LINE_SPACING_METHOD line_spacing_type() const noexcept {
-            return _option.line_spacing_type;
-        }
-
-        f32 line_height() const noexcept {
-            return _option.line_height;
-        }
-
-        f32 baseline() const noexcept {
-            return _option.baseline;
-        }
-
-        void set_alignment(u8 alignment) noexcept {
-            _option.alignment = alignment;
-        }
-
-        void set_direction(u8 direction) noexcept {
-            _option.direction = direction;
-        }
-
-        void set_max_width(f32 max_width) noexcept {
-            _option.max_width = max_width;
-        }
-
-        void set_max_height(f32 max_height) noexcept {
-            _option.max_height = max_height;
-        }
-
-        void set_font(std::pair<const std::string, Font>* font) noexcept {
-            _option.font = font;
-        }
-
-        void set_pair_kerning(bool pair_kerning) noexcept {
-            _option.pair_kerning = pair_kerning;
-        }
-
-        void set_letter_spacing(f32 letter_spacing) noexcept {
-            _option.letter_spacing = letter_spacing;
-        }
-
-        void set_line_spacing_type(DWRITE_LINE_SPACING_METHOD line_spacing_type) noexcept {
-            _option.line_spacing_type = line_spacing_type;
-        }
-
-        void set_line_height(f32 line_height) noexcept {
-            _option.line_height = line_height;
-        }
-
-        void set_baseline(f32 baseline) noexcept {
-            _option.baseline = baseline;
+        DrawOption& option() noexcept {
+            return _option;
         }
 
         void text(f32 x, f32 y, std::wstring_view text) {

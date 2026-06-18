@@ -60,8 +60,8 @@ API Real gm2_delete_font(StringRef raw_key) noexcept {
         return S_FALSE;
     }
 
-    if (draw.font() == &*iter) {
-        draw.set_font(nullptr);
+    if (draw.option().font == &*iter) {
+        draw.option().font = nullptr;
     }
 
     font_map.erase(iter);
@@ -88,44 +88,63 @@ try {
 CATCH_RETURN()
 
 API Real gm2_set_alignment(Real raw_alignment) noexcept {
-    draw.set_alignment(saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_MASK);
+    draw.option().alignment = saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_MASK;
     return S_OK;
 }
 
 API Real gm2_set_text_alignment(Real raw_alignment) noexcept {
-    draw.set_alignment(
-        draw.alignment() & ~DrawOption::TEXT_ALIGNMENT_MASK
-        | saturating_cast<u8>(raw_alignment) & DrawOption::TEXT_ALIGNMENT_MASK
-    );
+    draw.option().alignment = draw.option().alignment & ~DrawOption::TEXT_ALIGNMENT_MASK
+        | saturating_cast<u8>(raw_alignment) & DrawOption::TEXT_ALIGNMENT_MASK;
     return S_OK;
 }
 
 API Real gm2_set_par_alignment(Real raw_alignment) noexcept {
-    draw.set_alignment(
-        draw.alignment() & ~DrawOption::PAR_ALIGNMENT_MASK
-        | saturating_cast<u8>(raw_alignment) & DrawOption::PAR_ALIGNMENT_MASK
-    );
+    draw.option().alignment = draw.option().alignment & ~DrawOption::PAR_ALIGNMENT_MASK
+        | saturating_cast<u8>(raw_alignment) & DrawOption::PAR_ALIGNMENT_MASK;
     return S_OK;
 }
 
 API Real gm2_set_direction(Real raw_direction) noexcept {
-    draw.set_direction(saturating_cast<u8>(raw_direction) & DrawOption::DIRECTION_MASK);
+    gm2_set_text_alignment(raw_direction);
+    gm2_set_par_alignment(raw_direction);
     return S_OK;
 }
 
 API Real gm2_set_text_direction(Real raw_direction) noexcept {
-    draw.set_direction(
-        draw.direction() & ~DrawOption::TEXT_DIRECTION_MASK
-        | saturating_cast<u8>(raw_direction) & DrawOption::TEXT_DIRECTION_MASK
-    );
+    int direction{ saturating_cast<u8>(raw_direction) };
+    if (direction == DWRITE_READING_DIRECTION_TOP_TO_BOTTOM) {
+        direction = DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
+    }
+    else if (direction == DWRITE_READING_DIRECTION_BOTTOM_TO_TOP) {
+        direction = DWRITE_READING_DIRECTION_RIGHT_TO_LEFT;
+    }
+
+    draw.option().direction = draw.option().direction & ~DrawOption::TEXT_DIRECTION_MASK
+        | saturating_cast<u8>(direction) & DrawOption::TEXT_DIRECTION_MASK;
     return S_OK;
 }
 
 API Real gm2_set_par_direction(Real raw_direction) noexcept {
-    draw.set_direction(
-        draw.direction() & ~DrawOption::PAR_DIRECTION_MASK
-        | saturating_cast<u8>(raw_direction) & DrawOption::PAR_DIRECTION_MASK
-    );
+    int direction{ saturating_cast<u8>(raw_direction) };
+    if (direction == DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT) {
+        direction = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM;
+    }
+    else if (direction == DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT) {
+        direction = DWRITE_FLOW_DIRECTION_BOTTOM_TO_TOP;
+    }
+
+    draw.option().direction = draw.option().direction & ~DrawOption::PAR_DIRECTION_MASK
+        | saturating_cast<u8>(direction) & DrawOption::PAR_DIRECTION_MASK;
+    return S_OK;
+}
+
+API Real gm2_set_word_wrapping(Real raw_wrapping) noexcept {
+    auto wrapping{ static_cast<DWRITE_WORD_WRAPPING>(saturating_cast<u8>(raw_wrapping)) };
+    if (wrapping == DWRITE_WORD_WRAPPING_WRAP) {
+        wrapping = DWRITE_WORD_WRAPPING_WHOLE_WORD;
+    }
+
+    draw.option().word_wrapping = wrapping;
     return S_OK;
 }
 
@@ -135,7 +154,7 @@ API Real gm2_set_max_width(Real raw_max_width) noexcept {
         max_width = std::numeric_limits<f32>::max();
     }
 
-    draw.set_max_width(max_width);
+    draw.option().max_width = max_width;
     return S_OK;
 }
 
@@ -145,7 +164,7 @@ API Real gm2_set_max_height(Real raw_max_height) noexcept {
         max_height = std::numeric_limits<f32>::max();
     }
 
-    draw.set_max_height(max_height);
+    draw.option().max_height = max_height;
     return S_OK;
 }
 
@@ -156,133 +175,128 @@ try {
         throw std::invalid_argument{ "Font not found." };
     }
 
-    draw.set_font(&*iter);
+    draw.option().font = &*iter;
     return S_OK;
 }
 CATCH_RETURN()
 
 API Real gm2_set_pair_kerning(Real raw_pair_kerning) noexcept {
-    draw.set_pair_kerning(saturating_cast<bool>(raw_pair_kerning));
+    draw.option().pair_kerning = saturating_cast<bool>(raw_pair_kerning);
     return S_OK;
 }
 
 API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
-    draw.set_letter_spacing(saturating_cast<f32>(raw_letter_spacing));
+    draw.option().letter_spacing = saturating_cast<f32>(raw_letter_spacing);
     return S_OK;
 }
 
 API Real gm2_set_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
-    draw.set_line_spacing_type(DWRITE_LINE_SPACING_METHOD_PROPORTIONAL);
-    draw.set_line_height(saturating_cast<f32>(raw_line_height));
-    draw.set_baseline(saturating_cast<f32>(raw_baseline));
+    draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_PROPORTIONAL;
+    draw.option().line_height = saturating_cast<f32>(raw_line_height);
+    draw.option().baseline = saturating_cast<f32>(raw_baseline);
     return S_OK;
 }
 
 API Real gm2_set_fixed_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
-    draw.set_line_spacing_type(DWRITE_LINE_SPACING_METHOD_UNIFORM);
-    draw.set_line_height(saturating_cast<f32>(raw_line_height));
-    draw.set_baseline(saturating_cast<f32>(raw_baseline));
+    draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_UNIFORM;
+    draw.option().line_height = saturating_cast<f32>(raw_line_height);
+    draw.option().baseline = saturating_cast<f32>(raw_baseline);
     return S_OK;
 }
 
 API Real gm2_set_line_height(Real raw_line_height) noexcept {
-    draw.set_line_height(saturating_cast<f32>(raw_line_height));
+    draw.option().line_height = saturating_cast<f32>(raw_line_height);
     return S_OK;
 }
 
 API Real gm2_set_baseline(Real raw_baseline) noexcept {
-    draw.set_baseline(saturating_cast<f32>(raw_baseline));
+    draw.option().baseline = saturating_cast<f32>(raw_baseline);
     return S_OK;
 }
 
 API Real gm2_get_text_alignment() noexcept {
-    return draw.alignment() & DrawOption::TEXT_ALIGNMENT_MASK;
+    return draw.option().alignment & DrawOption::TEXT_ALIGNMENT_MASK;
 }
 
 API Real gm2_get_par_alignment() noexcept {
-    return draw.alignment() & DrawOption::PAR_ALIGNMENT_MASK;
+    return draw.option().alignment & DrawOption::PAR_ALIGNMENT_MASK;
 }
 
 API Real gm2_get_text_direction() noexcept {
-    return draw.direction() & DrawOption::TEXT_DIRECTION_MASK;
+    return draw.option().direction & DrawOption::TEXT_DIRECTION_MASK;
 }
 
 API Real gm2_get_par_direction() noexcept {
-    return draw.direction() & DrawOption::PAR_DIRECTION_MASK;
+    return draw.option().direction & DrawOption::PAR_DIRECTION_MASK;
+}
+
+API Real gm2_get_word_wrapping() noexcept {
+    return draw.option().word_wrapping;
 }
 
 API Real gm2_get_max_width() noexcept {
-    return draw.max_width();
+    return draw.option().max_width;
 }
 
 API Real gm2_get_max_height() noexcept {
-    return draw.max_height();
+    return draw.option().max_height;
 }
 
 API StringRef gm2_get_font() noexcept {
-    auto font{ draw.font() };
-    string_value = font == nullptr ? String{} : String{ font->first };
+    string_value = draw.option().font == nullptr ? String{} : String{ draw.option().font->first };
     return string_value.data();
 }
 
 API StringRef gm2_get_font_name() noexcept {
-    auto font{ draw.font() };
-    string_value = font == nullptr ? String{} : String{ to_string(font->second.name()) };
+    string_value = draw.option().font == nullptr ? String{} : String{ to_string(draw.option().font->second.name()) };
     return string_value.data();
 }
 
 API Real gm2_get_font_size() noexcept {
-    auto font{ draw.font() };
-    return font == nullptr ? -1 : font->second.size();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.size();
 }
 
 API Real gm2_get_font_weight() noexcept {
-    auto font{ draw.font() };
-    return font == nullptr ? -1 : font->second.weight();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.weight();
 }
 
 API Real gm2_get_font_style() noexcept {
-    auto font{ draw.font() };
-    return font == nullptr ? -1 : font->second.style();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.style();
 }
 
 API Real gm2_get_font_stretch() noexcept {
-    auto font{ draw.font() };
-    return font == nullptr ? -1 : font->second.stretch();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.stretch();
 }
 
 API StringRef gm2_get_font_locale() noexcept {
-    auto font{ draw.font() };
-    string_value = font == nullptr ? String{} : String{ to_string(font->second.locale()) };
+    string_value = draw.option().font == nullptr ? String{} : String{ to_string(draw.option().font->second.locale()) };
     return string_value.data();
 }
 
 API Real gm2_get_font_min_aa_h_size() noexcept {
-    auto font{ draw.font() };
-    return font == nullptr ? -1 : font->second.min_aa_h_size();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.min_aa_h_size();
 }
 
 API Real gm2_get_font_min_aa_v_size() noexcept {
-    auto font{ draw.font() };
-    return font == nullptr ? -1 : font->second.min_aa_v_size();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.min_aa_v_size();
 }
 
 API Real gm2_get_pair_kerning() noexcept {
-    return draw.pair_kerning();
+    return draw.option().pair_kerning;
 }
 
 API Real gm2_get_letter_spacing() noexcept {
-    return draw.letter_spacing();
+    return draw.option().letter_spacing;
 }
 
 API Real gm2_get_line_spacing_type() noexcept {
-    return draw.line_spacing_type();
+    return draw.option().line_spacing_type;
 }
 
 API Real gm2_get_line_height() noexcept {
-    return draw.line_height();
+    return draw.option().line_height;
 }
 
 API Real gm2_get_baseline() noexcept {
-    return draw.baseline();
+    return draw.option().baseline;
 }
