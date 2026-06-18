@@ -41,8 +41,8 @@ namespace gm::env {
         using DwGlyphRunAnalysisBase = IDWriteGlyphRunAnalysis;
         using DwGlyphRunAnalysis = IDWriteGlyphRunAnalysis;
 
-        // Not IDWriteTextRenderer1 because introduced orientationAngle is used for unsupported vertical writing mode
         using DwTextRendererBase = IDWriteTextRenderer;
+        // Not IDWriteTextRenderer1 because introduced orientationAngle is used for unsupported vertical writing mode
         using DwTextRenderer = IDWriteTextRenderer;
 
         using DwTextFormatBase = IDWriteTextFormat;

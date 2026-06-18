@@ -26,6 +26,7 @@ namespace gm {
         f32 height;
     };
 
+    // Ignore isSideways because it's used for unsupported vertical writing mode
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
     public:
         STDMETHODIMP IsPixelSnappingDisabled(void* client_drawing_context, BOOL* is_disabled) noexcept {
@@ -61,7 +62,6 @@ namespace gm {
             wil::com_ptr<env::DwFontFace> face;
             RETURN_IF_FAILED(face_base.query_to<env::DwFontFace>(&face));
 
-            // Ignore isSideways because it's used for unsupported vertical writing mode
             f32 size{ glyph_run->fontEmSize };
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
 
@@ -109,39 +109,40 @@ namespace gm {
         static constexpr u8 DIRECTION_V_MASK{ 0x2 };
         static constexpr u8 DIRECTION_MASK{ 0x3 };
 
-        // IDWriteTextFormat
+        // [IDWriteTextFormat]
         u8 alignment{};
         // WordWrapping            : unimplemented
         u8 direction{};
         // IncrementalTabStop      : unimplemented
         // Trimming                : unimplemented
 
-        // IDWriteTextLayout
+        // [IDWriteTextLayout]
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
-        std::pair<const std::string, Font>* font{};
+        std::pair<const std::string, Font>* font{}; // FontCollection is unimplemented; used for loading from font files
         // Underline               : Decoration is unsupported
         // Strikethrough           : Decoration is unsupported
         // DrawingEffect           : Decoration is unsupported
         // InlineObject            : Inline objects are unsupported
         // Typography              : uninvestigated
 
-        // IDWriteTextLayout1
+        // [IDWriteTextLayout1]
         bool pair_kerning{ true };
-        f32 letter_spacing{};
+        f32 letter_spacing{}; // Simulated by CharacterSpacing
 
-        // IDWriteTextLayout2
+        // [IDWriteTextLayout2]
         // VerticalGlyphOrientation: Vertical writing mode is unsupported
         // LastLineWrapping        : uninvestigated
         // OpticalAlignment        : uninvestigated
         // FontFallback            : uninvestigated
 
-        // IDWriteTextLayout3
+        // [IDWriteTextLayout3]
+        // DEFAULT and leadingBefore are unsupported
         DWRITE_LINE_SPACING_METHOD line_spacing_type{ DWRITE_LINE_SPACING_METHOD_PROPORTIONAL };
         f32 line_height{ 1 };
         f32 baseline{ 1 };
 
-        // IDWriteTextLayout4
+        // [IDWriteTextLayout4]
         // FontAxisValues          : VF is unsupported
         // AutomaticFontAxes       : VF is unsupported
 
@@ -307,7 +308,7 @@ namespace gm {
                 option.line_spacing_type,
                 option.line_height,
                 option.baseline,
-                0, // leadingBefore is unsupported
+                0,
                 DWRITE_FONT_LINE_GAP_USAGE_ENABLED
             };
             THROW_IF_FAILED(dw_layout->SetLineSpacing(&line_spacing));

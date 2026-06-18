@@ -111,7 +111,6 @@ namespace gm {
             }
         };
 
-        // FontCollection is unimplemented; used for loading from font files
         std::wstring _name;
         f32 _size{};
         u32 _properties{};
