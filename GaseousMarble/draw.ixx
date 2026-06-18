@@ -136,10 +136,8 @@ namespace gm {
         f32 letter_spacing{}; // Simulated by `CharacterSpacing`
 
         // [IDWriteTextLayout2]
-        // UNSUPPORTED: `VerticalGlyphOrientation`; used for vertical writing mode
-        // TODO: LastLineWrapping
-        // TODO: OpticalAlignment
-        // TODO: FontFallback
+        // UNSUPPORTED: `VerticalGlyphOrientation`                            ; used for vertical writing mode
+        // UNSUPPORTED: `LastLineWrapping`, `OpticalAlignment`, `FontFallback`; advanced typography properties
 
         // [IDWriteTextLayout3]
         // UNSUPPORTED: `DEFAULT`                          ; `PROPORTIONAL` is superior
