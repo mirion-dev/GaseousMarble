@@ -96,6 +96,7 @@ namespace gm {
     };
 
     export class Font {
+    public:
         static constexpr u32 WEIGHT_MASK{ 0x3ff };
         static constexpr int WEIGHT_OFFSET{};
         static constexpr u32 STYLE_MASK{ 0xc00 };
@@ -103,6 +104,12 @@ namespace gm {
         static constexpr u32 STRETCH_MASK{ 0xf000 };
         static constexpr int STRETCH_OFFSET{ 12 };
 
+        static constexpr u16 PROPERTIES_NORMAL{
+            DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
+            | DWRITE_FONT_STRETCH_NORMAL << STRETCH_OFFSET
+        };
+
+    private:
         struct Hash {
             usize operator()(GlyphId value) const noexcept {
                 return hash_combine(gm::Hash{}, value.face, value.gid);
@@ -148,8 +155,7 @@ namespace gm {
         Font(
             std::wstring_view name,
             f32 size,
-            u32 properties = DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
-                | DWRITE_FONT_STRETCH_NORMAL << STRETCH_OFFSET,
+            u32 properties = PROPERTIES_NORMAL,
             std::wstring_view locale = L"",
             f32 min_aa_h_size = 0,
             f32 min_aa_v_size = 24,

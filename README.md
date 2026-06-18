@@ -12,7 +12,7 @@
 | `gm2_draw_text(x, y, text)`<br>`gm2_text_width(text)`<br>`gm2_text_height(text)` | `gm_draw()`<br>`gm_width()`<br>`gm_height()` | <ul><li>**New**: Professional typography based on DirectWrite.</li></ul> |
 | `gm2_set_alignment(alignment)`<br>`gm2_set_text_alignment(alignment)`<br>`gm2_set_par_alignment(alignment)` | `gm_set_halign()`<br>`gm_set_valign()`<br>`gm_set_justified()`<br>`gm_set_align()`<br>`gm_set_align3()` | <ul><li>**New**: Paragraph alignment.</li><li>**Dropped**: `justified` is no longer independent of `left`/`center`/`right`.</li></ul> |
 | `gm2_set_direction(direction)`<br>`gm2_set_text_direction(direction)`<br>`gm2_set_par_direction(direction)` | | <ul><li>**New**</li></ul> |
-| `gm2_set_word_wrapping(wrapping)` | | <ul><li>**New**</li></ul> |
+| `gm2_set_word_wrapping(word_wrapping)` | | <ul><li>**New**</li></ul> |
 | `gm2_set_max_width(max_width)` | `gm_set_max_line_length()` | |
 | `gm2_set_max_height(max_height)` | | <ul><li>**New**</li></ul> |
 | `gm2_set_font(key)` | `gm_set_font()` | |

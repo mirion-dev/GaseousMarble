@@ -44,7 +44,7 @@ try {
             std::move(key),
             to_wstring(internal_from_real(raw_name)),
             saturating_cast<f32>(raw_size),
-            saturating_cast<u32>(raw_properties),
+            saturating_cast<u16>(raw_properties, Font::PROPERTIES_NORMAL),
             to_wstring(internal_from_real(raw_locale)),
             saturating_cast<f32>(raw_min_aa_h_size),
             saturating_cast<f32>(raw_min_aa_v_size)
@@ -88,30 +88,24 @@ try {
 CATCH_RETURN()
 
 API Real gm2_set_alignment(Real raw_alignment) noexcept {
-    draw.option().alignment = saturating_cast<u8>(raw_alignment) & DrawOption::ALIGNMENT_MASK;
+    draw.option().alignment = saturating_cast<u8>(raw_alignment, 0) & DrawOption::ALIGNMENT_MASK;
     return S_OK;
 }
 
 API Real gm2_set_text_alignment(Real raw_alignment) noexcept {
     draw.option().alignment = draw.option().alignment & ~DrawOption::TEXT_ALIGNMENT_MASK
-        | saturating_cast<u8>(raw_alignment) & DrawOption::TEXT_ALIGNMENT_MASK;
+        | saturating_cast<u8>(raw_alignment, 0) & DrawOption::TEXT_ALIGNMENT_MASK;
     return S_OK;
 }
 
 API Real gm2_set_par_alignment(Real raw_alignment) noexcept {
     draw.option().alignment = draw.option().alignment & ~DrawOption::PAR_ALIGNMENT_MASK
-        | saturating_cast<u8>(raw_alignment) & DrawOption::PAR_ALIGNMENT_MASK;
-    return S_OK;
-}
-
-API Real gm2_set_direction(Real raw_direction) noexcept {
-    gm2_set_text_alignment(raw_direction);
-    gm2_set_par_alignment(raw_direction);
+        | saturating_cast<u8>(raw_alignment, 0) & DrawOption::PAR_ALIGNMENT_MASK;
     return S_OK;
 }
 
 API Real gm2_set_text_direction(Real raw_direction) noexcept {
-    int direction{ saturating_cast<u8>(raw_direction) };
+    int direction{ saturating_cast<u8>(raw_direction, 0) };
     if (direction == DWRITE_READING_DIRECTION_TOP_TO_BOTTOM) {
         direction = DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
     }
@@ -120,12 +114,12 @@ API Real gm2_set_text_direction(Real raw_direction) noexcept {
     }
 
     draw.option().direction = draw.option().direction & ~DrawOption::TEXT_DIRECTION_MASK
-        | saturating_cast<u8>(direction) & DrawOption::TEXT_DIRECTION_MASK;
+        | direction & DrawOption::TEXT_DIRECTION_MASK;
     return S_OK;
 }
 
 API Real gm2_set_par_direction(Real raw_direction) noexcept {
-    int direction{ saturating_cast<u8>(raw_direction) };
+    int direction{ saturating_cast<u8>(raw_direction, 0) };
     if (direction == DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT) {
         direction = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM;
     }
@@ -134,17 +128,23 @@ API Real gm2_set_par_direction(Real raw_direction) noexcept {
     }
 
     draw.option().direction = draw.option().direction & ~DrawOption::PAR_DIRECTION_MASK
-        | saturating_cast<u8>(direction) & DrawOption::PAR_DIRECTION_MASK;
+        | direction & DrawOption::PAR_DIRECTION_MASK;
     return S_OK;
 }
 
-API Real gm2_set_word_wrapping(Real raw_wrapping) noexcept {
-    auto wrapping{ static_cast<DWRITE_WORD_WRAPPING>(saturating_cast<u8>(raw_wrapping)) };
-    if (wrapping == DWRITE_WORD_WRAPPING_WRAP) {
-        wrapping = DWRITE_WORD_WRAPPING_WHOLE_WORD;
+API Real gm2_set_direction(Real raw_direction) noexcept {
+    gm2_set_text_direction(raw_direction);
+    gm2_set_par_direction(raw_direction);
+    return S_OK;
+}
+
+API Real gm2_set_word_wrapping(Real raw_word_wrapping) noexcept {
+    int word_wrapping{ saturating_cast<u8>(raw_word_wrapping, DWRITE_WORD_WRAPPING_WHOLE_WORD) };
+    if (word_wrapping == DWRITE_WORD_WRAPPING_WRAP) {
+        word_wrapping = DWRITE_WORD_WRAPPING_WHOLE_WORD;
     }
 
-    draw.option().word_wrapping = wrapping;
+    draw.option().word_wrapping = static_cast<DWRITE_WORD_WRAPPING>(word_wrapping);
     return S_OK;
 }
 
@@ -181,7 +181,7 @@ try {
 CATCH_RETURN()
 
 API Real gm2_set_pair_kerning(Real raw_pair_kerning) noexcept {
-    draw.option().pair_kerning = saturating_cast<bool>(raw_pair_kerning);
+    draw.option().pair_kerning = static_cast<bool>(raw_pair_kerning);
     return S_OK;
 }
 
