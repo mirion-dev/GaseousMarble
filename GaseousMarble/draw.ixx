@@ -174,8 +174,8 @@ namespace gm {
                 && text_direction() != DWRITE_READING_DIRECTION_BOTTOM_TO_TOP
                 && par_direction() != DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT
                 && par_direction() != DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT
-                && max_width > 0
-                && max_height > 0
+                && max_width >= 0
+                && max_height >= 0
                 && font != nullptr
                 && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT;
         }

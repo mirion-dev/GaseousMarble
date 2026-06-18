@@ -150,7 +150,7 @@ API Real gm2_set_word_wrapping(Real raw_word_wrapping) noexcept {
 
 API Real gm2_set_max_width(Real raw_max_width) noexcept {
     f32 max_width{ saturating_cast<f32>(raw_max_width) };
-    if (max_width <= 0) {
+    if (max_width < 0) {
         max_width = std::numeric_limits<f32>::max();
     }
 
@@ -160,7 +160,7 @@ API Real gm2_set_max_width(Real raw_max_width) noexcept {
 
 API Real gm2_set_max_height(Real raw_max_height) noexcept {
     f32 max_height{ saturating_cast<f32>(raw_max_height) };
-    if (max_height <= 0) {
+    if (max_height < 0) {
         max_height = std::numeric_limits<f32>::max();
     }
 
