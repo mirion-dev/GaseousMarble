@@ -117,7 +117,8 @@ namespace gm {
         DWRITE_WORD_WRAPPING word_wrapping{ DWRITE_WORD_WRAPPING_WHOLE_WORD };
         u8 direction{}; // Enumerators used for vertical writing mode are unsupported
         f32 tab_spacing{ 48 };
-        // Trimming                : Unimplemented
+        // trimmingSign is unsupported because it's an inline object. Delimiters are unsupported
+        DWRITE_TRIMMING_GRANULARITY trimming{};
 
         // [IDWriteTextLayout]
         f32 max_width{ std::numeric_limits<f32>::max() };
@@ -218,6 +219,7 @@ namespace gm {
                     value.word_wrapping,
                     value.direction,
                     value.tab_spacing,
+                    value.trimming,
                     value.max_width,
                     value.max_height,
                     value.font,
@@ -287,12 +289,14 @@ namespace gm {
             f32 x{}, y{};
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
+            DWRITE_TRIMMING trimming{ option.trimming };
             THROW_IF_FAILED(dw_layout->SetTextAlignment(option.text_alignment()));
             THROW_IF_FAILED(dw_layout->SetParagraphAlignment(option.par_alignment()));
             THROW_IF_FAILED(dw_layout->SetWordWrapping(option.word_wrapping));
             THROW_IF_FAILED(dw_layout->SetReadingDirection(option.text_direction()));
             THROW_IF_FAILED(dw_layout->SetFlowDirection(option.par_direction()));
             THROW_IF_FAILED(dw_layout->SetIncrementalTabStop(option.tab_spacing));
+            THROW_IF_FAILED(dw_layout->SetTrimming(&trimming, nullptr));
 
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));

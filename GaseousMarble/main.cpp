@@ -153,6 +153,11 @@ API Real gm2_set_tab_spacing(Real raw_tab_spacing) noexcept {
     return S_OK;
 }
 
+API Real gm2_set_trimming(Real raw_trimming) noexcept {
+    draw.option().trimming = static_cast<DWRITE_TRIMMING_GRANULARITY>(saturating_cast<u8>(raw_trimming, 0));
+    return S_OK;
+}
+
 API Real gm2_set_max_width(Real raw_max_width) noexcept {
     f32 max_width{ saturating_cast<f32>(raw_max_width) };
     if (max_width < 0) {
@@ -241,6 +246,10 @@ API Real gm2_get_par_direction() noexcept {
 
 API Real gm2_get_tab_spacing() noexcept {
     return draw.option().tab_spacing;
+}
+
+API Real gm2_get_trimming() noexcept {
+    return draw.option().trimming;
 }
 
 API Real gm2_get_max_width() noexcept {
