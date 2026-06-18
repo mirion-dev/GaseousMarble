@@ -115,7 +115,8 @@ namespace gm {
         u8 alignment{};
         // WRAP is unsupported because EMERGENCY_BREAK and WHOLE_WORD are more specific
         DWRITE_WORD_WRAPPING word_wrapping{ DWRITE_WORD_WRAPPING_WHOLE_WORD };
-        u8 direction{}; // Enumerators used for vertical writing mode are unsupported
+        // Enumerators used for vertical writing mode are unsupported
+        u8 direction{};
         f32 tab_spacing{ 48 };
         // trimmingSign is unsupported because it's an inline object. Delimiters are unsupported
         DWRITE_TRIMMING_GRANULARITY trimming{};
@@ -132,7 +133,7 @@ namespace gm {
         // Typography              : Uninvestigated
 
         // [IDWriteTextLayout1]
-        bool pair_kerning{ true };
+        // UNSUPPORTED: `PairKerning`; advanced typography property
         f32 letter_spacing{}; // Simulated by CharacterSpacing
 
         // [IDWriteTextLayout2]
@@ -142,7 +143,7 @@ namespace gm {
         // FontFallback            : Uninvestigated
 
         // [IDWriteTextLayout3]
-        // DEFAULT is unsupported because PROPORTIONAL is superior. leadingBefore is unsupported
+        // DEFAULT is unsupported because PROPORTIONAL is superior. leadingBefore and fontLineGapUsage are unsupported
         DWRITE_LINE_SPACING_METHOD line_spacing_type{ DWRITE_LINE_SPACING_METHOD_PROPORTIONAL };
         f32 line_height{ 1 };
         f32 baseline{ 1 };
@@ -223,7 +224,6 @@ namespace gm {
                     value.max_width,
                     value.max_height,
                     value.font,
-                    value.pair_kerning,
                     value.letter_spacing,
                     value.line_spacing_type,
                     value.line_height,
@@ -289,17 +289,21 @@ namespace gm {
             f32 x{}, y{};
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
-            DWRITE_TRIMMING trimming{ option.trimming };
+            // [IDWriteTextFormat]
             THROW_IF_FAILED(dw_layout->SetTextAlignment(option.text_alignment()));
             THROW_IF_FAILED(dw_layout->SetParagraphAlignment(option.par_alignment()));
             THROW_IF_FAILED(dw_layout->SetWordWrapping(option.word_wrapping));
             THROW_IF_FAILED(dw_layout->SetReadingDirection(option.text_direction()));
             THROW_IF_FAILED(dw_layout->SetFlowDirection(option.par_direction()));
             THROW_IF_FAILED(dw_layout->SetIncrementalTabStop(option.tab_spacing));
+
+            DWRITE_TRIMMING trimming{ option.trimming };
             THROW_IF_FAILED(dw_layout->SetTrimming(&trimming, nullptr));
 
+            // [IDWriteTextLayout]
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
+
             THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font->second.name().data(), range));
             THROW_IF_FAILED(dw_layout->SetFontSize(option.font->second.size(), range));
             THROW_IF_FAILED(dw_layout->SetFontWeight(option.font->second.weight(), range));
@@ -307,7 +311,7 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
             THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
 
-            THROW_IF_FAILED(dw_layout->SetPairKerning(option.pair_kerning, range));
+            // [IDWriteTextLayout1]
             if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
                 THROW_IF_FAILED(dw_layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             }
@@ -327,6 +331,7 @@ namespace gm {
                 x -= option.letter_spacing / 2;
             }
 
+            // [IDWriteTextLayout3]
             DWRITE_LINE_SPACING line_spacing{
                 option.line_spacing_type,
                 option.line_height,

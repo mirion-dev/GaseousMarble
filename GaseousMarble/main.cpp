@@ -190,11 +190,6 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm2_set_pair_kerning(Real raw_pair_kerning) noexcept {
-    draw.option().pair_kerning = static_cast<bool>(raw_pair_kerning);
-    return S_OK;
-}
-
 API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
     draw.option().letter_spacing = saturating_cast<f32>(raw_letter_spacing);
     return S_OK;
@@ -297,10 +292,6 @@ API Real gm2_get_font_min_aa_h_size() noexcept {
 
 API Real gm2_get_font_min_aa_v_size() noexcept {
     return draw.option().font == nullptr ? -1 : draw.option().font->second.min_aa_v_size();
-}
-
-API Real gm2_get_pair_kerning() noexcept {
-    return draw.option().pair_kerning;
 }
 
 API Real gm2_get_letter_spacing() noexcept {
