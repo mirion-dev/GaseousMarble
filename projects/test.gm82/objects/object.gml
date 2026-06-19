@@ -65,20 +65,9 @@ if (error < 0) {
     show_error("gm2_internal_new_font error code: " + string(error), true)
 }
 
-error = external_call(global.gm2_set_font, "default")
-if (error < 0) {
-    show_error("gm2_set_font error code: " + string(error), true)
-}
-
-error = external_call(global.gm2_set_max_width, room_width)
-if (error < 0) {
-    show_error("gm2_set_max_width error code: " + string(error), true)
-}
-
-error = external_call(global.gm2_set_max_height, room_height)
-if (error < 0) {
-    show_error("gm2_set_max_height error code: " + string(error), true)
-}
+external_call(global.gm2_set_font, "default")
+external_call(global.gm2_set_max_width, room_width)
+external_call(global.gm2_set_max_height, room_height)
 #define Keyboard_82
 /*"/*'/**//* YYD ACTION
 lib_id=1
