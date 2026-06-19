@@ -38,7 +38,7 @@ API Real gm_free(StringRef raw_key) noexcept {
     }
 
     if (text_option.font == &iter->second) {
-        text_option.font = {};
+        text_option.font = nullptr;
         text_cache.clear();
     }
 
@@ -109,7 +109,7 @@ API Real gm_set_valign(Real raw_valign) noexcept {
 }
 
 API Real gm_set_justified(Real raw_justified) noexcept {
-    draw_option.justified = saturating_cast<bool>(raw_justified);
+    draw_option.justified = static_cast<bool>(raw_justified);
     return 0;
 }
 
@@ -178,7 +178,7 @@ API Real gm_set_line_height(Real raw_line_height) noexcept {
 }
 
 API Real gm_set_max_line_length(Real raw_max_line_length) noexcept {
-    f32 max_line_length{ saturating_cast<f32>(std::max(raw_max_line_length, 0.)) };
+    f32 max_line_length{ saturating_cast<f32>(raw_max_line_length, 0, std::numeric_limits<f32>::max()) };
     if (text_option.max_line_length != max_line_length) {
         text_option.max_line_length = max_line_length;
         text_cache.clear();

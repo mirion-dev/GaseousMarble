@@ -16,7 +16,7 @@ namespace gm {
         std::signed_integral<T>
         ? std::numeric_limits<T>::digits
         : std::unsigned_integral<T>
-        ? std::numeric_limits<int>::min()
+        ? std::numeric_limits<int>::lowest()
         : std::numeric_limits<T>::max_exponent
     };
 
@@ -30,27 +30,36 @@ namespace gm {
 
     export template <class R, class T>
         requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
-    R saturating_cast(T num) noexcept {
-        static constexpr R min{ std::numeric_limits<R>::min() };
-        static constexpr R max{ std::numeric_limits<R>::max() };
-
+    R saturating_cast(T num, R neg_overflow, R pos_overflow) noexcept {
         if constexpr (std::floating_point<T>) {
             if (std::isnan(num)) {
                 return R{};
             }
         }
         if constexpr (min_level<T> > min_level<R>) {
-            if (num <= T{ min }) {
-                return min;
+            if (num < static_cast<T>(std::numeric_limits<R>::lowest())) {
+                return neg_overflow;
             }
         }
         if constexpr (max_level<T> > max_level<R>) {
-            if (num >= T{ max }) {
-                return max;
+            if (num > static_cast<T>(std::numeric_limits<R>::max())) {
+                return pos_overflow;
             }
         }
 
         return static_cast<R>(num);
+    }
+
+    export template <class R, class T>
+        requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
+    R saturating_cast(T num, R overflow) noexcept {
+        return gm::saturating_cast(num, overflow, overflow);
+    }
+
+    export template <class R, class T>
+        requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
+    R saturating_cast(T num) noexcept {
+        return gm::saturating_cast(num, std::numeric_limits<R>::lowest(), std::numeric_limits<R>::max());
     }
 
     export template <class T, auto Deleter, T Null = {}>
