@@ -74,7 +74,6 @@ namespace gm {
                 throw FontError::data_corrupted;
             }
 
-            _glyphs.reserve(size);
             for (usize i{}; i != size; ++i) {
                 u32 ch;
                 Glyph glyph;
