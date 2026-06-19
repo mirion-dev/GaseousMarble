@@ -5,7 +5,7 @@
 
 Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
 
-> ![warning]
+> [!warning]
 > Minimum requirement: Windows 10, Version 1903.
 
 ## Functions
