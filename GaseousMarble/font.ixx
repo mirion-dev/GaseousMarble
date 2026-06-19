@@ -148,7 +148,6 @@ namespace gm {
             if (_texture_num >= _max_texture_num) {
                 throw std::runtime_error{ "Too many textures." };
             }
-            ++_texture_num;
 
             wil::com_ptr<IDirect3DTexture8> texture;
             THROW_IF_FAILED(
@@ -162,6 +161,8 @@ namespace gm {
                     &texture
                 )
             );
+
+            ++_texture_num;
             return texture;
         }
 
