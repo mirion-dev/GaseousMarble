@@ -111,9 +111,9 @@ namespace gm {
                         line.height *= _option.line_height;
                     }
 
-                    _layout.lines.emplace_back(std::move(line));
                     _layout.width = std::max(_layout.width, line.width);
                     _layout.height += line.height;
+                    _layout.lines.emplace_back(std::move(line));
 
                     line = { .height = height };
                     cursor = 0;
