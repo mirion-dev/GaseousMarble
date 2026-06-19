@@ -125,7 +125,7 @@ namespace gm {
                 [&](std::string_view word, u32 type) {
                     const char* word_begin{ word.data() };
                     const char* word_end{ word_begin + word.size() };
-                    f32 next_cursor{ cursor }, next_line_width;
+                    f32 next_cursor{ cursor }, next_line_width{ line.width };
                     bool first_ch{ true };
                     bool line_break{};
                     if (!unicode_for_each(
