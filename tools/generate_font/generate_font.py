@@ -136,10 +136,11 @@ def generate_font(
                 raw_a = round(draw.textlength(ch))
                 (l, t, r, b) = bbox(draw, ch)
                 w = r - l
+                a = w + raw_a - raw_w
                 if x + w > sprite_width:
                     x = 0
                     y += line_height + glyph_spacing
-                data.write(struct.pack('IHHHhh', ord(ch), x, y, raw_w, raw_a, raw_l))
+                data.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, l))
 
                 draw_x = x - l
                 draw_y = y - min_glyph_top
