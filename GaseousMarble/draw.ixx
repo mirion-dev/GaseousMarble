@@ -243,10 +243,10 @@ namespace gm {
                             }
 
                             auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
-                            f32 delta_x{ cursor + left - origin_x };
-                            f32 delta_y{ y - origin_y };
-                            f32 draw_x{ origin_x + (delta_x * cos - delta_y * sin) * draw_option.scale_x };
-                            f32 draw_y{ origin_y + (delta_y * cos + delta_x * sin) * draw_option.scale_y };
+                            f32 draw_x{ cursor + left };
+                            f32 draw_y{ y };
+                            f32 delta_x{ (draw_x - origin_x) * draw_option.scale_x };
+                            f32 delta_y{ (draw_y - origin_y) * draw_option.scale_y };
                             draw_sprite_general(
                                 sprite,
                                 0,
@@ -254,8 +254,8 @@ namespace gm {
                                 sprite_y,
                                 width,
                                 height,
-                                draw_x,
-                                draw_y,
+                                origin_x + delta_x * cos - delta_y * sin,
+                                origin_y + delta_y * cos + delta_x * sin,
                                 draw_option.scale_x,
                                 draw_option.scale_y,
                                 draw_option.rotation,
