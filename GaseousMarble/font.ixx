@@ -195,10 +195,7 @@ namespace gm {
             }
 
             if (_locale.empty()) {
-                std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> locale;
-                auto size{ static_cast<usize>(GetUserDefaultLocaleName(locale.data(), locale.size())) };
-                THROW_LAST_ERROR_IF(size == 0);
-                _locale = { locale.data(), size };
+                _locale = env::default_locale();
             }
         }
 

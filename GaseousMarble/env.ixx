@@ -12,6 +12,17 @@ import gm.types;
 
 namespace gm::env {
 
+    export std::wstring default_locale() {
+        static std::wstring locale;
+        if (locale.empty()) {
+            std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> user_locale;
+            auto size{ static_cast<usize>(GetUserDefaultLocaleName(user_locale.data(), user_locale.size())) };
+            THROW_LAST_ERROR_IF(size == 0);
+            locale = { user_locale.data(), size - 1 };
+        }
+        return locale;
+    }
+
     struct D3dResource {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
