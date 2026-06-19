@@ -267,8 +267,8 @@ namespace gm {
         std::vector<const GlyphMeta*> get(R&& items, KeyFn&& key_func, DataFn&& data_func) {
             assert(*this);
 
-            std::vector<const GlyphMeta*> result;
             TextureLock lock;
+            std::vector<const GlyphMeta*> result;
             for (auto& item : std::forward<R>(items)) {
                 auto iter{ _data.find(std::forward<KeyFn>(key_func)(item)) };
                 if (iter != _data.end()) {
@@ -347,6 +347,9 @@ namespace gm {
 
                 auto x{ static_cast<usize>(insert_result->x) }, y{ static_cast<usize>(insert_result->y) };
                 auto w{ static_cast<usize>(insert_result->w) }, h{ static_cast<usize>(insert_result->h) };
+                if (!lock) {
+                    lock = { _current_texture, 0, 0, _texture_width, _texture_height };
+                }
                 lock.update(x, y, std::mdspan{ alpha.data(), h, w });
 
                 _current_texture = texture;
