@@ -270,15 +270,15 @@ API Real gm2_get_font_size() noexcept {
 }
 
 API Real gm2_get_font_weight() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.weight();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.properties() & Font::WEIGHT_MASK;
 }
 
 API Real gm2_get_font_style() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.style();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.properties() & Font::STYLE_MASK;
 }
 
 API Real gm2_get_font_stretch() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.stretch();
+    return draw.option().font == nullptr ? -1 : draw.option().font->second.properties() & Font::STRETCH_MASK;
 }
 
 API StringRef gm2_get_font_locale() noexcept {

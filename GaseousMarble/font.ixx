@@ -219,6 +219,11 @@ namespace gm {
             return _size;
         }
 
+        u16 properties() const noexcept {
+            assert(*this);
+            return _properties;
+        }
+
         DWRITE_FONT_WEIGHT weight() const noexcept {
             assert(*this);
             return static_cast<DWRITE_FONT_WEIGHT>((_properties & WEIGHT_MASK) >> WEIGHT_OFFSET);
