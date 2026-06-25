@@ -115,7 +115,7 @@ API Real gm2_set_word_wrapping(Real raw_word_wrapping) noexcept {
 }
 
 API Real gm2_set_text_direction(Real raw_direction) noexcept {
-    int direction{ saturating_cast<u8>(raw_direction, 0) };
+    int direction{ saturating_cast<u8>(raw_direction, 0) & DrawOption::TEXT_DIRECTION_MASK };
     if (direction == DWRITE_READING_DIRECTION_TOP_TO_BOTTOM) {
         direction = DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
     }
@@ -123,13 +123,12 @@ API Real gm2_set_text_direction(Real raw_direction) noexcept {
         direction = DWRITE_READING_DIRECTION_RIGHT_TO_LEFT;
     }
 
-    draw.option().direction = draw.option().direction & ~DrawOption::TEXT_DIRECTION_MASK
-        | direction & DrawOption::TEXT_DIRECTION_MASK;
+    draw.option().direction = draw.option().direction & ~DrawOption::TEXT_DIRECTION_MASK | direction;
     return S_OK;
 }
 
 API Real gm2_set_par_direction(Real raw_direction) noexcept {
-    int direction{ saturating_cast<u8>(raw_direction, 0) };
+    int direction{ saturating_cast<u8>(raw_direction, 0) & DrawOption::PAR_DIRECTION_MASK };
     if (direction == DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT) {
         direction = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM;
     }
@@ -137,8 +136,7 @@ API Real gm2_set_par_direction(Real raw_direction) noexcept {
         direction = DWRITE_FLOW_DIRECTION_BOTTOM_TO_TOP;
     }
 
-    draw.option().direction = draw.option().direction & ~DrawOption::PAR_DIRECTION_MASK
-        | direction & DrawOption::PAR_DIRECTION_MASK;
+    draw.option().direction = draw.option().direction & ~DrawOption::PAR_DIRECTION_MASK | direction;
     return S_OK;
 }
 
