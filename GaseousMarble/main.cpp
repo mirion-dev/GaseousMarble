@@ -193,20 +193,6 @@ API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
-    draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_PROPORTIONAL;
-    draw.option().line_height = std::max(saturating_cast<f32>(raw_line_height), 0.f);
-    draw.option().baseline = saturating_cast<f32>(raw_baseline);
-    return S_OK;
-}
-
-API Real gm2_set_fixed_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
-    draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_UNIFORM;
-    draw.option().line_height = std::max(saturating_cast<f32>(raw_line_height), 0.f);
-    draw.option().baseline = saturating_cast<f32>(raw_baseline);
-    return S_OK;
-}
-
 API Real gm2_set_line_height(Real raw_line_height) noexcept {
     draw.option().line_height = std::max(saturating_cast<f32>(raw_line_height), 0.f);
     return S_OK;
@@ -214,6 +200,20 @@ API Real gm2_set_line_height(Real raw_line_height) noexcept {
 
 API Real gm2_set_baseline(Real raw_baseline) noexcept {
     draw.option().baseline = saturating_cast<f32>(raw_baseline);
+    return S_OK;
+}
+
+API Real gm2_set_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
+    draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_PROPORTIONAL;
+    gm2_set_line_height(raw_line_height);
+    gm2_set_baseline(raw_baseline);
+    return S_OK;
+}
+
+API Real gm2_set_fixed_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
+    draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_UNIFORM;
+    gm2_set_line_height(raw_line_height);
+    gm2_set_baseline(raw_baseline);
     return S_OK;
 }
 
