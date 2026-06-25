@@ -46,8 +46,8 @@ try {
             saturating_cast<f32>(raw_size),
             saturating_cast<u16>(raw_properties, Font::PROPERTIES_NORMAL),
             to_wstring(internal_from_real(raw_locale)),
-            saturating_cast<f32>(raw_min_aa_h_size),
-            saturating_cast<f32>(raw_min_aa_v_size)
+            std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
+            std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f)
         ).second
         ? S_OK
         : S_FALSE;
@@ -149,7 +149,7 @@ API Real gm2_set_direction(Real raw_direction) noexcept {
 }
 
 API Real gm2_set_tab_spacing(Real raw_tab_spacing) noexcept {
-    draw.option().tab_spacing = saturating_cast<f32>(raw_tab_spacing, 0, std::numeric_limits<f32>::max());
+    draw.option().tab_spacing = std::max(saturating_cast<f32>(raw_tab_spacing), 0.f);
     return S_OK;
 }
 
@@ -197,20 +197,20 @@ API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
 
 API Real gm2_set_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
     draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_PROPORTIONAL;
-    draw.option().line_height = saturating_cast<f32>(raw_line_height);
+    draw.option().line_height = std::max(saturating_cast<f32>(raw_line_height), 0.f);
     draw.option().baseline = saturating_cast<f32>(raw_baseline);
     return S_OK;
 }
 
 API Real gm2_set_fixed_line_spacing(Real raw_line_height, Real raw_baseline) noexcept {
     draw.option().line_spacing_type = DWRITE_LINE_SPACING_METHOD_UNIFORM;
-    draw.option().line_height = saturating_cast<f32>(raw_line_height);
+    draw.option().line_height = std::max(saturating_cast<f32>(raw_line_height), 0.f);
     draw.option().baseline = saturating_cast<f32>(raw_baseline);
     return S_OK;
 }
 
 API Real gm2_set_line_height(Real raw_line_height) noexcept {
-    draw.option().line_height = saturating_cast<f32>(raw_line_height, 0, std::numeric_limits<f32>::max());
+    draw.option().line_height = std::max(saturating_cast<f32>(raw_line_height), 0.f);
     return S_OK;
 }
 
