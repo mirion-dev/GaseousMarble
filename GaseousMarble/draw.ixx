@@ -262,8 +262,8 @@ namespace gm {
             return _cache_size;
         }
 
-        const Layout& get(std::wstring_view text, const LayoutOption& option, wil::com_ptr<env::DwTextFormat> format) {
-            assert(*this && option.is_valid() && format);
+        const Layout& get(std::wstring_view text, const LayoutOption& option) {
+            assert(*this && option.is_valid());
 
             auto map_iter{ _map.find({ text, option }) };
             if (map_iter != _map.end()) {
@@ -271,6 +271,21 @@ namespace gm {
                 _data.splice(_data.end(), _data, iter);
                 return iter->second;
             }
+
+            wil::com_ptr<env::DwTextFormatBase> format_base;
+            THROW_IF_FAILED(
+                env::dw_factory()->CreateTextFormat(
+                    option.font.second->name().data(),
+                    nullptr,
+                    option.font.second->weight(),
+                    option.font.second->style(),
+                    option.font.second->stretch(),
+                    option.font.second->size(),
+                    option.font.second->locale().data(),
+                    &format_base
+                )
+            );
+            wil::com_ptr format{ format_base.query<env::DwTextFormat>() };
 
             wil::com_ptr<env::DwTextLayoutBase> dw_layout_base;
             THROW_IF_FAILED(
@@ -302,13 +317,6 @@ namespace gm {
             // [IDWriteTextLayout]
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
-
-            THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font.second->name().data(), range));
-            THROW_IF_FAILED(dw_layout->SetFontSize(option.font.second->size(), range));
-            THROW_IF_FAILED(dw_layout->SetFontWeight(option.font.second->weight(), range));
-            THROW_IF_FAILED(dw_layout->SetFontStyle(option.font.second->style(), range));
-            THROW_IF_FAILED(dw_layout->SetFontStretch(option.font.second->stretch(), range));
-            THROW_IF_FAILED(dw_layout->SetLocaleName(option.font.second->locale().data(), range));
 
             // [IDWriteTextLayout1]
             if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
@@ -384,32 +392,13 @@ namespace gm {
         };
 
         DrawOption _option;
-        wil::com_ptr<env::DwTextFormat> _format;
         LayoutCache _layout{ 1024 };
 
         const Layout& _text_layout(std::wstring_view text) {
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
-
-            if (!_format) {
-                wil::com_ptr<env::DwTextFormatBase> format_base;
-                THROW_IF_FAILED(
-                    env::dw_factory()->CreateTextFormat(
-                        L"Arial",
-                        nullptr,
-                        DWRITE_FONT_WEIGHT_NORMAL,
-                        DWRITE_FONT_STYLE_NORMAL,
-                        DWRITE_FONT_STRETCH_NORMAL,
-                        12,
-                        L"en-US",
-                        &format_base
-                    )
-                );
-                _format = format_base.query<env::DwTextFormat>();
-            }
-
-            return _layout.get(text, _option, _format);
+            return _layout.get(text, _option);
         }
 
     public:
