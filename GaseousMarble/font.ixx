@@ -109,11 +109,11 @@ namespace gm {
 
     export class Font {
     public:
-        static constexpr u32 WEIGHT_MASK{ 0x3ff };
+        static constexpr u16 WEIGHT_MASK{ 0x3ff };
         static constexpr int WEIGHT_OFFSET{};
-        static constexpr u32 STYLE_MASK{ 0xc00 };
+        static constexpr u16 STYLE_MASK{ 0xc00 };
         static constexpr int STYLE_OFFSET{ 10 };
-        static constexpr u32 STRETCH_MASK{ 0xf000 };
+        static constexpr u16 STRETCH_MASK{ 0xf000 };
         static constexpr int STRETCH_OFFSET{ 12 };
 
         static constexpr u16 PROPERTIES_NORMAL{
@@ -130,7 +130,7 @@ namespace gm {
 
         std::wstring _name;
         f32 _size{};
-        u32 _properties{};
+        u16 _properties{};
         std::wstring _locale;
         f32 _min_aa_h_size{};
         f32 _min_aa_v_size{};
@@ -172,7 +172,7 @@ namespace gm {
         Font(
             std::wstring_view name,
             f32 size,
-            u32 properties = PROPERTIES_NORMAL,
+            u16 properties = PROPERTIES_NORMAL,
             std::wstring_view locale = L"",
             f32 min_aa_h_size = 0,
             f32 min_aa_v_size = 24,
