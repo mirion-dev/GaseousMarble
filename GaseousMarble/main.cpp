@@ -14,7 +14,9 @@ using namespace gm;
 
 static String string_value;
 
-static std::unordered_map<std::string, Font> font_map;
+static FontManager font_manager;
+static std::unordered_map<std::string, usize> key_map;
+static std::unordered_map<usize, std::string_view> id_map;
 static Draw draw;
 
 API Real gm2_internal_to_real(StringRef string) noexcept {
@@ -40,31 +42,37 @@ try {
         throw std::invalid_argument{ "Font key must not be empty." };
     }
 
-    return font_map.try_emplace(
-            std::move(key),
-            to_wstring(internal_from_real(raw_name)),
-            saturating_cast<f32>(raw_size),
-            saturating_cast<u16>(raw_properties, Font::PROPERTIES_NORMAL),
-            to_wstring(internal_from_real(raw_locale)),
-            std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
-            std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f)
-        ).second
-        ? S_OK
-        : S_FALSE;
+    if (key_map.contains(key)) {
+        return S_FALSE;
+    }
+
+    usize id{ font_manager.insert(
+        to_wstring(internal_from_real(raw_name)),
+        saturating_cast<f32>(raw_size),
+        saturating_cast<u16>(raw_properties, Font::PROPERTIES_NORMAL),
+        to_wstring(internal_from_real(raw_locale)),
+        std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
+        std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f)
+    ).first };
+    id_map.try_emplace(id, key_map.try_emplace(std::move(key), id).first->first);
+    return S_OK;
 }
 CATCH_RETURN()
 
 API Real gm2_delete_font(StringRef raw_key) noexcept {
-    auto iter{ font_map.find(raw_key) };
-    if (iter == font_map.end()) {
+    auto iter{ key_map.find(raw_key) };
+    if (iter == key_map.end()) {
         return S_FALSE;
     }
 
-    if (draw.option().font == &*iter) {
-        draw.option().font = nullptr;
+    usize id{ iter->second };
+    if (draw.option().font.first == id) {
+        draw.option().font = {};
     }
 
-    font_map.erase(iter);
+    font_manager.erase(id);
+    key_map.erase(iter);
+    id_map.erase(id);
     return S_OK;
 }
 
@@ -178,12 +186,13 @@ API Real gm2_set_max_height(Real raw_max_height) noexcept {
 
 API Real gm2_set_font(StringRef raw_key) noexcept
 try {
-    auto iter{ font_map.find(raw_key) };
-    if (iter == font_map.end()) {
+    auto iter{ key_map.find(raw_key) };
+    if (iter == key_map.end()) {
         throw std::invalid_argument{ "Font not found." };
     }
 
-    draw.option().font = &*iter;
+    usize id{ iter->second };
+    draw.option().font = { id, font_manager.get(id) };
     return S_OK;
 }
 CATCH_RETURN()
@@ -254,42 +263,51 @@ API Real gm2_get_max_height() noexcept {
 }
 
 API StringRef gm2_get_font() noexcept {
-    string_value = draw.option().font == nullptr ? String{} : String{ draw.option().font->first };
+    auto [id, font]{ draw.option().font };
+    string_value = id == 0 ? String{} : String{ id_map.at(id) };
     return string_value.data();
 }
 
 API StringRef gm2_get_font_name() noexcept {
-    string_value = draw.option().font == nullptr ? String{} : String{ to_string(draw.option().font->second.name()) };
+    auto [id, font]{ draw.option().font };
+    string_value = id == 0 ? String{} : String{ to_string(font->name()) };
     return string_value.data();
 }
 
 API Real gm2_get_font_size() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.size();
+    auto [id, font]{ draw.option().font };
+    return id == 0 ? -1 : font->size();
 }
 
 API Real gm2_get_font_weight() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.properties() & Font::WEIGHT_MASK;
+    auto [id, font]{ draw.option().font };
+    return id == 0 ? -1 : font->properties() & Font::WEIGHT_MASK;
 }
 
 API Real gm2_get_font_style() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.properties() & Font::STYLE_MASK;
+    auto [id, font]{ draw.option().font };
+    return id == 0 ? -1 : font->properties() & Font::STYLE_MASK;
 }
 
 API Real gm2_get_font_stretch() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.properties() & Font::STRETCH_MASK;
+    auto [id, font]{ draw.option().font };
+    return id == 0 ? -1 : font->properties() & Font::STRETCH_MASK;
 }
 
 API StringRef gm2_get_font_locale() noexcept {
-    string_value = draw.option().font == nullptr ? String{} : String{ to_string(draw.option().font->second.locale()) };
+    auto [id, font]{ draw.option().font };
+    string_value = id == 0 ? String{} : String{ to_string(font->locale()) };
     return string_value.data();
 }
 
 API Real gm2_get_font_min_aa_h_size() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.min_aa_h_size();
+    auto [id, font]{ draw.option().font };
+    return id == 0 ? -1 : font->min_aa_h_size();
 }
 
 API Real gm2_get_font_min_aa_v_size() noexcept {
-    return draw.option().font == nullptr ? -1 : draw.option().font->second.min_aa_v_size();
+    auto [id, font]{ draw.option().font };
+    return id == 0 ? -1 : font->min_aa_v_size();
 }
 
 API Real gm2_get_letter_spacing() noexcept {

@@ -126,7 +126,7 @@ namespace gm {
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
         // TODO: `FontCollection`; used for loading from font files
-        std::pair<const std::string, Font>* font{};
+        std::pair<usize, Font*> font{};
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
         // UNSUPPORTED: `Typography`                                 ; advanced typography properties
@@ -177,7 +177,8 @@ namespace gm {
                 && tab_spacing >= 0
                 && max_width >= 0
                 && max_height >= 0
-                && font != nullptr
+                && font.first != 0
+                && font.second != nullptr
                 && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT
                 && line_height >= 0;
         }
@@ -221,7 +222,7 @@ namespace gm {
                     value.trimming,
                     value.max_width,
                     value.max_height,
-                    value.font,
+                    value.font.first,
                     value.letter_spacing,
                     value.line_spacing_type,
                     value.line_height,
@@ -302,12 +303,12 @@ namespace gm {
             THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
             THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
 
-            THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font->second.name().data(), range));
-            THROW_IF_FAILED(dw_layout->SetFontSize(option.font->second.size(), range));
-            THROW_IF_FAILED(dw_layout->SetFontWeight(option.font->second.weight(), range));
-            THROW_IF_FAILED(dw_layout->SetFontStyle(option.font->second.style(), range));
-            THROW_IF_FAILED(dw_layout->SetFontStretch(option.font->second.stretch(), range));
-            THROW_IF_FAILED(dw_layout->SetLocaleName(option.font->second.locale().data(), range));
+            THROW_IF_FAILED(dw_layout->SetFontFamilyName(option.font.second->name().data(), range));
+            THROW_IF_FAILED(dw_layout->SetFontSize(option.font.second->size(), range));
+            THROW_IF_FAILED(dw_layout->SetFontWeight(option.font.second->weight(), range));
+            THROW_IF_FAILED(dw_layout->SetFontStyle(option.font.second->style(), range));
+            THROW_IF_FAILED(dw_layout->SetFontStretch(option.font.second->stretch(), range));
+            THROW_IF_FAILED(dw_layout->SetLocaleName(option.font.second->locale().data(), range));
 
             // [IDWriteTextLayout1]
             if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
@@ -429,7 +430,7 @@ namespace gm {
         void text(f32 x, f32 y, std::wstring_view text) {
             auto glyphs{ _text_layout(text).glyphs };
             auto glyph_meta{
-                _option.font->second.get(
+                _option.font.second->get(
                     glyphs,
                     [](const Glyph& glyph) noexcept -> const GlyphId& { return glyph; },
                     [](const Glyph& glyph) noexcept -> const GlyphRasterization& { return glyph; }
@@ -447,8 +448,8 @@ namespace gm {
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
 
-                f32 width{ static_cast<f32>(_option.font->second.texture_width()) };
-                f32 height{ static_cast<f32>(_option.font->second.texture_height()) };
+                f32 width{ static_cast<f32>(_option.font.second->texture_width()) };
+                f32 height{ static_cast<f32>(_option.font.second->texture_height()) };
                 f32 u1{ meta->x / width };
                 f32 v1{ meta->y / height };
                 f32 u2{ (meta->x + meta->width) / width };

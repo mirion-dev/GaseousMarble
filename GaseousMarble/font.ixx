@@ -379,4 +379,33 @@ namespace gm {
         }
     };
 
+    export class FontManager {
+        usize _id{ 1 };
+        std::unordered_map<usize, Font> _data;
+
+    public:
+        Font* get(usize id) noexcept {
+            auto iter{ _data.find(id) };
+            return iter == _data.end() ? nullptr : &iter->second;
+        }
+
+        const Font* get(usize id) const noexcept {
+            auto iter{ _data.find(id) };
+            return iter == _data.end() ? nullptr : &iter->second;
+        }
+
+        template <class... Args>
+        std::pair<usize, bool> insert(Args... args) {
+            auto [iter, inserted]{ _data.try_emplace(_id, std::forward<Args>(args)...) };
+            if (inserted) {
+                ++_id;
+            }
+            return { iter->first, inserted };
+        }
+
+        bool erase(usize id) noexcept {
+            return _data.erase(id);
+        }
+    };
+
 }
