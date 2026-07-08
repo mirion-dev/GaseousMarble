@@ -126,7 +126,7 @@ namespace gm {
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
         // TODO: `FontCollection`; used for loading from font files
-        std::pair<usize, Font*> font{};
+        std::pair<FontManager*, usize> font{};
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
         // UNSUPPORTED: `Typography`                                 ; advanced typography properties
@@ -177,8 +177,8 @@ namespace gm {
                 && tab_spacing >= 0
                 && max_width >= 0
                 && max_height >= 0
-                && font.first != 0
-                && font.second != nullptr
+                && font.first != nullptr
+                && font.second != 0
                 && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT
                 && line_height >= 0;
         }
@@ -223,6 +223,7 @@ namespace gm {
                     value.max_width,
                     value.max_height,
                     value.font.first,
+                    value.font.second,
                     value.letter_spacing,
                     value.line_spacing_type,
                     value.line_height,
@@ -272,16 +273,17 @@ namespace gm {
                 return iter->second;
             }
 
+            const Font& font{ *option.font.first->get(option.font.second) };
             wil::com_ptr<env::DwTextFormatBase> format_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
-                    option.font.second->name().data(),
-                    nullptr,
-                    option.font.second->weight(),
-                    option.font.second->style(),
-                    option.font.second->stretch(),
-                    option.font.second->size(),
-                    option.font.second->locale().data(),
+                    font.name().data(),
+                    option.font.first->collection(),
+                    font.weight(),
+                    font.style(),
+                    font.stretch(),
+                    font.size(),
+                    font.locale().data(),
                     &format_base
                 )
             );
@@ -417,9 +419,10 @@ namespace gm {
         }
 
         void text(f32 x, f32 y, std::wstring_view text) {
+            Font& font{ *_option.font.first->get(_option.font.second) };
             auto glyphs{ _text_layout(text).glyphs };
             auto glyph_meta{
-                _option.font.second->get(
+                font.get(
                     glyphs,
                     [](const Glyph& glyph) noexcept -> const GlyphId& { return glyph; },
                     [](const Glyph& glyph) noexcept -> const GlyphRasterization& { return glyph; }
@@ -437,8 +440,8 @@ namespace gm {
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
 
-                f32 width{ static_cast<f32>(_option.font.second->texture_width()) };
-                f32 height{ static_cast<f32>(_option.font.second->texture_height()) };
+                f32 width{ static_cast<f32>(font.texture_width()) };
+                f32 height{ static_cast<f32>(font.texture_height()) };
                 f32 u1{ meta->x / width };
                 f32 v1{ meta->y / height };
                 f32 u2{ (meta->x + meta->width) / width };

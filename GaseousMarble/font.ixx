@@ -382,6 +382,7 @@ namespace gm {
     export class FontManager {
         usize _id{ 1 };
         std::unordered_map<usize, Font> _data;
+        wil::com_ptr<env::DwFontCollection> _collection;
 
     public:
         Font* get(usize id) noexcept {
@@ -392,6 +393,10 @@ namespace gm {
         const Font* get(usize id) const noexcept {
             auto iter{ _data.find(id) };
             return iter == _data.end() ? nullptr : &iter->second;
+        }
+
+        env::DwFontCollection* collection() const noexcept {
+            return _collection.get();
         }
 
         template <class... Args>
