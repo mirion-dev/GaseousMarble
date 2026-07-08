@@ -224,20 +224,20 @@ namespace gm {
             return _texture_height;
         }
 
-        template <std::ranges::input_range R, class KeyFn, class DataFn>
-        std::vector<const GlyphMeta*> get(R&& items, KeyFn&& key_func, DataFn&& data_func) {
+        template <std::ranges::input_range R, class IdFn, class RasterizationFn>
+        std::vector<const GlyphMeta*> get(R&& items, IdFn&& id_func, RasterizationFn&& raster_func) {
             assert(*this);
 
             TextureLock lock;
             std::vector<const GlyphMeta*> result;
             for (auto& item : std::forward<R>(items)) {
-                auto iter{ _data.find(std::forward<KeyFn>(key_func)(item)) };
+                auto iter{ _data.find(std::forward<IdFn>(id_func)(item)) };
                 if (iter != _data.end()) {
                     result.push_back(&iter->second);
                     continue;
                 }
 
-                GlyphRasterization rasterization{ std::forward<DataFn>(data_func)(item) };
+                GlyphRasterization rasterization{ std::forward<RasterizationFn>(raster_func)(item) };
                 DWRITE_GLYPH_RUN run{ rasterization.face.get(), rasterization.size, 1, &rasterization.gid };
                 DWRITE_RENDERING_MODE1 aa{
                     rasterization.size < _min_aa_h_size
