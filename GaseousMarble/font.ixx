@@ -395,12 +395,10 @@ namespace gm {
         }
 
         template <class... Args>
-        std::pair<usize, bool> insert(Args... args) {
-            auto [iter, inserted]{ _data.try_emplace(_id, std::forward<Args>(args)...) };
-            if (inserted) {
-                ++_id;
-            }
-            return { iter->first, inserted };
+        usize insert(std::wstring_view name, Args... args) {
+            Font font{ name, std::forward<Args>(args)... };
+            _data.try_emplace(_id, std::move(font));
+            return _id++;
         }
 
         bool erase(usize id) noexcept {

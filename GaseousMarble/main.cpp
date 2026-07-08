@@ -53,7 +53,7 @@ try {
         to_wstring(internal_from_real(raw_locale)),
         std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
         std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f)
-    ).first };
+    ) };
     id_map.try_emplace(id, key_map.try_emplace(std::move(key), id).first->first);
     return S_OK;
 }
