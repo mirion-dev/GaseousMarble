@@ -300,37 +300,37 @@ namespace gm {
                     &dw_layout_base
                 )
             );
-            wil::com_ptr dw_layout{ dw_layout_base.query<env::DwTextLayout>() };
+            wil::com_ptr layout{ dw_layout_base.query<env::DwTextLayout>() };
 
             f32 x{}, y{};
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
             // [IDWriteTextFormat]
-            THROW_IF_FAILED(dw_layout->SetTextAlignment(option.text_alignment()));
-            THROW_IF_FAILED(dw_layout->SetParagraphAlignment(option.par_alignment()));
-            THROW_IF_FAILED(dw_layout->SetWordWrapping(option.word_wrapping));
-            THROW_IF_FAILED(dw_layout->SetReadingDirection(option.text_direction()));
-            THROW_IF_FAILED(dw_layout->SetFlowDirection(option.par_direction()));
-            THROW_IF_FAILED(dw_layout->SetIncrementalTabStop(option.tab_spacing));
+            THROW_IF_FAILED(layout->SetTextAlignment(option.text_alignment()));
+            THROW_IF_FAILED(layout->SetParagraphAlignment(option.par_alignment()));
+            THROW_IF_FAILED(layout->SetWordWrapping(option.word_wrapping));
+            THROW_IF_FAILED(layout->SetReadingDirection(option.text_direction()));
+            THROW_IF_FAILED(layout->SetFlowDirection(option.par_direction()));
+            THROW_IF_FAILED(layout->SetIncrementalTabStop(option.tab_spacing));
 
             DWRITE_TRIMMING trimming{ option.trimming };
-            THROW_IF_FAILED(dw_layout->SetTrimming(&trimming, nullptr));
+            THROW_IF_FAILED(layout->SetTrimming(&trimming, nullptr));
 
             // [IDWriteTextLayout]
-            THROW_IF_FAILED(dw_layout->SetMaxWidth(option.max_width + option.letter_spacing));
-            THROW_IF_FAILED(dw_layout->SetMaxHeight(option.max_height));
+            THROW_IF_FAILED(layout->SetMaxWidth(option.max_width + option.letter_spacing));
+            THROW_IF_FAILED(layout->SetMaxHeight(option.max_height));
 
             // [IDWriteTextLayout1]
             if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
-                THROW_IF_FAILED(dw_layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
+                THROW_IF_FAILED(layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             }
             else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
-                THROW_IF_FAILED(dw_layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
+                THROW_IF_FAILED(layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
                 x -= option.letter_spacing;
             }
             else {
                 THROW_IF_FAILED(
-                    dw_layout->SetCharacterSpacing(
+                    layout->SetCharacterSpacing(
                         option.letter_spacing / 2,
                         option.letter_spacing / 2,
                         0,
@@ -348,20 +348,20 @@ namespace gm {
                 0,
                 DWRITE_FONT_LINE_GAP_USAGE_ENABLED
             };
-            THROW_IF_FAILED(dw_layout->SetLineSpacing(&line_spacing));
+            THROW_IF_FAILED(layout->SetLineSpacing(&line_spacing));
 
-            Layout layout;
+            Layout gm_layout;
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            THROW_IF_FAILED(dw_layout->Draw(&layout, collector.get(), x, y));
+            THROW_IF_FAILED(layout->Draw(&gm_layout, collector.get(), x, y));
 
             DWRITE_TEXT_METRICS metrics;
-            THROW_IF_FAILED(dw_layout->GetMetrics(&metrics));
+            THROW_IF_FAILED(layout->GetMetrics(&metrics));
 
-            layout.width = std::max(metrics.width - option.letter_spacing, 0.f);
-            layout.height = metrics.height;
+            gm_layout.width = std::max(metrics.width - option.letter_spacing, 0.f);
+            gm_layout.height = metrics.height;
 
-            auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(layout)) };
+            auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(gm_layout)) };
             _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {
