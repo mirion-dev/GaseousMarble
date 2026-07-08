@@ -43,16 +43,13 @@ namespace gm::env {
 
     export {
 
-        using DwFactoryBase = IDWriteFactory;
         using DwFactory = IDWriteFactory7;
 
         using DwFontFaceBase = IDWriteFontFace;
         using DwFontFace = IDWriteFontFace5;
 
-        using DwGlyphRunAnalysisBase = IDWriteGlyphRunAnalysis;
         using DwGlyphRunAnalysis = IDWriteGlyphRunAnalysis;
 
-        using DwTextRendererBase = IDWriteTextRenderer;
         // UNSUPPORTED: `IDWriteTextRenderer1::orientationAngle`; used for vertical writing mode
         using DwTextRenderer = IDWriteTextRenderer;
 
