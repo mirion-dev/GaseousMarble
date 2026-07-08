@@ -168,9 +168,10 @@ namespace gm {
             _texture_width{ texture_width },
             _texture_height{ texture_height } {
 
+            assert(_max_texture_num != 0 && _texture_width != 0 && _texture_height != 0);
+
             if (_size <= 0 || weight() < 1 || weight() > 1000 || stretch() > 9
-                || _min_aa_h_size < 0 || _min_aa_v_size < 0
-                || _max_texture_num == 0 || _texture_width == 0 || _texture_height == 0) {
+                || _min_aa_h_size < 0 || _min_aa_v_size < 0) {
                 throw std::invalid_argument{ "Invalid font arguments." };
             }
 
@@ -187,7 +188,7 @@ namespace gm {
             return _size != 0;
         }
 
-        std::wstring_view name() const noexcept {
+        const std::wstring& name() const noexcept {
             assert(*this);
             return _name;
         }
@@ -217,7 +218,7 @@ namespace gm {
             return static_cast<DWRITE_FONT_STRETCH>((_properties & STRETCH_MASK) >> STRETCH_OFFSET);
         }
 
-        std::wstring_view locale() const noexcept {
+        const std::wstring& locale() const noexcept {
             assert(*this);
             return _locale;
         }

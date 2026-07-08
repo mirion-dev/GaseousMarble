@@ -403,12 +403,8 @@ namespace gm {
 
         Draw& operator=(Draw&&) noexcept = default;
 
-        const DrawOption& option() const noexcept {
-            return _option;
-        }
-
-        DrawOption& option() noexcept {
-            return _option;
+        auto& option(this auto& self) noexcept {
+            return std::forward_like<decltype(self)>(_option);
         }
 
         void text(f32 x, f32 y, std::wstring_view text) {
