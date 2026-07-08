@@ -59,23 +59,6 @@ try {
 }
 CATCH_RETURN()
 
-API Real gm2_delete_font(StringRef raw_key) noexcept {
-    auto iter{ key_map.find(raw_key) };
-    if (iter == key_map.end()) {
-        return S_FALSE;
-    }
-
-    usize id{ iter->second };
-    if (draw.option().font.second == id) {
-        draw.option().font = {};
-    }
-
-    font_manager.erase(id);
-    key_map.erase(iter);
-    id_map.erase(id);
-    return S_OK;
-}
-
 API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept
 try {
     draw.text(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), to_wstring(raw_text));

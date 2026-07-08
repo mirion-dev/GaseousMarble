@@ -12,8 +12,8 @@
 | **Function** | **v1 Function** | **Description** |
 | :--: | :--: | -- |
 | `gm2_new_font(key, name, size, properties, locale, min_aa_h_size, min_aa_v_size)` | `gm_font()`<br>`generate_font()` | <ul><li>**New**: Creates fonts dynamically and supports more font properties.</li><li>**Dropped**: Loads fonts from images.</li></ul> |
-| `gm2_delete_font(key)` | `gm_free()` | |
-| | ~~`gm_clear()`~~ | <ul><li>**Removed**: Originally used to clean up fonts before a game restart but later became unnecessary.</li></ul> |
+| | ~~`gm_free()`~~ | <ul><li>**Removed**: All glyphs are extracted on demand, so excessive memory usage generally does not occur.</li></ul> |
+| | ~~`gm_clear()`~~ | <ul><li>**Removed**: Ditto.</li></ul> |
 | `gm2_draw_text(x, y, text)`<br>`gm2_text_width(text)`<br>`gm2_text_height(text)` | `gm_draw()`<br>`gm_width()`<br>`gm_height()` | <ul><li>**New**: Professional typography based on DirectWrite.</li></ul> |
 | `gm2_set_alignment(alignment)`<br>`gm2_set_text_alignment(alignment)`<br>`gm2_set_par_alignment(alignment)` | `gm_set_halign()`<br>`gm_set_valign()`<br>`gm_set_justified()`<br>`gm_set_align()`<br>`gm_set_align3()` | <ul><li>**New**: Paragraph alignment.</li><li>**Dropped**: `justified` is no longer independent of `left`/`center`/`right`.</li></ul> |
 | `gm2_set_word_wrapping(word_wrapping)` | | <ul><li>**New**</li></ul> |
