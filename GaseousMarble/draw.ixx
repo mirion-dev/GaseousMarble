@@ -274,7 +274,7 @@ namespace gm {
             }
 
             const Font& font{ *option.font.first->get(option.font.second) };
-            wil::com_ptr<env::DwTextFormatBase> format_base;
+            wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
                     font.name().data(),
@@ -289,7 +289,7 @@ namespace gm {
             );
             wil::com_ptr format{ format_base.query<env::DwTextFormat>() };
 
-            wil::com_ptr<env::DwTextLayoutBase> layout_base;
+            wil::com_ptr<IDWriteTextLayout> layout_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextLayout(
                     text.data(),
