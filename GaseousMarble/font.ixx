@@ -107,8 +107,7 @@ namespace gm {
         isize offset_y;
     };
 
-    export class Font {
-    public:
+    export struct FontDescription {
         static constexpr u16 WEIGHT_MASK{ 0x3ff };
         static constexpr int WEIGHT_OFFSET{};
         static constexpr u16 STYLE_MASK{ 0xc00 };
@@ -116,22 +115,40 @@ namespace gm {
         static constexpr u16 STRETCH_MASK{ 0xf000 };
         static constexpr int STRETCH_OFFSET{ 12 };
 
-        static constexpr u16 PROPERTIES_NORMAL{
-            DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
+        std::wstring name;
+        u16 properties{
+            DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET
+            | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
             | DWRITE_FONT_STRETCH_NORMAL << STRETCH_OFFSET
         };
+        f32 size{};
+        std::wstring locale{ L"en-US" };
 
-    private:
+        DWRITE_FONT_WEIGHT weight() const noexcept {
+            return static_cast<DWRITE_FONT_WEIGHT>((properties & WEIGHT_MASK) >> WEIGHT_OFFSET);
+        }
+
+        DWRITE_FONT_STYLE style() const noexcept {
+            return static_cast<DWRITE_FONT_STYLE>((properties & STYLE_MASK) >> STYLE_OFFSET);
+        }
+
+        DWRITE_FONT_STRETCH stretch() const noexcept {
+            return static_cast<DWRITE_FONT_STRETCH>((properties & STRETCH_MASK) >> STRETCH_OFFSET);
+        }
+
+        bool is_valid() const noexcept {
+            return weight() >= 1 && weight() <= 1000 && stretch() <= 9 && size > 0;
+        }
+    };
+
+    export class Font {
         struct Hash {
             usize operator()(GlyphId value) const noexcept {
                 return hash_combine(gm::Hash{}, value.face, value.gid);
             }
         };
 
-        std::wstring _name;
-        f32 _size{};
-        u16 _properties{};
-        std::wstring _locale;
+        FontDescription _desc;
         f32 _min_aa_h_size{};
         f32 _min_aa_v_size{};
         usize _max_texture_num{};
@@ -148,20 +165,14 @@ namespace gm {
         Font() noexcept = default;
 
         Font(
-            std::wstring_view name,
-            f32 size,
-            u16 properties = PROPERTIES_NORMAL,
-            std::wstring_view locale = L"",
+            const FontDescription& desc,
             f32 min_aa_h_size = 0,
             f32 min_aa_v_size = 24,
             usize max_texture_num = 16,
             usize texture_width = 1024,
             usize texture_height = 1024
         ) :
-            _name{ name },
-            _size{ size },
-            _properties{ properties },
-            _locale{ locale },
+            _desc{ desc },
             _min_aa_h_size{ min_aa_h_size },
             _min_aa_v_size{ min_aa_v_size },
             _max_texture_num{ max_texture_num },
@@ -170,57 +181,22 @@ namespace gm {
 
             assert(_max_texture_num != 0 && _texture_width != 0 && _texture_height != 0);
 
-            if (_size <= 0 || weight() < 1 || weight() > 1000 || stretch() > 9
-                || _min_aa_h_size < 0 || _min_aa_v_size < 0) {
+            if (!_desc.is_valid() || _min_aa_h_size < 0 || _min_aa_v_size < 0) {
                 throw std::invalid_argument{ "Invalid font arguments." };
             }
-
-            if (_locale.empty()) {
-                _locale = env::default_locale();
             }
-        }
 
         Font(Font&&) noexcept = default;
 
         Font& operator=(Font&&) noexcept = default;
 
         operator bool() const noexcept {
-            return _size != 0;
+            return _max_texture_num != 0;
         }
 
-        const std::wstring& name() const noexcept {
+        const FontDescription& desc() const noexcept {
             assert(*this);
-            return _name;
-        }
-
-        f32 size() const noexcept {
-            assert(*this);
-            return _size;
-        }
-
-        u16 properties() const noexcept {
-            assert(*this);
-            return _properties;
-        }
-
-        DWRITE_FONT_WEIGHT weight() const noexcept {
-            assert(*this);
-            return static_cast<DWRITE_FONT_WEIGHT>((_properties & WEIGHT_MASK) >> WEIGHT_OFFSET);
-        }
-
-        DWRITE_FONT_STYLE style() const noexcept {
-            assert(*this);
-            return static_cast<DWRITE_FONT_STYLE>((_properties & STYLE_MASK) >> STYLE_OFFSET);
-        }
-
-        DWRITE_FONT_STRETCH stretch() const noexcept {
-            assert(*this);
-            return static_cast<DWRITE_FONT_STRETCH>((_properties & STRETCH_MASK) >> STRETCH_OFFSET);
-        }
-
-        const std::wstring& locale() const noexcept {
-            assert(*this);
-            return _locale;
+            return _desc;
         }
 
         f32 min_aa_h_size() const noexcept {
@@ -396,7 +372,7 @@ namespace gm {
         }
 
         template <class... Args>
-        usize insert(std::wstring_view name, Args... args) {
+        usize add(const FontDescription& desc, Args... args) {
             Font font{ name, std::forward<Args>(args)... };
             _data.try_emplace(_id, std::move(font));
             return _id++;

@@ -273,17 +273,17 @@ namespace gm {
                 return iter->second;
             }
 
-            const Font& font{ *option.font.first->get(option.font.second) };
+            auto& font_desc{ option.font.first->get(option.font.second).desc() };
             wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
-                    font.name().data(),
+                    font_desc.name.data(),
                     option.font.first->collection(),
-                    font.weight(),
-                    font.style(),
-                    font.stretch(),
-                    font.size(),
-                    font.locale().data(),
+                    font_desc.weight(),
+                    font_desc.style(),
+                    font_desc.stretch(),
+                    font_desc.size,
+                    font_desc.locale.data(),
                     &format_base
                 )
             );
@@ -412,7 +412,7 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            Font& font{ *_option.font.first->get(_option.font.second) };
+            Font& font{ _option.font.first->get(_option.font.second) };
             auto glyphs{ _layout.get(text, _option).glyphs };
             auto glyph_meta{
                 font.get(
