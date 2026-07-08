@@ -404,7 +404,7 @@ namespace gm {
         Draw& operator=(Draw&&) noexcept = default;
 
         auto& option(this auto& self) noexcept {
-            return std::forward_like<decltype(self)>(_option);
+            return std::forward_like<decltype(self)>(self._option);
         }
 
         void text(f32 x, f32 y, std::wstring_view text) {
