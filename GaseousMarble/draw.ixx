@@ -289,7 +289,7 @@ namespace gm {
             );
             wil::com_ptr format{ format_base.query<env::DwTextFormat>() };
 
-            wil::com_ptr<env::DwTextLayoutBase> dw_layout_base;
+            wil::com_ptr<env::DwTextLayoutBase> layout_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextLayout(
                     text.data(),
@@ -297,10 +297,10 @@ namespace gm {
                     format.get(),
                     std::numeric_limits<f32>::max(),
                     std::numeric_limits<f32>::max(),
-                    &dw_layout_base
+                    &layout_base
                 )
             );
-            wil::com_ptr layout{ dw_layout_base.query<env::DwTextLayout>() };
+            wil::com_ptr layout{ layout_base.query<env::DwTextLayout>() };
 
             f32 x{}, y{};
             DWRITE_TEXT_RANGE range{ 0, text.size() };
