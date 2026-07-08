@@ -396,13 +396,6 @@ namespace gm {
         DrawOption _option;
         LayoutCache _layout{ 1024 };
 
-        const Layout& _text_layout(std::wstring_view text) {
-            if (!_option.is_valid()) {
-                throw std::invalid_argument{ "Invalid draw options." };
-            }
-            return _layout.get(text, _option);
-        }
-
     public:
         Draw() noexcept = default;
 
@@ -419,8 +412,12 @@ namespace gm {
         }
 
         void text(f32 x, f32 y, std::wstring_view text) {
+            if (!_option.is_valid()) {
+                throw std::invalid_argument{ "Invalid draw options." };
+            }
+
             Font& font{ *_option.font.first->get(_option.font.second) };
-            auto glyphs{ _text_layout(text).glyphs };
+            auto glyphs{ _layout.get(text, _option).glyphs };
             auto glyph_meta{
                 font.get(
                     glyphs,
@@ -480,11 +477,17 @@ namespace gm {
         }
 
         f32 text_width(std::wstring_view text) {
-            return _text_layout(text).width;
+            if (!_option.is_valid()) {
+                throw std::invalid_argument{ "Invalid draw options." };
+            }
+            return _layout.get(text, _option).width;
         }
 
         f32 text_height(std::wstring_view text) {
-            return _text_layout(text).height;
+            if (!_option.is_valid()) {
+                throw std::invalid_argument{ "Invalid draw options." };
+            }
+            return _layout.get(text, _option).height;
         }
     };
 

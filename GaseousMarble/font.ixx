@@ -144,28 +144,6 @@ namespace gm {
         wil::com_ptr<IDirect3DTexture8> _current_texture;
         rectpack2D::empty_spaces<false> _current_bin{ {} };
 
-        auto _new_texture() {
-            if (_texture_num >= _max_texture_num) {
-                throw std::runtime_error{ "Too many textures." };
-            }
-
-            wil::com_ptr<IDirect3DTexture8> texture;
-            THROW_IF_FAILED(
-                env::d3d_device()->CreateTexture(
-                    _texture_width,
-                    _texture_height,
-                    1,
-                    0,
-                    D3DFMT_A8R8G8B8,
-                    D3DPOOL_MANAGED,
-                    &texture
-                )
-            );
-
-            ++_texture_num;
-            return texture;
-        }
-
     public:
         Font() noexcept = default;
 
@@ -341,11 +319,27 @@ namespace gm {
                     )
                 );
 
+                usize texture_num{ _texture_num };
                 wil::com_ptr texture{ _current_texture };
                 rectpack2D::empty_spaces bin{ _current_bin };
                 auto insert_result{ bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
                 if (!insert_result) {
-                    texture = _new_texture();
+                    if (texture_num++ >= _max_texture_num) {
+                        throw std::runtime_error{ "Too many textures." };
+                    }
+
+                    THROW_IF_FAILED(
+                        env::d3d_device()->CreateTexture(
+                            _texture_width,
+                            _texture_height,
+                            1,
+                            0,
+                            D3DFMT_A8R8G8B8,
+                            D3DPOOL_MANAGED,
+                            &texture
+                        )
+                    );
+
                     lock = { texture, 0, 0, _texture_width, _texture_height };
                     bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
                     insert_result = bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
@@ -358,6 +352,7 @@ namespace gm {
                 }
                 lock.update(x, y, std::mdspan{ alpha.data(), h, w });
 
+                _texture_num = texture_num;
                 _current_texture = texture;
                 _current_bin = std::move(bin);
 
