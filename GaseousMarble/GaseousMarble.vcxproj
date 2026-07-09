@@ -15,6 +15,7 @@
     <ClCompile Include="env.ixx" />
     <ClCompile Include="font.ixx" />
     <ClCompile Include="gm.ixx" />
+    <ClCompile Include="layout.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
