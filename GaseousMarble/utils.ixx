@@ -9,23 +9,39 @@ import gm.types;
 
 namespace gm {
 
-    template <class T>
+    template <class T, bool Max>
         requires std::is_arithmetic_v<T>
-    static constexpr int min_level{
-        std::signed_integral<T>
-        ? std::numeric_limits<T>::digits
-        : std::unsigned_integral<T>
-        ? std::numeric_limits<int>::lowest()
-        : std::numeric_limits<T>::max_exponent
+    class Limit {
+        static constexpr int D{ std::numeric_limits<T>::digits };
+        static constexpr int E{ std::numeric_limits<T>::max_exponent };
+
+        int _a{
+            Max
+            ? (std::integral<T> ? D : E)
+            : (std::unsigned_integral<T> ? 0 : std::signed_integral<T> ? D : E - D)
+        };
+        int _b{
+            Max
+            ? (std::integral<T> ? 0 : E - D)
+            : (std::unsigned_integral<T> ? 0 : std::signed_integral<T> ? D + 1 : E)
+        };
+
+    public:
+        template <class T1, bool Max1, class T2, bool Max2>
+        constexpr friend bool operator<(Limit<T1, Max1> left, Limit<T2, Max2> right) noexcept {
+            int max_diff{ std::max(left._a, right._b) - std::max(left._b, right._a) };
+            int min_diff{ std::min(left._a, right._b) - std::min(left._b, right._a) };
+            return max_diff < 0 || max_diff == 0 && min_diff < 0;
+        }
     };
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    static constexpr int max_level{
-        std::integral<T>
-        ? std::numeric_limits<T>::digits
-        : std::numeric_limits<T>::max_exponent
-    };
+    static constexpr Limit<T, true> max_limit;
+
+    template <class T>
+        requires std::is_arithmetic_v<T>
+    static constexpr Limit<T, false> min_limit;
 
     export template <class R, class T>
         requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
@@ -35,12 +51,12 @@ namespace gm {
                 return R{};
             }
         }
-        if constexpr (min_level<T> > min_level<R>) {
+        if constexpr (min_limit<T> < min_limit<R>) {
             if (num < static_cast<T>(std::numeric_limits<R>::lowest())) {
                 return neg_overflow;
             }
         }
-        if constexpr (max_level<T> > max_level<R>) {
+        if constexpr (max_limit<R> < max_limit<T>) {
             if (num > static_cast<T>(std::numeric_limits<R>::max())) {
                 return pos_overflow;
             }
