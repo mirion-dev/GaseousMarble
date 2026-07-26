@@ -25,19 +25,15 @@ namespace gm {
             assert(texture && width > 0 && height > 0);
 
             D3DLOCKED_RECT lock;
-            RECT rect{
-                static_cast<isize>(x),
+            RECT rect{ static_cast<isize>(x),
                 static_cast<isize>(y),
                 static_cast<isize>(x + width),
-                static_cast<isize>(y + height)
-            };
+                       static_cast<isize>(y + height) };
             THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, D3DLOCK_NO_DIRTY_UPDATE));
 
             _texture = texture;
-            _data = {
-                static_cast<u32*>(lock.pBits),
-                { std::extents{ height, width }, std::array{ lock.Pitch / sizeof(u32), 1uz } }
-            };
+            _data = { static_cast<u32*>(lock.pBits),
+                      { std::extents{ height, width }, std::array{ lock.Pitch / sizeof(u32), 1uz } } };
         }
 
         TextureLock(TextureLock&& other) noexcept {
@@ -70,12 +66,10 @@ namespace gm {
 
         void update(usize x, usize y, const std::mdspan<u8, std::dextents<usize, 2>>& data) const {
             usize height{ data.extents().extent(0) }, width{ data.extents().extent(1) };
-            RECT rect{
-                static_cast<isize>(x),
+            RECT rect{ static_cast<isize>(x),
                 static_cast<isize>(y),
                 static_cast<isize>(x + width),
-                static_cast<isize>(y + height)
-            };
+                       static_cast<isize>(y + height) };
             THROW_IF_FAILED(_texture->AddDirtyRect(&rect));
 
             for (usize j{}; j < height; ++j) {
@@ -288,12 +282,7 @@ namespace gm {
 
                 std::vector<u8> alpha(width * height);
                 THROW_IF_FAILED(
-                    rasterizer->CreateAlphaTexture(
-                        DWRITE_TEXTURE_ALIASED_1x1,
-                        &bbox,
-                        alpha.data(),
-                        alpha.size()
-                    )
+                    rasterizer->CreateAlphaTexture(DWRITE_TEXTURE_ALIASED_1x1, &bbox, alpha.data(), alpha.size())
                 );
 
                 usize texture_num{ _texture_num };
@@ -307,13 +296,7 @@ namespace gm {
 
                     THROW_IF_FAILED(
                         env::d3d_device()->CreateTexture(
-                            _texture_width,
-                            _texture_height,
-                            1,
-                            0,
-                            D3DFMT_A8R8G8B8,
-                            D3DPOOL_MANAGED,
-                            &texture
+                        _texture_width, _texture_height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texture
                         )
                     );
 

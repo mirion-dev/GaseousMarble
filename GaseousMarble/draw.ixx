@@ -103,12 +103,7 @@ namespace gm {
             for (auto& [texture, vertices] : batches) {
                 THROW_IF_FAILED(device->SetTexture(0, texture.get()));
                 THROW_IF_FAILED(
-                    device->DrawPrimitiveUP(
-                        D3DPT_TRIANGLELIST,
-                        vertices.size() / 3,
-                        vertices.data(),
-                        sizeof(Vertex)
-                    )
+                    device->DrawPrimitiveUP(D3DPT_TRIANGLELIST, vertices.size() / 3, vertices.data(), sizeof(Vertex))
                 );
             }
         }

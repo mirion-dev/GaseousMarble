@@ -243,8 +243,8 @@ namespace gm {
     public:
         LayoutCache() noexcept = default;
 
-        LayoutCache(usize cache_size) noexcept :
-            _cache_size{ cache_size } {
+        LayoutCache(usize cache_size) noexcept
+            : _cache_size{ cache_size } {
 
             assert(_cache_size > 0);
         }

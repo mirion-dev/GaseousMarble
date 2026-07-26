@@ -31,7 +31,6 @@ namespace gm::env {
     }
 
     export {
-
         using DwFactory = IDWriteFactory7;
         using DwFontFace = IDWriteFontFace5;
         using DwGlyphRunAnalysis = IDWriteGlyphRunAnalysis;
@@ -39,7 +38,6 @@ namespace gm::env {
         using DwTextRenderer = IDWriteTextRenderer;
         using DwTextFormat = IDWriteTextFormat3;
         using DwTextLayout = IDWriteTextLayout4;
-
     }
 
     struct DwResource {
@@ -47,11 +45,7 @@ namespace gm::env {
 
         DwResource() {
             THROW_IF_FAILED(
-                DWriteCreateFactory(
-                    DWRITE_FACTORY_TYPE_SHARED,
-                    __uuidof(DwFactory),
-                    factory.put_unknown()
-                )
+                DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(DwFactory), factory.put_unknown())
             );
         }
     };

@@ -3,7 +3,7 @@
 **Work in progress**. Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
 
 > [!warning]
-> Minimum requirement: Windows 10, Version 1803.
+> Minimum system requirement: Windows 10, Version 1803.
 > 
 > Incompatible with 3D mode.
 
@@ -40,10 +40,12 @@
 
 ## Development
 
-1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) and [vcpkg](https://vcpkg.io/en/).
+1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) with MSVC Build Tools for x64/x86 Preview.
+1. Install [vcpkg](https://vcpkg.io/en/).
 1. Install [DirectX 8.1 SDK](https://archive.org/details/dx81sdk_full) to `third_party/dx81`.
 1. `vcpkg install wil:x86-windows`.
 1. `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
+1. Build clang-format 24 from [LLVM](https://github.com/llvm/llvm-project/) if formatting is needed.
 
 ## Credits
 

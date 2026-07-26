@@ -56,7 +56,7 @@ namespace gm {
             return std::launder(reinterpret_cast<const Header*>(reinterpret_cast<const u8*>(_data) - sizeof(Header)));
         }
 
-    public:
+      public:
         BasicString() noexcept {
             ++_header()->ref_count;
         }
@@ -70,21 +70,21 @@ namespace gm {
             *std::ranges::copy(view, _data).out = {};
         }
 
-        BasicString(const BasicString& other) noexcept :
-            _data{ other._data } {
+        BasicString(const BasicString& other) noexcept
+            : _data{ other._data } {
 
             ++_header()->ref_count;
         }
 
-        BasicString(BasicString&& other) noexcept :
-            BasicString{} {
+        BasicString(BasicString&& other) noexcept
+            : BasicString{} {
 
             this->swap(other);
         }
 
         ~BasicString() noexcept {
             if (--_header()->ref_count == 0) {
-                delete[](reinterpret_cast<u8*>(_data) - sizeof(Header));
+                delete[] (reinterpret_cast<u8*>(_data) - sizeof(Header));
             }
         }
 
