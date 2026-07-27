@@ -22,14 +22,16 @@ namespace gm::env {
     };
     }
 
-    static const auto d3d_resource{ reinterpret_cast<D3dResource*>(0x006886a4) };
+    static const D3dResource& d3d_resource() noexcept {
+        return *reinterpret_cast<D3dResource*>(0x006886a4);
+    }
 
     export IDirect3D8* d3d_interface() noexcept {
-        return d3d_resource->interface;
+        return d3d_resource().interface;
     }
 
     export IDirect3DDevice8* d3d_device() noexcept {
-        return d3d_resource->device;
+        return d3d_resource().device;
     }
 
     export {
