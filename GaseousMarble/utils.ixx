@@ -9,31 +9,34 @@ import gm.types;
 
 namespace gm {
 
-    template <class T, bool Max>
-        requires std::is_arithmetic_v<T>
-    class Limit {
-        static constexpr int D{ std::numeric_limits<T>::digits };
-        static constexpr int E{ std::numeric_limits<T>::max_exponent };
+    namespace {
+        template <class T, bool Max>
+            requires std::is_arithmetic_v<T>
+        class Limit {
+            static constexpr int D{ std::numeric_limits<T>::digits };
+            static constexpr int E{ std::numeric_limits<T>::max_exponent };
 
-        int _a{
-            Max
-            ? (std::integral<T> ? D : E)
-            : (std::unsigned_integral<T> ? 0 : std::signed_integral<T> ? D : E - D)
-        };
-        int _b{
-            Max
-            ? (std::integral<T> ? 0 : E - D)
-            : (std::unsigned_integral<T> ? 0 : std::signed_integral<T> ? D + 1 : E)
+            int _a{ Max                         ? (std::integral<T> ? D : E)
+                    : std::unsigned_integral<T> ? 0
+                    : std::signed_integral<T>   ? D
+                                                : E - D };
+            int _b{ Max                         ? (std::integral<T> ? 0 : E - D)
+                    : std::unsigned_integral<T> ? 0
+                    : std::signed_integral<T>   ? D + 1
+                                                : E };
+
+          public:
+            template <class T1, bool Max1, class T2, bool Max2>
+            constexpr friend bool operator<(Limit<T1, Max1> left, Limit<T2, Max2> right) noexcept;
         };
 
-    public:
         template <class T1, bool Max1, class T2, bool Max2>
-        constexpr friend bool operator<(Limit<T1, Max1> left, Limit<T2, Max2> right) noexcept {
+        constexpr bool operator<(Limit<T1, Max1> left, Limit<T2, Max2> right) noexcept {
             int max_diff{ std::max(left._a, right._b) - std::max(left._b, right._a) };
             int min_diff{ std::min(left._a, right._b) - std::min(left._b, right._a) };
             return max_diff < 0 || max_diff == 0 && min_diff < 0;
         }
-    };
+    }
 
     template <class T>
         requires std::is_arithmetic_v<T>
@@ -43,6 +46,7 @@ namespace gm {
         requires std::is_arithmetic_v<T>
     static constexpr Limit<T, false> min_limit;
 
+    // Not comprehensive when encountering floating-point numbers
     export template <class R, class T>
         requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
     R saturating_cast(T num, R neg_overflow, R pos_overflow) noexcept {
