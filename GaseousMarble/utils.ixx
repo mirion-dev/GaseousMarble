@@ -22,21 +22,21 @@ namespace gm {
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    static constexpr auto upper_bound{ [] {
+    static constexpr Bound upper_bound() {
         static constexpr int D{ std::numeric_limits<T>::digits };
         static constexpr int E{ std::numeric_limits<T>::max_exponent };
         return std::integral<T> ? Bound{ D, 0 } : Bound{ E, E - D };
-    }() };
+    }
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    static constexpr auto neg_lower_bound{ [] {
+    static constexpr Bound neg_lower_bound() {
         static constexpr int D{ std::numeric_limits<T>::digits };
         static constexpr int E{ std::numeric_limits<T>::max_exponent };
         return std::unsigned_integral<T> ? Bound{ 0, 0 }
                : std::signed_integral<T> ? Bound{ D, D + 1 }
                                          : Bound{ E - D, E };
-    }() };
+    }
 
     export template <class R, class T>
         requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
@@ -51,13 +51,13 @@ namespace gm {
             }
         }
 
-        if constexpr (neg_lower_bound<T> < neg_lower_bound<R>) {
+        if constexpr (neg_lower_bound<T>() < neg_lower_bound<R>()) {
             if (num < static_cast<T>(std::numeric_limits<R>::lowest())) {
                 return neg_overflow;
             }
         }
 
-        if constexpr (upper_bound<R> < upper_bound<T>) {
+        if constexpr (upper_bound<R>() < upper_bound<T>()) {
             if constexpr (
                 std::floating_point<T>
                 && std::integral<R>
