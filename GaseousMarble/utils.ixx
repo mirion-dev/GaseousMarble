@@ -9,18 +9,16 @@ import gm.types;
 
 namespace gm {
 
-    namespace {
-        struct Bound {
-            int a{};
-            int b{};
+    struct Bound {
+        int a{};
+        int b{};
 
-            constexpr friend bool operator<(Bound left, Bound right) noexcept {
-                int max_diff{ std::max(left.a, right.b) - std::max(left.b, right.a) };
-                int min_diff{ std::min(left.a, right.b) - std::min(left.b, right.a) };
-                return max_diff < 0 || max_diff == 0 && min_diff < 0;
-            }
-        };
-    }
+        constexpr friend bool operator<(Bound left, Bound right) noexcept {
+            int max_diff{ std::max(left.a, right.b) - std::max(left.b, right.a) };
+            int min_diff{ std::min(left.a, right.b) - std::min(left.b, right.a) };
+            return max_diff < 0 || max_diff == 0 && min_diff < 0;
+        }
+    };
 
     template <class T>
         requires std::is_arithmetic_v<T>
