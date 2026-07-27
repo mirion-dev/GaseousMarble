@@ -12,6 +12,7 @@ import gm.types;
 
 namespace gm::env {
 
+    namespace {
     struct D3dResource {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
@@ -19,6 +20,7 @@ namespace gm::env {
         u32 render_width;
         u32 render_height;
     };
+    }
 
     static const auto d3d_resource{ reinterpret_cast<D3dResource*>(0x006886a4) };
 
@@ -40,6 +42,7 @@ namespace gm::env {
         using DwTextLayout = IDWriteTextLayout4;
     }
 
+    namespace {
     struct DwResource {
         wil::com_ptr<DwFactory> factory;
 
@@ -49,8 +52,9 @@ namespace gm::env {
             );
         }
     };
+    }
 
-    const DwResource& dw_resource() {
+    static const DwResource& dw_resource() {
         static DwResource resource;
         return resource;
     }
