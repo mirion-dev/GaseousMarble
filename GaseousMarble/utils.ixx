@@ -10,43 +10,36 @@ import gm.types;
 namespace gm {
 
     namespace {
-        template <class T, bool Max>
-            requires std::is_arithmetic_v<T>
-        class Limit {
-            static constexpr int D{ std::numeric_limits<T>::digits };
-            static constexpr int E{ std::numeric_limits<T>::max_exponent };
+        struct Bound {
+            int a{};
+            int b{};
 
-            int _a{ Max                         ? (std::integral<T> ? D : E)
-                    : std::unsigned_integral<T> ? 0
-                    : std::signed_integral<T>   ? D
-                                                : E - D };
-            int _b{ Max                         ? (std::integral<T> ? 0 : E - D)
-                    : std::unsigned_integral<T> ? 0
-                    : std::signed_integral<T>   ? D + 1
-                                                : E };
-
-          public:
-            template <class T1, bool Max1, class T2, bool Max2>
-            constexpr friend bool operator<(Limit<T1, Max1> left, Limit<T2, Max2> right) noexcept;
+            constexpr friend bool operator<(Bound left, Bound right) noexcept {
+                int max_diff{ std::max(left.a, right.b) - std::max(left.b, right.a) };
+                int min_diff{ std::min(left.a, right.b) - std::min(left.b, right.a) };
+                return max_diff < 0 || max_diff == 0 && min_diff < 0;
+            }
         };
-
-        template <class T1, bool Max1, class T2, bool Max2>
-        constexpr bool operator<(Limit<T1, Max1> left, Limit<T2, Max2> right) noexcept {
-            int max_diff{ std::max(left._a, right._b) - std::max(left._b, right._a) };
-            int min_diff{ std::min(left._a, right._b) - std::min(left._b, right._a) };
-            return max_diff < 0 || max_diff == 0 && min_diff < 0;
-        }
     }
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    static constexpr Limit<T, true> max_limit;
+    static constexpr auto upper_bound{ [] {
+        static constexpr int D{ std::numeric_limits<T>::digits };
+        static constexpr int E{ std::numeric_limits<T>::max_exponent };
+        return std::integral<T> ? Bound{ D, 0 } : Bound{ E, E - D };
+    }() };
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    static constexpr Limit<T, false> min_limit;
+    static constexpr auto neg_lower_bound{ [] {
+        static constexpr int D{ std::numeric_limits<T>::digits };
+        static constexpr int E{ std::numeric_limits<T>::max_exponent };
+        return std::unsigned_integral<T> ? Bound{ 0, 0 }
+               : std::signed_integral<T> ? Bound{ D, D + 1 }
+                                         : Bound{ E - D, E };
+    }() };
 
-    // Not comprehensive when encountering floating-point numbers
     export template <class R, class T>
         requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
     R saturating_cast(T num, R neg_overflow, R pos_overflow) noexcept {
@@ -54,15 +47,31 @@ namespace gm {
             if (std::isnan(num)) {
                 return R{};
             }
+
+            if (std::isinf(num)) {
+                return num > T{} ? pos_overflow : neg_overflow;
+            }
         }
-        if constexpr (min_limit<T> < min_limit<R>) {
+
+        if constexpr (neg_lower_bound<T> < neg_lower_bound<R>) {
             if (num < static_cast<T>(std::numeric_limits<R>::lowest())) {
                 return neg_overflow;
             }
         }
-        if constexpr (max_limit<R> < max_limit<T>) {
-            if (num > static_cast<T>(std::numeric_limits<R>::max())) {
-                return pos_overflow;
+
+        if constexpr (upper_bound<R> < upper_bound<T>) {
+            if constexpr (
+                std::floating_point<T>
+                && std::integral<R>
+                && std::numeric_limits<T>::digits < std::numeric_limits<R>::digits
+            ) {
+                if (num >= std::exp2(static_cast<T>(std::numeric_limits<R>::digits))) {
+                    return pos_overflow;
+                }
+            } else {
+                if (num > static_cast<T>(std::numeric_limits<R>::max())) {
+                    return pos_overflow;
+                }
             }
         }
 
