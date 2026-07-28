@@ -38,7 +38,7 @@ namespace gm {
         DrawOption _option;
         LayoutCache _layout;
 
-      public:
+    public:
         Draw(usize cache_size) noexcept
             : _layout{ cache_size } {}
 

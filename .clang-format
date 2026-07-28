@@ -4,6 +4,7 @@ IndentWidth: 4
 LineEnding: LF
 
 # Spaces
+AccessModifierOffset: -4
 Cpp11BracedListStyle: Block # { ... }
 NamespaceIndentation: All
 

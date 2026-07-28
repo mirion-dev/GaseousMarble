@@ -56,7 +56,7 @@ namespace gm {
             return std::launder(reinterpret_cast<const Header*>(reinterpret_cast<const u8*>(_data) - sizeof(Header)));
         }
 
-      public:
+    public:
         BasicString() noexcept {
             ++_header()->ref_count;
         }

@@ -28,7 +28,7 @@ namespace gm {
 
     // UNSUPPORTED: `DWRITE_GLYPH_RUN::isSideways`; used for vertical writing mode
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
-      public:
+    public:
         STDMETHODIMP IsPixelSnappingDisabled(void* client_drawing_context, BOOL* is_disabled) noexcept {
             *is_disabled = true;
             return S_OK;
@@ -243,7 +243,7 @@ namespace gm {
         std::list<std::pair<LayoutSpec, Layout>> _data;
         std::unordered_map<LayoutSpecRef, decltype(_data)::iterator, Hash> _map;
 
-      public:
+    public:
         LayoutCache() noexcept = default;
 
         LayoutCache(usize cache_size) noexcept

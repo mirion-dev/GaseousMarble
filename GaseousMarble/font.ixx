@@ -57,7 +57,7 @@ namespace gm {
         std::vector<Font> _data;
         wil::com_ptr<env::DwFontCollection> _collection;
 
-      public:
+    public:
         FontManager() noexcept = default;
 
         FontManager(usize max_font_num) noexcept

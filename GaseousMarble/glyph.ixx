@@ -18,7 +18,7 @@ namespace gm {
         wil::com_ptr<IDirect3DTexture8> _texture;
         std::mdspan<u32, std::dextents<usize, 2>, std::layout_stride> _data;
 
-      public:
+    public:
         TextureLock() noexcept = default;
 
         TextureLock(wil::com_ptr<IDirect3DTexture8> texture, usize x, usize y, usize width, usize height) {
@@ -126,7 +126,7 @@ namespace gm {
         wil::com_ptr<IDirect3DTexture8> _current_texture;
         rectpack2D::empty_spaces<false> _current_bin{ {} };
 
-      public:
+    public:
         GlyphAtlas() noexcept = default;
 
         GlyphAtlas(usize texture_width, usize texture_height, usize max_texture_num, RasterOption option = {})
