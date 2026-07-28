@@ -37,7 +37,7 @@ namespace gm {
         }
 
         TextureLock(TextureLock&& other) noexcept {
-            swap(other);
+            std::ranges::swap(*this, other);
         }
 
         ~TextureLock() noexcept {
@@ -47,7 +47,7 @@ namespace gm {
         }
 
         TextureLock& operator=(TextureLock&& other) noexcept {
-            swap(other);
+            std::ranges::swap(*this, other);
             return *this;
         }
 
@@ -55,13 +55,9 @@ namespace gm {
             return _texture != nullptr;
         }
 
-        void swap(TextureLock& other) noexcept {
-            std::ranges::swap(_texture, other._texture);
-            std::ranges::swap(_data, other._data);
-        }
-
         friend void swap(TextureLock& left, TextureLock& right) noexcept {
-            left.swap(right);
+            std::ranges::swap(left._texture, right._texture);
+            std::ranges::swap(left._data, right._data);
         }
 
         void update(usize x, usize y, const std::mdspan<u8, std::dextents<usize, 2>>& data) const {
@@ -146,12 +142,28 @@ namespace gm {
             }
         }
 
-        GlyphAtlas(GlyphAtlas&&) noexcept = default;
+        GlyphAtlas(GlyphAtlas&& other) noexcept {
+            std::ranges::swap(*this, other);
+        }
 
-        GlyphAtlas& operator=(GlyphAtlas&&) noexcept = default;
+        GlyphAtlas& operator=(GlyphAtlas&& other) noexcept {
+            std::ranges::swap(*this, other);
+            return *this;
+        }
 
         operator bool() const noexcept {
             return _max_texture_num > 0;
+        }
+
+        friend void swap(GlyphAtlas& left, GlyphAtlas& right) noexcept {
+            std::ranges::swap(left._texture_width, right._texture_width);
+            std::ranges::swap(left._texture_height, right._texture_height);
+            std::ranges::swap(left._max_texture_num, right._max_texture_num);
+            std::ranges::swap(left._option, right._option);
+            std::ranges::swap(left._data, right._data);
+            std::ranges::swap(left._texture_num, right._texture_num);
+            std::ranges::swap(left._current_texture, right._current_texture);
+            std::ranges::swap(left._current_bin, right._current_bin);
         }
 
         usize texture_width() const noexcept {

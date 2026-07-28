@@ -42,10 +42,6 @@ namespace gm {
         Draw(usize cache_size) noexcept
             : _layout{ cache_size } {}
 
-        Draw(Draw&&) noexcept = default;
-
-        Draw& operator=(Draw&&) noexcept = default;
-
         auto& option(this auto& self) noexcept {
             return std::forward_like<decltype(self)>(self._option);
         }

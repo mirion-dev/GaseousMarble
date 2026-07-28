@@ -58,18 +58,31 @@ namespace gm {
         wil::com_ptr<env::DwFontCollection> _collection;
 
       public:
+        FontManager() noexcept = default;
+
         FontManager(usize max_font_num) noexcept
             : _max_font_num{ max_font_num } {
 
             assert(_max_font_num > 0);
         }
 
-        FontManager(FontManager&&) noexcept = default;
+        FontManager(FontManager&& other) noexcept {
+            std::ranges::swap(*this, other);
+        }
 
-        FontManager& operator=(FontManager&&) noexcept = default;
+        FontManager& operator=(FontManager&& other) noexcept {
+            std::ranges::swap(*this, other);
+            return *this;
+        }
 
         operator bool() const noexcept {
             return _max_font_num > 0;
+        }
+
+        friend void swap(FontManager& left, FontManager& right) noexcept {
+            std::ranges::swap(left._max_font_num, right._max_font_num);
+            std::ranges::swap(left._data, right._data);
+            std::ranges::swap(left._collection, right._collection);
         }
 
         usize max_font_num() const noexcept {

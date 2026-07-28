@@ -79,7 +79,7 @@ namespace gm {
         BasicString(BasicString&& other) noexcept
             : BasicString{} {
 
-            this->swap(other);
+            std::ranges::swap(*this, other);
         }
 
         ~BasicString() noexcept {
@@ -90,12 +90,12 @@ namespace gm {
 
         BasicString& operator=(const BasicString& other) noexcept {
             BasicString temp{ other };
-            this->swap(temp);
+            std::ranges::swap(*this, temp);
             return *this;
         }
 
         BasicString& operator=(BasicString&& other) noexcept {
-            this->swap(other);
+            std::ranges::swap(*this, other);
             return *this;
         }
 
@@ -103,12 +103,8 @@ namespace gm {
             return { _data, size() };
         }
 
-        void swap(BasicString& other) noexcept {
-            std::ranges::swap(_data, other._data);
-        }
-
         friend void swap(BasicString& left, BasicString& right) noexcept {
-            left.swap(right);
+            std::ranges::swap(left._data, right._data);
         }
 
         bool empty() const noexcept {

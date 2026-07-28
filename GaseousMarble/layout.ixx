@@ -252,12 +252,23 @@ namespace gm {
             assert(_cache_size > 0);
         }
 
-        LayoutCache(LayoutCache&&) noexcept = default;
+        LayoutCache(LayoutCache&& other) noexcept {
+            std::ranges::swap(*this, other);
+        }
 
-        LayoutCache& operator=(LayoutCache&&) noexcept = default;
+        LayoutCache& operator=(LayoutCache&& other) noexcept {
+            std::ranges::swap(*this, other);
+            return *this;
+        }
 
         operator bool() const noexcept {
             return _cache_size > 0;
+        }
+
+        friend void swap(LayoutCache& left, LayoutCache& right) noexcept {
+            std::ranges::swap(left._cache_size, right._cache_size);
+            std::ranges::swap(left._data, right._data);
+            std::ranges::swap(left._map, right._map);
         }
 
         usize cache_size() const noexcept {
