@@ -1,8 +1,7 @@
 module;
 
-#include <d3d8.h>
+#include <cassert>
 #include <dwrite_3.h>
-#include <rectpack2D/finders_interface.h>
 #include <wil/com.h>
 
 export module gm.font;
@@ -11,97 +10,11 @@ import std;
 import gm.types;
 import gm.utils;
 import gm.env;
+import gm.glyph;
 
 namespace gm {
 
-    class TextureLock {
-        wil::com_ptr<IDirect3DTexture8> _texture;
-        std::mdspan<u32, std::dextents<usize, 2>, std::layout_stride> _data;
-
-    public:
-        TextureLock() noexcept = default;
-
-        TextureLock(wil::com_ptr<IDirect3DTexture8> texture, usize x, usize y, usize width, usize height) {
-            assert(texture && width > 0 && height > 0);
-
-            D3DLOCKED_RECT lock;
-            RECT rect{ static_cast<isize>(x),
-                static_cast<isize>(y),
-                static_cast<isize>(x + width),
-                       static_cast<isize>(y + height) };
-            THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, D3DLOCK_NO_DIRTY_UPDATE));
-
-            _texture = texture;
-            _data = { static_cast<u32*>(lock.pBits),
-                      { std::extents{ height, width }, std::array{ lock.Pitch / sizeof(u32), 1uz } } };
-        }
-
-        TextureLock(TextureLock&& other) noexcept {
-            swap(other);
-        }
-
-        ~TextureLock() noexcept {
-            if (_texture) {
-                _texture->UnlockRect(0);
-            }
-        }
-
-        TextureLock& operator=(TextureLock&& other) noexcept {
-            swap(other);
-            return *this;
-        }
-
-        operator bool() const noexcept {
-            return _texture != nullptr;
-        }
-
-        void swap(TextureLock& other) noexcept {
-            std::ranges::swap(_texture, other._texture);
-            std::ranges::swap(_data, other._data);
-        }
-
-        friend void swap(TextureLock& left, TextureLock& right) noexcept {
-            left.swap(right);
-        }
-
-        void update(usize x, usize y, const std::mdspan<u8, std::dextents<usize, 2>>& data) const {
-            usize height{ data.extents().extent(0) }, width{ data.extents().extent(1) };
-            RECT rect{ static_cast<isize>(x),
-                static_cast<isize>(y),
-                static_cast<isize>(x + width),
-                       static_cast<isize>(y + height) };
-            THROW_IF_FAILED(_texture->AddDirtyRect(&rect));
-
-            for (usize j{}; j < height; ++j) {
-                for (usize i{}; i < width; ++i) {
-                    _data[y + j, x + i] = D3DCOLOR_RGBA(0xff, 0xff, 0xff, (data[j, i]));
-                }
-            }
-        }
-    };
-
-    export struct GlyphId {
-        wil::com_ptr<env::DwFontFace> face;
-        u16 gid;
-
-        friend bool operator==(GlyphId left, GlyphId right) noexcept = default;
-    };
-
-    export struct GlyphRasterization : GlyphId {
-        f32 size;
-    };
-
-    export struct GlyphMeta {
-        wil::com_ptr<IDirect3DTexture8> texture;
-        usize x;
-        usize y;
-        usize width;
-        usize height;
-        isize offset_x;
-        isize offset_y;
-    };
-
-    export struct FontDescription {
+    export struct FontDesc {
         static constexpr u16 WEIGHT_MASK{ 0x3ff };
         static constexpr int WEIGHT_OFFSET{};
         static constexpr u16 STYLE_MASK{ 0xc00 };
@@ -110,11 +23,8 @@ namespace gm {
         static constexpr int STRETCH_OFFSET{ 12 };
 
         std::wstring name;
-        u16 properties{
-            DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET
-            | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
-            | DWRITE_FONT_STRETCH_NORMAL << STRETCH_OFFSET
-        };
+        u16 properties{ DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
+                        | DWRITE_FONT_STRETCH_NORMAL << STRETCH_OFFSET };
         f32 size{};
         std::wstring locale{ L"en-US" };
 
@@ -135,234 +45,94 @@ namespace gm {
         }
     };
 
-    export class Font {
-        struct Hash {
-            usize operator()(GlyphId value) const noexcept {
-                return hash_combine(gm::Hash{}, value.face, value.gid);
-            }
-        };
-
-        FontDescription _desc;
-        f32 _min_aa_h_size{};
-        f32 _min_aa_v_size{};
-        usize _max_texture_num{};
-        usize _texture_width{};
-        usize _texture_height{};
-
-        std::unordered_map<GlyphId, GlyphMeta, Hash> _data;
-
-        usize _texture_num{};
-        wil::com_ptr<IDirect3DTexture8> _current_texture;
-        rectpack2D::empty_spaces<false> _current_bin{ {} };
-
-    public:
-        Font() noexcept = default;
-
-        Font(
-            const FontDescription& desc,
-            f32 min_aa_h_size = 0,
-            f32 min_aa_v_size = 24,
-            usize max_texture_num = 16,
-            usize texture_width = 1024,
-            usize texture_height = 1024
-        ) :
-            _desc{ desc },
-            _min_aa_h_size{ min_aa_h_size },
-            _min_aa_v_size{ min_aa_v_size },
-            _max_texture_num{ max_texture_num },
-            _texture_width{ texture_width },
-            _texture_height{ texture_height } {
-
-            assert(_max_texture_num != 0 && _texture_width != 0 && _texture_height != 0);
-
-            if (!_desc.is_valid() || _min_aa_h_size < 0 || _min_aa_v_size < 0) {
-                throw std::invalid_argument{ "Invalid font arguments." };
-            }
-            }
-
-        Font(Font&&) noexcept = default;
-
-        Font& operator=(Font&&) noexcept = default;
-
-        operator bool() const noexcept {
-            return _max_texture_num != 0;
-        }
-
-        const FontDescription& desc() const noexcept {
-            assert(*this);
-            return _desc;
-        }
-
-        f32 min_aa_h_size() const noexcept {
-            assert(*this);
-            return _min_aa_h_size;
-        }
-
-        f32 min_aa_v_size() const noexcept {
-            assert(*this);
-            return _min_aa_v_size;
-        }
-
-        usize max_texture_num() const noexcept {
-            assert(*this);
-            return _max_texture_num;
-        }
-
-        usize texture_width() const noexcept {
-            assert(*this);
-            return _texture_width;
-        }
-
-        usize texture_height() const noexcept {
-            assert(*this);
-            return _texture_height;
-        }
-
-        template <std::ranges::input_range R, class IdFn, class RasterizationFn>
-        std::vector<const GlyphMeta*> get(R&& items, IdFn&& id_func, RasterizationFn&& raster_func) {
-            assert(*this);
-
-            TextureLock lock;
-            std::vector<const GlyphMeta*> result;
-            for (auto& item : std::forward<R>(items)) {
-                auto iter{ _data.find(std::forward<IdFn>(id_func)(item)) };
-                if (iter != _data.end()) {
-                    result.push_back(&iter->second);
-                    continue;
-                }
-
-                GlyphRasterization rasterization{ std::forward<RasterizationFn>(raster_func)(item) };
-                DWRITE_GLYPH_RUN run{ rasterization.face.get(), rasterization.size, 1, &rasterization.gid };
-                DWRITE_RENDERING_MODE1 aa{
-                    rasterization.size < _min_aa_h_size
-                    ? DWRITE_RENDERING_MODE1_ALIASED
-                    : rasterization.size < _min_aa_v_size
-                    ? DWRITE_RENDERING_MODE1_NATURAL
-                    : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC
-                };
-                wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
-                THROW_IF_FAILED(
-                    env::dw_factory()->CreateGlyphRunAnalysis(
-                        &run,
-                        nullptr,
-                        aa,
-                        DWRITE_MEASURING_MODE_NATURAL,
-                        DWRITE_GRID_FIT_MODE_DISABLED,
-                        DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
-                        0,
-                        0,
-                        &rasterizer
-                    )
-                );
-
-                RECT bbox;
-                THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
-
-                auto width{ static_cast<usize>(bbox.right - bbox.left) };
-                auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
-                if (width == 0 || height == 0) {
-                    result.push_back(
-                        &_data.try_emplace(
-                            std::move(static_cast<GlyphId>(rasterization)),
-                            nullptr,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
-                        ).first->second
-                    );
-                    continue;
-                }
-
-                if (width > _texture_width || height > _texture_height) {
-                    throw std::runtime_error{ "Glyph too large." };
-                }
-
-                std::vector<u8> alpha(width * height);
-                THROW_IF_FAILED(
-                    rasterizer->CreateAlphaTexture(DWRITE_TEXTURE_ALIASED_1x1, &bbox, alpha.data(), alpha.size())
-                );
-
-                usize texture_num{ _texture_num };
-                wil::com_ptr texture{ _current_texture };
-                rectpack2D::empty_spaces bin{ _current_bin };
-                auto insert_result{ bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
-                if (!insert_result) {
-                    if (texture_num++ >= _max_texture_num) {
-                        throw std::runtime_error{ "Too many textures." };
-                    }
-
-                    THROW_IF_FAILED(
-                        env::d3d_device()->CreateTexture(
-                        _texture_width, _texture_height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texture
-                        )
-                    );
-
-                    lock = { texture, 0, 0, _texture_width, _texture_height };
-                    bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
-                    insert_result = bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
-                }
-
-                auto x{ static_cast<usize>(insert_result->x) }, y{ static_cast<usize>(insert_result->y) };
-                auto w{ static_cast<usize>(insert_result->w) }, h{ static_cast<usize>(insert_result->h) };
-                if (!lock) {
-                    lock = { _current_texture, 0, 0, _texture_width, _texture_height };
-                }
-                lock.update(x, y, std::mdspan{ alpha.data(), h, w });
-
-                _texture_num = texture_num;
-                _current_texture = texture;
-                _current_bin = std::move(bin);
-
-                result.push_back(
-                    &_data.try_emplace(
-                        std::move(static_cast<GlyphId>(rasterization)),
-                        _current_texture,
-                        x,
-                        y,
-                        w,
-                        h,
-                        bbox.left,
-                        bbox.top
-                    ).first->second
-                );
-            }
-
-            return result;
-        }
+    export struct Font {
+        FontDesc desc;
+        GlyphAtlas atlas;
+        wil::com_ptr<env::DwFontSet> set;
     };
 
     export class FontManager {
-        usize _id{ 1 };
-        std::unordered_map<usize, Font> _data;
+        usize _max_font_num{};
+
+        std::vector<Font> _data;
         wil::com_ptr<env::DwFontCollection> _collection;
 
-    public:
-        Font* get(usize id) noexcept {
-            auto iter{ _data.find(id) };
-            return iter == _data.end() ? nullptr : &iter->second;
+      public:
+        FontManager(usize max_font_num) noexcept
+            : _max_font_num{ max_font_num } {
+
+            assert(_max_font_num > 0);
         }
 
-        const Font* get(usize id) const noexcept {
-            auto iter{ _data.find(id) };
-            return iter == _data.end() ? nullptr : &iter->second;
+        FontManager(FontManager&&) noexcept = default;
+
+        FontManager& operator=(FontManager&&) noexcept = default;
+
+        operator bool() const noexcept {
+            return _max_font_num > 0;
+        }
+
+        usize max_font_num() const noexcept {
+            assert(*this);
+            return _max_font_num;
+        }
+
+        auto& get(this auto& self, usize id) noexcept {
+            assert(self && id > 0 && id <= self._data.size());
+            return std::forward_like<decltype(self)>(self._data[id - 1]);
         }
 
         env::DwFontCollection* collection() const noexcept {
+            assert(*this);
             return _collection.get();
         }
 
-        template <class... Args>
-        usize add(const FontDescription& desc, Args... args) {
-            Font font{ name, std::forward<Args>(args)... };
-            _data.try_emplace(_id, std::move(font));
-            return _id++;
-        }
+        usize add(const FontDesc& desc, GlyphAtlas&& atlas) {
+            assert(*this);
 
-        bool erase(usize id) noexcept {
-            return _data.erase(id);
+            if (!desc.is_valid()) {
+                throw std::invalid_argument{ "Invalid font description." };
+            }
+
+            if (_data.size() >= _max_font_num) {
+                throw std::runtime_error{ "Too many fonts." };
+            }
+
+            wil::com_ptr<env::DwFontSet> set;
+            if (std::filesystem::is_regular_file(desc.name)) {
+                wil::com_ptr<env::DwFontSetBuilder> builder;
+                THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
+
+                wil::com_ptr<IDWriteFontSet> set_base;
+                THROW_IF_FAILED(builder->AddFontFile(desc.name.data()));
+                THROW_IF_FAILED(builder->CreateFontSet(&set_base));
+                set = set_base.query<env::DwFontSet>();
+
+                wil::com_ptr<env::DwFontSetBuilder> merge_builder;
+                THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&merge_builder));
+
+                THROW_IF_FAILED(builder->AddFontSet(set.get()));
+                for (const auto& [desc, atlas, set] : _data) {
+                    if (set) {
+                        THROW_IF_FAILED(builder->AddFontSet(set.get()));
+                    }
+                }
+
+                wil::com_ptr<IDWriteFontSet> merged_set_base;
+                THROW_IF_FAILED(builder->CreateFontSet(&merged_set_base));
+                wil::com_ptr merged_set{ merged_set_base.query<env::DwFontSet>() };
+
+                wil::com_ptr<IDWriteFontCollection2> collection_base;
+                THROW_IF_FAILED(
+                    env::dw_factory()->CreateFontCollectionFromFontSet(
+                        merged_set.get(), DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE, &collection_base
+                    )
+                );
+                _collection = collection_base.query<env::DwFontCollection>();
+            }
+
+            _data.emplace_back(desc, std::move(atlas), set);
+            return _data.size();
         }
     };
 

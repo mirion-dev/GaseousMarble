@@ -8,6 +8,8 @@
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
     <ClCompile Include="font.ixx" />
+    <ClCompile Include="layout.ixx" />
+    <ClCompile Include="glyph.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

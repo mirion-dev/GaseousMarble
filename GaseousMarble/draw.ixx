@@ -9,6 +9,7 @@ import std;
 import gm.types;
 import gm.utils;
 import gm.env;
+import gm.glyph;
 import gm.font;
 import gm.layout;
 
@@ -35,10 +36,11 @@ namespace gm {
         };
 
         DrawOption _option;
-        LayoutCache _layout{ 1024 };
+        LayoutCache _layout;
 
-    public:
-        Draw() noexcept = default;
+      public:
+        Draw(usize cache_size) noexcept
+            : _layout{ cache_size } {}
 
         Draw(Draw&&) noexcept = default;
 
@@ -54,15 +56,16 @@ namespace gm {
             }
 
             Font& font{ _option.font.first->get(_option.font.second) };
-            auto glyphs{ _layout.get(text, _option).glyphs };
-            auto glyph_meta{
-                font.get(
-                    glyphs,
-                    [](const Glyph& glyph) noexcept -> const GlyphId& { return glyph; },
-                    [](const Glyph& glyph) noexcept -> const GlyphRasterization& { return glyph; }
-                )
-            };
+            f32 texture_width{ static_cast<f32>(font.atlas.texture_width()) };
+            f32 texture_height{ static_cast<f32>(font.atlas.texture_height()) };
+            auto glyphs{ _layout.get({ text, _option }).glyphs };
+            auto glyph_meta{ font.atlas.get(
+                glyphs,
+                [](const GlyphInstance& glyph) noexcept -> const GlyphDesc& { return glyph; },
+                [](const GlyphInstance& glyph) noexcept -> const GlyphSpec& { return glyph; }
+            ) };
 
+            u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
             for (auto [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
                 if (!meta->texture) {
@@ -73,15 +76,10 @@ namespace gm {
                 f32 y1{ y + glyph.y + meta->offset_y - .5f };
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
-
-                f32 width{ static_cast<f32>(font.texture_width()) };
-                f32 height{ static_cast<f32>(font.texture_height()) };
-                f32 u1{ meta->x / width };
-                f32 v1{ meta->y / height };
-                f32 u2{ (meta->x + meta->width) / width };
-                f32 v2{ (meta->y + meta->height) / height };
-
-                u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
+                f32 u1{ meta->x / texture_width };
+                f32 v1{ meta->y / texture_height };
+                f32 u2{ (meta->x + meta->width) / texture_width };
+                f32 v2{ (meta->y + meta->height) / texture_height };
                 Vertex a{ x1, y1, 0, 1, color, u1, v1 };
                 Vertex b{ x2, y1, 0, 1, color, u2, v1 };
                 Vertex c{ x1, y2, 0, 1, color, u1, v2 };
@@ -112,14 +110,14 @@ namespace gm {
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
-            return _layout.get(text, _option).width;
+            return _layout.get({ text, _option }).width;
         }
 
         f32 text_height(std::wstring_view text) {
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
-            return _layout.get(text, _option).height;
+            return _layout.get({ text, _option }).height;
         }
     };
 

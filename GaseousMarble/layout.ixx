@@ -10,24 +10,25 @@ import std;
 import gm.types;
 import gm.utils;
 import gm.env;
+import gm.glyph;
 import gm.font;
 
 namespace gm {
 
-    export struct Glyph : GlyphRasterization {
+    export struct GlyphInstance : GlyphSpec {
         f32 x;
         f32 y;
     };
 
     export struct Layout {
-        std::vector<Glyph> glyphs;
+        std::vector<GlyphInstance> glyphs;
         f32 width;
         f32 height;
     };
 
     // UNSUPPORTED: `DWRITE_GLYPH_RUN::isSideways`; used for vertical writing mode
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
-    public:
+      public:
         STDMETHODIMP IsPixelSnappingDisabled(void* client_drawing_context, BOOL* is_disabled) noexcept {
             *is_disabled = true;
             return S_OK;
@@ -67,17 +68,15 @@ namespace gm {
             for (usize i{}; i < glyph_run->glyphCount; ++i) {
                 u16 gid{ glyph_run->glyphIndices[i] };
                 f32 advance{ glyph_run->glyphAdvances == nullptr ? 0 : glyph_run->glyphAdvances[i] };
-                auto [offset_x, offset_y]{
-                    glyph_run->glyphOffsets == nullptr ? DWRITE_GLYPH_OFFSET{} : glyph_run->glyphOffsets[i]
-                };
+                auto [offset_x, offset_y]{ glyph_run->glyphOffsets == nullptr ? DWRITE_GLYPH_OFFSET{}
+                                                                              : glyph_run->glyphOffsets[i] };
 
                 if (is_ltr) {
-                    glyphs.emplace_back(GlyphRasterization{ { face, gid }, size }, x + offset_x, y - offset_y);
+                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, x + offset_x, y - offset_y);
                     x += advance;
-                }
-                else {
+                } else {
                     x -= advance;
-                    glyphs.emplace_back(GlyphRasterization{ { face, gid }, size }, x - offset_x, y - offset_y);
+                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, x - offset_x, y - offset_y);
                 }
             }
 
@@ -124,7 +123,6 @@ namespace gm {
         // [IDWriteTextLayout]
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
-        // TODO: `FontCollection`; used for loading from font files
         std::pair<FontManager*, usize> font{};
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
@@ -167,47 +165,52 @@ namespace gm {
 
         bool is_valid() const noexcept {
             return alignment <= ALIGNMENT_MASK
-                && word_wrapping != DWRITE_WORD_WRAPPING_WRAP
-                && direction <= DIRECTION_MASK
-                && text_direction() != DWRITE_READING_DIRECTION_TOP_TO_BOTTOM
-                && text_direction() != DWRITE_READING_DIRECTION_BOTTOM_TO_TOP
-                && par_direction() != DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT
-                && par_direction() != DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT
-                && tab_spacing >= 0
-                && max_width >= 0
-                && max_height >= 0
-                && font.first != nullptr
-                && font.second != 0
-                && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT
-                && line_height >= 0;
+                   && word_wrapping != DWRITE_WORD_WRAPPING_WRAP
+                   && direction <= DIRECTION_MASK
+                   && text_direction() != DWRITE_READING_DIRECTION_TOP_TO_BOTTOM
+                   && text_direction() != DWRITE_READING_DIRECTION_BOTTOM_TO_TOP
+                   && par_direction() != DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT
+                   && par_direction() != DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT
+                   && tab_spacing >= 0
+                   && max_width >= 0
+                   && max_height >= 0
+                   && font.first != nullptr
+                   && font.second > 0
+                   && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT
+                   && line_height >= 0;
         }
 
         friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
     };
 
+    export struct LayoutSpecRef {
+        std::wstring_view text;
+        const LayoutOption& option;
+
+        friend bool operator==(const LayoutSpecRef& left, const LayoutSpecRef& right) noexcept {
+            return left.text == right.text && left.option == right.option;
+        }
+    };
+
+    export struct LayoutSpec {
+        std::wstring text;
+        LayoutOption option;
+
+        LayoutSpec() noexcept = default;
+
+        template <std::convertible_to<LayoutSpecRef> R>
+        LayoutSpec(R&& spec) noexcept {
+            auto ref{ static_cast<LayoutSpecRef>(spec) };
+            text = ref.text;
+            option = ref.option;
+        }
+
+        operator LayoutSpecRef() const noexcept {
+            return { text, option };
+        }
+    };
+
     export class LayoutCache {
-        struct Key {
-            std::wstring text;
-            LayoutOption option;
-        };
-
-        struct KeyRef {
-            std::wstring_view text;
-            const LayoutOption* option;
-
-            KeyRef(const Key& key) noexcept :
-                text{ key.text },
-                option{ &key.option } {}
-
-            KeyRef(std::wstring_view text, const LayoutOption& option) noexcept :
-                text{ text },
-                option{ &option } {}
-
-            friend bool operator==(const KeyRef& left, const KeyRef& right) noexcept {
-                return left.text == right.text && *left.option == *right.option;
-            }
-        };
-
         struct Hash : gm::Hash {
             using gm::Hash::operator();
 
@@ -230,17 +233,17 @@ namespace gm {
                 );
             }
 
-            usize operator()(const KeyRef& value) const noexcept {
-                return hash_combine(Hash{}, value.text, *value.option);
+            usize operator()(const LayoutSpecRef& value) const noexcept {
+                return hash_combine(Hash{}, value.text, value.option);
             }
         };
 
         usize _cache_size{};
 
-        std::list<std::pair<Key, Layout>> _data;
-        std::unordered_map<KeyRef, decltype(_data)::iterator, Hash> _map;
+        std::list<std::pair<LayoutSpec, Layout>> _data;
+        std::unordered_map<LayoutSpecRef, decltype(_data)::iterator, Hash> _map;
 
-    public:
+      public:
         LayoutCache() noexcept = default;
 
         LayoutCache(usize cache_size) noexcept
@@ -254,7 +257,7 @@ namespace gm {
         LayoutCache& operator=(LayoutCache&&) noexcept = default;
 
         operator bool() const noexcept {
-            return _cache_size != 0;
+            return _cache_size > 0;
         }
 
         usize cache_size() const noexcept {
@@ -262,27 +265,28 @@ namespace gm {
             return _cache_size;
         }
 
-        const Layout& get(std::wstring_view text, const LayoutOption& option) {
-            assert(*this && option.is_valid());
+        const Layout& get(const LayoutSpecRef& spec) {
+            assert(*this && spec.option.is_valid());
 
-            auto map_iter{ _map.find({ text, option }) };
+            auto map_iter{ _map.find(spec) };
             if (map_iter != _map.end()) {
                 auto iter{ map_iter->second };
                 _data.splice(_data.end(), _data, iter);
                 return iter->second;
             }
 
-            auto& font_desc{ option.font.first->get(option.font.second).desc() };
+            auto& [text, option]{ spec };
+            Font& font{ option.font.first->get(option.font.second) };
             wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
-                    font_desc.name.data(),
+                    font.desc.name.data(),
                     option.font.first->collection(),
-                    font_desc.weight(),
-                    font_desc.style(),
-                    font_desc.stretch(),
-                    font_desc.size,
-                    font_desc.locale.data(),
+                    font.desc.weight(),
+                    font.desc.style(),
+                    font.desc.stretch(),
+                    font.desc.size,
+                    font.desc.locale.data(),
                     &format_base
                 )
             );
@@ -322,30 +326,19 @@ namespace gm {
             // [IDWriteTextLayout1]
             if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
                 THROW_IF_FAILED(layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
-            }
-            else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
+            } else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
                 THROW_IF_FAILED(layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
                 x -= option.letter_spacing;
-            }
-            else {
+            } else {
                 THROW_IF_FAILED(
-                    layout->SetCharacterSpacing(
-                        option.letter_spacing / 2,
-                        option.letter_spacing / 2,
-                        0,
-                        range
-                    )
+                    layout->SetCharacterSpacing(option.letter_spacing / 2, option.letter_spacing / 2, 0, range)
                 );
                 x -= option.letter_spacing / 2;
             }
 
             // [IDWriteTextLayout3]
             DWRITE_LINE_SPACING line_spacing{
-                option.line_spacing_type,
-                option.line_height,
-                option.baseline,
-                0,
-                DWRITE_FONT_LINE_GAP_USAGE_ENABLED
+                option.line_spacing_type, option.line_height, option.baseline, 0, DWRITE_FONT_LINE_GAP_USAGE_ENABLED
             };
             THROW_IF_FAILED(layout->SetLineSpacing(&line_spacing));
 
@@ -360,7 +353,7 @@ namespace gm {
             gm_layout.width = std::max(metrics.width - option.letter_spacing, 0.f);
             gm_layout.height = metrics.height;
 
-            auto iter{ _data.emplace(_data.end(), Key{ std::wstring{ text }, option }, std::move(gm_layout)) };
+            auto iter{ _data.emplace(_data.end(), spec, std::move(gm_layout)) };
             _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {

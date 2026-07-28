@@ -14,16 +14,16 @@ using namespace gm;
 
 static String string_value;
 
-static FontManager font_manager;
+static FontManager font_manager{ 64 };
 static std::unordered_map<std::string, usize> key_map;
 static std::unordered_map<usize, std::string_view> id_map;
-static Draw draw;
+static Draw draw{ 1024 };
 
 API Real gm2_internal_to_real(StringRef string) noexcept {
     return reinterpret_cast<usize>(string);
 }
 
-StringRef internal_from_real(Real real) noexcept {
+static StringRef internal_from_real(Real real) noexcept {
     return reinterpret_cast<const char*>(static_cast<usize>(real));
 }
 
@@ -35,8 +35,7 @@ API Real gm2_internal_new_font(
     Real raw_locale,
     Real raw_min_aa_h_size,
     Real raw_min_aa_v_size
-) noexcept
-try {
+) noexcept try {
     std::string key{ internal_from_real(raw_key) };
     if (key.empty()) {
         throw std::invalid_argument{ "Font key must not be empty." };
@@ -46,38 +45,32 @@ try {
         return S_FALSE;
     }
 
-    usize id{ font_manager.insert(
-        {
-            to_wstring(internal_from_real(raw_name)),
-            saturating_cast<u16>(raw_properties, FontDescription{}.properties),
-            saturating_cast<f32>(raw_size),
-            to_wstring(internal_from_real(raw_locale))
-        },
-        std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
-        std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f)
+    usize id{ font_manager.add(
+        { to_wstring(internal_from_real(raw_name)),
+          saturating_cast<u16>(raw_properties, FontDesc{}.properties),
+          saturating_cast<f32>(raw_size),
+          to_wstring(internal_from_real(raw_locale)) },
+        { 1024,
+          1024,
+          16,
+          { std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
+            std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f) } }
     ) };
     id_map.try_emplace(id, key_map.try_emplace(std::move(key), id).first->first);
     return S_OK;
 }
 CATCH_RETURN()
 
-API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept
-try {
+API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try {
     draw.text(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), to_wstring(raw_text));
     return S_OK;
 }
 CATCH_RETURN()
 
-API Real gm2_text_width(StringRef raw_text) noexcept
-try {
-    return draw.text_width(to_wstring(raw_text));
-}
+API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_width(to_wstring(raw_text)); }
 CATCH_RETURN()
 
-API Real gm2_text_height(StringRef raw_text) noexcept
-try {
-    return draw.text_height(to_wstring(raw_text));
-}
+API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_height(to_wstring(raw_text)); }
 CATCH_RETURN()
 
 API Real gm2_set_alignment(Real raw_alignment) noexcept {
@@ -87,13 +80,13 @@ API Real gm2_set_alignment(Real raw_alignment) noexcept {
 
 API Real gm2_set_text_alignment(Real raw_alignment) noexcept {
     draw.option().alignment = draw.option().alignment & ~DrawOption::TEXT_ALIGNMENT_MASK
-        | saturating_cast<u8>(raw_alignment, 0) & DrawOption::TEXT_ALIGNMENT_MASK;
+                              | saturating_cast<u8>(raw_alignment, 0) & DrawOption::TEXT_ALIGNMENT_MASK;
     return S_OK;
 }
 
 API Real gm2_set_par_alignment(Real raw_alignment) noexcept {
     draw.option().alignment = draw.option().alignment & ~DrawOption::PAR_ALIGNMENT_MASK
-        | saturating_cast<u8>(raw_alignment, 0) & DrawOption::PAR_ALIGNMENT_MASK;
+                              | saturating_cast<u8>(raw_alignment, 0) & DrawOption::PAR_ALIGNMENT_MASK;
     return S_OK;
 }
 
@@ -111,8 +104,7 @@ API Real gm2_set_text_direction(Real raw_direction) noexcept {
     int direction{ saturating_cast<u8>(raw_direction, 0) & DrawOption::TEXT_DIRECTION_MASK };
     if (direction == DWRITE_READING_DIRECTION_TOP_TO_BOTTOM) {
         direction = DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
-    }
-    else if (direction == DWRITE_READING_DIRECTION_BOTTOM_TO_TOP) {
+    } else if (direction == DWRITE_READING_DIRECTION_BOTTOM_TO_TOP) {
         direction = DWRITE_READING_DIRECTION_RIGHT_TO_LEFT;
     }
 
@@ -124,8 +116,7 @@ API Real gm2_set_par_direction(Real raw_direction) noexcept {
     int direction{ saturating_cast<u8>(raw_direction, 0) & DrawOption::PAR_DIRECTION_MASK };
     if (direction == DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT) {
         direction = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM;
-    }
-    else if (direction == DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT) {
+    } else if (direction == DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT) {
         direction = DWRITE_FLOW_DIRECTION_BOTTOM_TO_TOP;
     }
 
@@ -169,8 +160,7 @@ API Real gm2_set_max_height(Real raw_max_height) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_font(StringRef raw_key) noexcept
-try {
+API Real gm2_set_font(StringRef raw_key) noexcept try {
     auto iter{ key_map.find(raw_key) };
     if (iter == key_map.end()) {
         throw std::invalid_argument{ "Font not found." };
@@ -254,44 +244,44 @@ API StringRef gm2_get_font() noexcept {
 
 API StringRef gm2_get_font_name() noexcept {
     usize id{ draw.option().font.second };
-    string_value = id == 0 ? String{} : String{ to_string(font_manager.get(id).desc().name) };
+    string_value = id == 0 ? String{} : String{ to_string(font_manager.get(id).desc.name) };
     return string_value.data();
 }
 
 API Real gm2_get_font_size() noexcept {
     usize id{ draw.option().font.second };
-    return id == 0 ? -1 : font_manager.get(id).desc().size;
+    return id == 0 ? -1 : font_manager.get(id).desc.size;
 }
 
 API Real gm2_get_font_weight() noexcept {
     usize id{ draw.option().font.second };
-    return id == 0 ? -1 : font_manager.get(id).desc().properties & FontDescription::WEIGHT_MASK;
+    return id == 0 ? -1 : font_manager.get(id).desc.properties & FontDesc::WEIGHT_MASK;
 }
 
 API Real gm2_get_font_style() noexcept {
     usize id{ draw.option().font.second };
-    return id == 0 ? -1 : font_manager.get(id).desc().properties & FontDescription::STYLE_MASK;
+    return id == 0 ? -1 : font_manager.get(id).desc.properties & FontDesc::STYLE_MASK;
 }
 
 API Real gm2_get_font_stretch() noexcept {
     usize id{ draw.option().font.second };
-    return id == 0 ? -1 : font_manager.get(id).desc().properties & FontDescription::STRETCH_MASK;
+    return id == 0 ? -1 : font_manager.get(id).desc.properties & FontDesc::STRETCH_MASK;
 }
 
 API StringRef gm2_get_font_locale() noexcept {
     usize id{ draw.option().font.second };
-    string_value = id == 0 ? String{} : String{ to_string(font_manager.get(id).desc().locale) };
+    string_value = id == 0 ? String{} : String{ to_string(font_manager.get(id).desc.locale) };
     return string_value.data();
 }
 
 API Real gm2_get_font_min_aa_h_size() noexcept {
     usize id{ draw.option().font.second };
-    return id == 0 ? -1 : font_manager.get(id).min_aa_h_size();
+    return id == 0 ? -1 : font_manager.get(id).atlas.option().min_aa_h_size;
 }
 
 API Real gm2_get_font_min_aa_v_size() noexcept {
     usize id{ draw.option().font.second };
-    return id == 0 ? -1 : font_manager.get(id).min_aa_v_size();
+    return id == 0 ? -1 : font_manager.get(id).atlas.option().min_aa_v_size;
 }
 
 API Real gm2_get_letter_spacing() noexcept {
