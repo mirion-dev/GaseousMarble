@@ -112,12 +112,13 @@ namespace gm {
             }
 
             wil::com_ptr<env::DwFontSet> set;
-            if (std::filesystem::is_regular_file(desc.name)) {
+            auto abs_path{ std::filesystem::absolute(desc.name) };
+            if (std::filesystem::is_regular_file(abs_path)) {
                 wil::com_ptr<env::DwFontSetBuilder> builder;
                 THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
 
                 wil::com_ptr<IDWriteFontSet> set_base;
-                THROW_IF_FAILED(builder->AddFontFile(desc.name.data()));
+                THROW_IF_FAILED(builder->AddFontFile(abs_path.c_str()));
                 THROW_IF_FAILED(builder->CreateFontSet(&set_base));
                 set = set_base.query<env::DwFontSet>();
 
