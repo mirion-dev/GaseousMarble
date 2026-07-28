@@ -1,5 +1,6 @@
 module;
 
+#include <cassert>
 #include <d3d8.h>
 #include <wil/com.h>
 
@@ -39,14 +40,23 @@ namespace gm {
         LayoutCache _layout;
 
     public:
-        Draw(usize cache_size) noexcept
+        Draw() = default;
+
+        Draw(usize cache_size)
             : _layout{ cache_size } {}
 
+        operator bool() noexcept {
+            return _layout;
+        }
+
         auto& option(this auto& self) noexcept {
+            assert(self);
             return std::forward_like<decltype(self)>(self._option);
         }
 
         void text(f32 x, f32 y, std::wstring_view text) {
+            assert(*this);
+
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
@@ -103,16 +113,22 @@ namespace gm {
         }
 
         f32 text_width(std::wstring_view text) {
+            assert(*this);
+
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
+
             return _layout.get({ text, _option }).width;
         }
 
         f32 text_height(std::wstring_view text) {
+            assert(*this);
+
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
+
             return _layout.get({ text, _option }).height;
         }
     };
