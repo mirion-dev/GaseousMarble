@@ -8,7 +8,10 @@ Cpp11BracedListStyle: Block # { ... }
 NamespaceIndentation: All
 
 # Line Breaks
+AllowShortCaseExpressionOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
+AllowShortRecordOnASingleLine: Empty
 BreakAfterOpenBracketFunction: true
 BreakAfterOpenBracketIf: true
 BreakAfterOpenBracketLoop: true
