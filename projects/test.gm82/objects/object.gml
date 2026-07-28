@@ -7,7 +7,6 @@ applies_to=self
 var dll_path{ dll_path = parameter_string(1) }
 global.gm2_internal_to_real       = external_define(dll_path, "gm2_internal_to_real", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_internal_new_font      = external_define(dll_path, "gm2_internal_new_font", dll_cdecl, ty_real, 7, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
-global.gm2_delete_font            = external_define(dll_path, "gm2_delete_font", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_draw_text              = external_define(dll_path, "gm2_draw_text", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm2_text_width             = external_define(dll_path, "gm2_text_width", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_text_height            = external_define(dll_path, "gm2_text_height", dll_cdecl, ty_real, 1, ty_string)
