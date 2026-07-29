@@ -40,9 +40,9 @@ namespace gm {
         LayoutCache _layout;
 
     public:
-        Draw() = default;
+        Draw() noexcept = default;
 
-        Draw(usize cache_size)
+        Draw(usize cache_size) noexcept
             : _layout{ cache_size } {}
 
         operator bool() noexcept {
@@ -61,11 +61,11 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            Font& font{ _option.font.first->get(_option.font.second) };
-            f32 texture_width{ static_cast<f32>(font.atlas.texture_width()) };
-            f32 texture_height{ static_cast<f32>(font.atlas.texture_height()) };
+            GlyphAtlas& atlas{ _option.font.first->get(_option.font.second).atlas };
+            f32 texture_width{ static_cast<f32>(atlas.texture_width()) };
+            f32 texture_height{ static_cast<f32>(atlas.texture_height()) };
             auto glyphs{ _layout.get({ text, _option }).glyphs };
-            auto glyph_meta{ font.atlas.get(
+            auto glyph_meta{ atlas.get(
                 glyphs,
                 [](const GlyphInstance& glyph) noexcept -> const GlyphDesc& { return glyph; },
                 [](const GlyphInstance& glyph) noexcept -> const GlyphSpec& { return glyph; }

@@ -196,13 +196,10 @@ namespace gm {
         std::wstring text;
         LayoutOption option;
 
-        LayoutSpec() noexcept = default;
-
         template <std::convertible_to<LayoutSpecRef> R>
-        LayoutSpec(R&& spec) noexcept {
-            auto ref{ static_cast<LayoutSpecRef>(spec) };
-            text = ref.text;
-            option = ref.option;
+        static LayoutSpec from(R&& spec) noexcept {
+            auto [text, option]{ static_cast<LayoutSpecRef>(spec) };
+            return { std::wstring{ text }, option };
         }
 
         operator LayoutSpecRef() const noexcept {
@@ -287,17 +284,17 @@ namespace gm {
             }
 
             auto& [text, option]{ spec };
-            Font& font{ option.font.first->get(option.font.second) };
+            FontDesc& font_desc{ option.font.first->get(option.font.second).desc };
             wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
-                    font.desc.name.data(),
-                    option.font.first->collection(),
-                    font.desc.weight(),
-                    font.desc.style(),
-                    font.desc.stretch(),
-                    font.desc.size,
-                    font.desc.locale.data(),
+                    font_desc.name.data(),
+                    font_desc.collection.get(),
+                    font_desc.weight(),
+                    font_desc.style(),
+                    font_desc.stretch(),
+                    font_desc.size,
+                    font_desc.locale.data(),
                     &format_base
                 )
             );
@@ -364,7 +361,7 @@ namespace gm {
             gm_layout.width = std::max(metrics.width - option.letter_spacing, 0.f);
             gm_layout.height = metrics.height;
 
-            auto iter{ _data.emplace(_data.end(), spec, std::move(gm_layout)) };
+            auto iter{ _data.emplace(_data.end(), LayoutSpec::from(spec), std::move(gm_layout)) };
             _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {

@@ -45,17 +45,27 @@ API Real gm2_internal_new_font(
         return S_FALSE;
     }
 
-    usize id{ font_manager.add(
-        { to_wstring(internal_from_real(raw_name)),
-          saturating_cast<u16>(raw_properties, FontDesc{}.properties),
-          saturating_cast<f32>(raw_size),
-          to_wstring(internal_from_real(raw_locale)) },
-        { 1024,
-          1024,
-          16,
-          { std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
-            std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f) } }
-    ) };
+    FontDesc desc{ {},
+                   to_wstring(internal_from_real(raw_name)),
+                   saturating_cast<u16>(raw_properties, FontDesc{}.properties),
+                   saturating_cast<f32>(raw_size),
+                   to_wstring(internal_from_real(raw_locale)) };
+    if (!desc.is_valid()) {
+        throw std::invalid_argument{ "Invalid font description." };
+    }
+
+    if (std::filesystem::is_regular_file(desc.name)) {
+        auto extracted{ FontDesc::from(desc.name) };
+        desc.collection = extracted.collection;
+        desc.name = std::move(extracted.name);
+    }
+
+    GlyphAtlas atlas{ 1024,
+                      1024,
+                      16,
+                      { std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
+                        std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f) } };
+    usize id{ font_manager.add(std::move(desc), std::move(atlas)) };
     id_map.try_emplace(id, key_map.try_emplace(std::move(key), id).first->first);
     return S_OK;
 }

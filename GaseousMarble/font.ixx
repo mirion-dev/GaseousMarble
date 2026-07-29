@@ -22,11 +22,37 @@ namespace gm {
         static constexpr u16 STRETCH_MASK{ 0xf000 };
         static constexpr int STRETCH_OFFSET{ 12 };
 
+        wil::com_ptr<env::DwFontCollection> collection;
         std::wstring name;
         u16 properties{ DWRITE_FONT_WEIGHT_NORMAL << WEIGHT_OFFSET | DWRITE_FONT_STYLE_NORMAL << STYLE_OFFSET
                         | DWRITE_FONT_STRETCH_NORMAL << STRETCH_OFFSET };
         f32 size{};
         std::wstring locale{ L"en-US" };
+
+        template <class... Args>
+        static FontDesc from(std::wstring_view path, Args&&... args) {
+            wil::com_ptr<env::DwFontSetBuilder> builder;
+            THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
+
+            auto abs_path{ std::filesystem::absolute(path) };
+            wil::com_ptr<IDWriteFontSet> set_base;
+            THROW_IF_FAILED(builder->AddFontFile(abs_path.c_str()));
+            THROW_IF_FAILED(builder->CreateFontSet(&set_base));
+            wil::com_ptr set{ set_base.query<env::DwFontSet>() };
+
+            wil::com_ptr<IDWriteFontCollection2> collection_base;
+            THROW_IF_FAILED(
+                env::dw_factory()->CreateFontCollectionFromFontSet(
+                    set.get(), DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE, &collection_base
+                )
+            );
+            wil::com_ptr collection{ collection_base.query<env::DwFontCollection>() };
+
+            std::wstring name;
+            // TODO
+
+            return { collection, std::move(name), std::forward<Args>(args)... };
+        }
 
         DWRITE_FONT_WEIGHT weight() const noexcept {
             return static_cast<DWRITE_FONT_WEIGHT>((properties & WEIGHT_MASK) >> WEIGHT_OFFSET);
@@ -48,14 +74,12 @@ namespace gm {
     export struct Font {
         FontDesc desc;
         GlyphAtlas atlas;
-        wil::com_ptr<env::DwFontSet> set;
     };
 
     export class FontManager {
         usize _max_font_num{};
 
         std::vector<Font> _data;
-        wil::com_ptr<env::DwFontCollection> _collection;
 
     public:
         FontManager() noexcept = default;
@@ -82,7 +106,6 @@ namespace gm {
         friend void swap(FontManager& left, FontManager& right) noexcept {
             std::ranges::swap(left._max_font_num, right._max_font_num);
             std::ranges::swap(left._data, right._data);
-            std::ranges::swap(left._collection, right._collection);
         }
 
         usize max_font_num() const noexcept {
@@ -95,57 +118,15 @@ namespace gm {
             return std::forward_like<decltype(self)>(self._data[id - 1]);
         }
 
-        env::DwFontCollection* collection() const noexcept {
+        template <class... Args>
+        usize add(Args&&... args) {
             assert(*this);
-            return _collection.get();
-        }
-
-        usize add(const FontDesc& desc, GlyphAtlas&& atlas) {
-            assert(*this);
-
-            if (!desc.is_valid()) {
-                throw std::invalid_argument{ "Invalid font description." };
-            }
 
             if (_data.size() >= _max_font_num) {
                 throw std::runtime_error{ "Too many fonts." };
             }
 
-            wil::com_ptr<env::DwFontSet> set;
-            auto abs_path{ std::filesystem::absolute(desc.name) };
-            if (std::filesystem::is_regular_file(abs_path)) {
-                wil::com_ptr<env::DwFontSetBuilder> builder;
-                THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
-
-                wil::com_ptr<IDWriteFontSet> set_base;
-                THROW_IF_FAILED(builder->AddFontFile(abs_path.c_str()));
-                THROW_IF_FAILED(builder->CreateFontSet(&set_base));
-                set = set_base.query<env::DwFontSet>();
-
-                wil::com_ptr<env::DwFontSetBuilder> merge_builder;
-                THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&merge_builder));
-
-                THROW_IF_FAILED(builder->AddFontSet(set.get()));
-                for (const auto& [desc, atlas, set] : _data) {
-                    if (set) {
-                        THROW_IF_FAILED(builder->AddFontSet(set.get()));
-                    }
-                }
-
-                wil::com_ptr<IDWriteFontSet> merged_set_base;
-                THROW_IF_FAILED(builder->CreateFontSet(&merged_set_base));
-                wil::com_ptr merged_set{ merged_set_base.query<env::DwFontSet>() };
-
-                wil::com_ptr<IDWriteFontCollection2> collection_base;
-                THROW_IF_FAILED(
-                    env::dw_factory()->CreateFontCollectionFromFontSet(
-                        merged_set.get(), DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE, &collection_base
-                    )
-                );
-                _collection = collection_base.query<env::DwFontCollection>();
-            }
-
-            _data.emplace_back(desc, std::move(atlas), set);
+            _data.emplace_back(std::forward<Args>(args)...);
             return _data.size();
         }
     };
