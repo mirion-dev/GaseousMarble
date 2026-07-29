@@ -4,14 +4,14 @@
 
 > [!warning]
 > Minimum system requirement: Windows 10, Version 1803.
-> 
+>
 > Incompatible with 3D mode.
 
 ## Functions
 
 | **Function** | **v1 Function** | **Description** |
 | :--: | :--: | -- |
-| `gm2_new_font(key, name, size, properties, locale, min_aa_h_size, min_aa_v_size)` | `gm_font()`<br>`generate_font()` | <ul><li>**New**: Creates fonts dynamically and supports more font properties.</li><li>**Dropped**: Loads fonts from images.</li></ul> |
+| `gm2_new_font(key, name, properties, size, locale, min_aa_h_size, min_aa_v_size)` | `gm_font()`<br>`generate_font()` | <ul><li>**New**: Creates fonts dynamically and supports more font properties.</li><li>**Dropped**: Loads fonts from images.</li></ul> |
 | | ~~`gm_free()`~~ | <ul><li>**Removed**: All glyphs are extracted on demand, so excessive memory usage generally does not occur.</li></ul> |
 | | ~~`gm_clear()`~~ | <ul><li>**Removed**: Ditto.</li></ul> |
 | `gm2_draw_text(x, y, text)`<br>`gm2_text_width(text)`<br>`gm2_text_height(text)` | `gm_draw()`<br>`gm_width()`<br>`gm_height()` | <ul><li>**New**: Professional typography based on DirectWrite.</li></ul> |

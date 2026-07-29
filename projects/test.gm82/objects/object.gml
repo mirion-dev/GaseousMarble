@@ -54,8 +54,8 @@ error = external_call(
     global.gm2_internal_new_font,
     external_call(global.gm2_internal_to_real, "default"),
     external_call(global.gm2_internal_to_real, "SimSun"),
-    18,
     400 | 0 << 10 | 5 << 12,
+    18,
     external_call(global.gm2_internal_to_real, ""),
     0,
     24

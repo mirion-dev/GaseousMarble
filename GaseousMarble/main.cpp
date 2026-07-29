@@ -30,8 +30,8 @@ static StringRef internal_from_real(Real real) noexcept {
 API Real gm2_internal_new_font(
     Real raw_key,
     Real raw_name,
-    Real raw_size,
     Real raw_properties,
+    Real raw_size,
     Real raw_locale,
     Real raw_min_aa_h_size,
     Real raw_min_aa_v_size
