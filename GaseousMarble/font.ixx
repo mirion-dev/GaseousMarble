@@ -7,7 +7,7 @@ export module gm.font;
 import std;
 import gm.types;
 import gm.utils;
-import gm.engine;
+import gm.env;
 
 namespace gm {
 
@@ -28,7 +28,7 @@ namespace gm {
 
     export class Font {
         static void _deleter(usize id) noexcept {
-            static Function sprite_delete{ FunctionId::sprite_delete };
+            static env::Function sprite_delete{ env::FunctionId::sprite_delete };
             sprite_delete(id);
         }
 
@@ -46,7 +46,7 @@ namespace gm {
         Font(std::string_view name, std::string_view sprite_path)
             : _name{ name } {
 
-            static Function sprite_add{ FunctionId::sprite_add };
+            static env::Function sprite_add{ env::FunctionId::sprite_add };
             _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (!_sprite) {
                 throw FontError::failed_to_load_sprite;

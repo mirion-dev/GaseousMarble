@@ -15,7 +15,7 @@
     <ClCompile Include="gm.ixx" />
     <ClCompile Include="utils.ixx" />
     <ClCompile Include="draw.ixx" />
-    <ClCompile Include="engine.ixx" />
+    <ClCompile Include="env.ixx" />
     <ClCompile Include="font.ixx" />
     <ClCompile Include="types.ixx" />
   </ItemGroup>

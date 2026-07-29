@@ -2,53 +2,19 @@ module;
 
 #include <cassert>
 
-export module gm.engine;
+export module gm.env;
 
 import std;
 import gm.types;
 
-namespace gm {
-
-    enum class ValueType {
-        real,
-        string
-    };
-
-    class Value {
-        ValueType _type{};
-        Real _real{};
-        String _string;
-
-    public:
-        Value() noexcept = default;
-
-        Value(Real real) noexcept
-            : _real{ real } {}
-
-        Value(String string) noexcept
-            : _type{ ValueType::string }, _string{ string } {}
-
-        operator Real() const noexcept {
-            assert(_type == ValueType::real);
-            return _real;
-        }
-
-        operator String() const noexcept {
-            assert(_type == ValueType::string);
-            return _string;
-        }
-
-        ValueType type() const noexcept {
-            return _type;
-        }
-    };
+namespace gm::env {
 
     struct FunctionData {
         u8 name_size;
         char name[67];
         void* address;
         u32 arg_count;
-        bool require_pro;
+        bool is_pro;
     };
 
     struct FunctionResource {
@@ -106,22 +72,22 @@ namespace gm {
                 return {};
             }
 
-            std::array<Value, ARGS_COUNT> args_arr{ static_cast<Value>(
+            std::array<Value, ARGS_COUNT> value_args{ static_cast<Value>(
                 static_cast<std::conditional_t<std::convertible_to<Args, Real>, Real, String>>(args)
             )... };
-            Value res;
-            Value* args_ptr{ args_arr.data() };
-            Value* res_ptr{ &res };
+            Value* args_ptr{ value_args.data() };
+            Value result;
+            Value* result_ptr{ &result };
             void* func_ptr{ address() };
 
             __asm {
                 push args_ptr;
                 push ARGS_COUNT;
-                push res_ptr;
+                push result_ptr;
                 call func_ptr;
             }
 
-            return res;
+            return result;
         }
     };
 

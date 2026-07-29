@@ -1,3 +1,7 @@
+module;
+
+#include <cassert>
+
 export module gm.types;
 
 import std;
@@ -129,5 +133,39 @@ namespace gm {
         using String = BasicString<char>;
         using StringRef = const char*;
     }
+
+    export enum class ValueType : u32 {
+        real,
+        string
+    };
+
+    export class Value {
+        ValueType _type{};
+        Real _real{};
+        String _string;
+
+    public:
+        Value() noexcept = default;
+
+        Value(Real real) noexcept
+            : _real{ real } {}
+
+        Value(String string) noexcept
+            : _type{ ValueType::string }, _string{ string } {}
+
+        operator Real() const noexcept {
+            assert(_type == ValueType::real);
+            return _real;
+        }
+
+        operator String() const noexcept {
+            assert(_type == ValueType::string);
+            return _string;
+        }
+
+        ValueType type() const noexcept {
+            return _type;
+        }
+    };
 
 }
