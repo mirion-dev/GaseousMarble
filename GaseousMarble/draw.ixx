@@ -67,8 +67,8 @@ namespace gm {
     public:
         Text() noexcept = default;
 
-        Text(std::string_view str, const TextOption& option) :
-            _option{ option } {
+        Text(std::string_view str, const TextOption& option)
+            : _option{ option } {
 
             if (_option.font == nullptr || _option.max_line_length < 0) {
                 throw TextError::invalid_option;
@@ -85,108 +85,100 @@ namespace gm {
             f32 cursor{};
             usize justified_count{};
 
-            auto push_token{
-                [&] noexcept {
-                    if (first == last) {
-                        return;
-                    }
-
-                    if (!cont) {
-                        ++justified_count;
-                    }
-                    line.tokens.emplace_back(std::string{ first, last }, cont);
+            auto push_token{ [&] noexcept {
+                if (first == last) {
+                    return;
                 }
-            };
 
-            auto push_line{
-                [&](bool hard = false, bool last = false) noexcept {
-                    push_token();
-
-                    if (!hard && justified_count > 1) {
-                        line.justified_spacing = (_option.max_line_length - line.width) / (justified_count - 1);
-                        line.width = _option.max_line_length;
-                    }
-
-                    if (!last) {
-                        line.height *= _option.line_height;
-                    }
-
-                    _layout.width = std::max(_layout.width, line.width);
-                    _layout.height += line.height;
-                    _layout.lines.emplace_back(std::move(line));
-
-                    line = { .height = height };
-                    cursor = 0;
-                    justified_count = 0;
+                if (!cont) {
+                    ++justified_count;
                 }
-            };
+                line.tokens.emplace_back(std::string{ first, last }, cont);
+            } };
 
-            auto push_word{
-                [&](std::string_view word, u32 type) {
-                    const char* word_begin{ word.data() };
-                    const char* word_end{ word_begin + word.size() };
-                    f32 next_cursor{ cursor }, next_line_width{ line.width };
-                    bool first_ch{ true };
-                    bool line_break{};
-                    if (!unicode_for_each(
-                        word,
-                        [&](u32 ch) noexcept {
-                            if (first_ch) {
-                                first_ch = false;
+            auto push_line{ [&](bool hard = false, bool last = false) noexcept {
+                push_token();
 
-                                if (is_line_break(ch)) {
-                                    line.height += _option.paragraph_spacing;
-                                    push_line(true);
-                                    first = word_end;
-                                    cont = false;
-                                    line_break = true;
-                                    return false;
-                                }
+                if (!hard && justified_count > 1) {
+                    line.justified_spacing = (_option.max_line_length - line.width) / (justified_count - 1);
+                    line.width = _option.max_line_length;
+                }
 
-                                bool word_cont{ type >= UBRK_WORD_KANA || type == UBRK_WORD_NONE && is_wide(ch) };
-                                if (cont != word_cont) {
-                                    push_token();
-                                    first = word_begin;
-                                    cont = word_cont;
-                                }
+                if (!last) {
+                    line.height *= _option.line_height;
+                }
+
+                _layout.width = std::max(_layout.width, line.width);
+                _layout.height += line.height;
+                _layout.lines.emplace_back(std::move(line));
+
+                line = { .height = height };
+                cursor = 0;
+                justified_count = 0;
+            } };
+
+            auto push_word{ [&](std::string_view word, u32 type) {
+                const char* word_begin{ word.data() };
+                const char* word_end{ word_begin + word.size() };
+                f32 next_cursor{ cursor }, next_line_width{ line.width };
+                bool first_ch{ true };
+                bool line_break{};
+                if (!unicode_for_each(word, [&](u32 ch) noexcept {
+                        if (first_ch) {
+                            first_ch = false;
+
+                            if (is_line_break(ch)) {
+                                line.height += _option.paragraph_spacing;
+                                push_line(true);
+                                first = word_end;
+                                cont = false;
+                                line_break = true;
+                                return false;
                             }
 
-                            auto glyph_iter{ glyphs.find(ch) };
-                            if (glyph_iter == glyphs.end()) {
-                                return true;
-                            }
-
-                            auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
-                            if (_option.max_line_length != 0 && cursor != 0
-                                && next_cursor + left + width > _option.max_line_length) {
-                                next_cursor -= cursor;
-                                push_line();
+                            bool word_cont{ type >= UBRK_WORD_KANA || type == UBRK_WORD_NONE && is_wide(ch) };
+                            if (cont != word_cont) {
+                                push_token();
                                 first = word_begin;
+                                cont = word_cont;
                             }
+                        }
 
-                            next_line_width = next_cursor + left + width;
-                            next_cursor += advance + _option.letter_spacing;
-                            if (is_white_space(ch)) {
-                                next_cursor += _option.word_spacing;
-                            }
-                            if (cont) {
-                                ++justified_count;
-                            }
+                        auto glyph_iter{ glyphs.find(ch) };
+                        if (glyph_iter == glyphs.end()) {
                             return true;
                         }
-                    )) {
-                        throw TextError::failed_to_decode;
-                    }
 
-                    if (!line_break) {
-                        cursor = next_cursor;
-                        line.width = next_line_width;
-                    }
+                        auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
+                        if (_option.max_line_length != 0
+                            && cursor != 0
+                            && next_cursor + left + width > _option.max_line_length) {
+                            next_cursor -= cursor;
+                            push_line();
+                            first = word_begin;
+                        }
 
-                    last = word_end;
-                    return true;
+                        next_line_width = next_cursor + left + width;
+                        next_cursor += advance + _option.letter_spacing;
+                        if (is_white_space(ch)) {
+                            next_cursor += _option.word_spacing;
+                        }
+                        if (cont) {
+                            ++justified_count;
+                        }
+                        return true;
+                    })) {
+                    throw TextError::failed_to_decode;
                 }
-            };
+
+                if (!line_break) {
+                    cursor = next_cursor;
+                    line.width = next_line_width;
+                }
+
+                last = word_end;
+                return true;
+            } };
 
             if (!word_break_for_each(str, push_word)) {
                 throw TextError::failed_to_word_break;
@@ -212,8 +204,7 @@ namespace gm {
 
             if (draw_option.valign == 0) {
                 y -= _layout.height / 2;
-            }
-            else if (draw_option.valign > 0) {
+            } else if (draw_option.valign > 0) {
                 y -= _layout.height;
             }
 
@@ -228,15 +219,12 @@ namespace gm {
                 f32 cursor{ x };
                 if (draw_option.halign == 0) {
                     cursor -= line_width / 2;
-                }
-                else if (draw_option.halign > 0) {
+                } else if (draw_option.halign > 0) {
                     cursor -= line_width;
                 }
 
                 for (auto& [str, continuous] : tokens) {
-                    if (!unicode_for_each(
-                        str,
-                        [&](u32 ch) noexcept {
+                    if (!unicode_for_each(str, [&](u32 ch) noexcept {
                             auto glyph_iter{ glyphs.find(ch) };
                             if (glyph_iter == glyphs.end()) {
                                 return true;
@@ -274,8 +262,7 @@ namespace gm {
                                 cursor += justified_spacing;
                             }
                             return true;
-                        }
-                    )) {
+                        })) {
                         throw TextError::failed_to_decode;
                     }
 
@@ -306,8 +293,8 @@ namespace gm {
     public:
         TextCache() noexcept = default;
 
-        TextCache(usize cache_size) noexcept :
-            _cache_size{ cache_size } {
+        TextCache(usize cache_size) noexcept
+            : _cache_size{ cache_size } {
 
             assert(_cache_size > 0);
         }

@@ -25,8 +25,7 @@ API Real gm_font(StringRef raw_key, StringRef raw_sprite_path) noexcept {
     try {
         // font already exists
         return font_map.try_emplace(std::move(key), raw_key, raw_sprite_path).second ? 0 : 1;
-    }
-    catch (FontError error) {
+    } catch (FontError error) {
         return static_cast<int>(error);
     }
 }
@@ -55,14 +54,10 @@ API Real gm_clear() noexcept {
 
 API Real gm_draw(Real raw_x, Real raw_y, StringRef raw_str) noexcept {
     try {
-        text_cache.get(raw_str, text_option).draw(
-            saturating_cast<f32>(raw_x),
-            saturating_cast<f32>(raw_y),
-            draw_option
-        );
+        text_cache.get(raw_str, text_option)
+            .draw(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), draw_option);
         return 0;
-    }
-    catch (TextError error) {
+    } catch (TextError error) {
         return static_cast<int>(error);
     }
 }
@@ -70,8 +65,7 @@ API Real gm_draw(Real raw_x, Real raw_y, StringRef raw_str) noexcept {
 API Real gm_width(StringRef raw_str) noexcept {
     try {
         return text_cache.get(raw_str, text_option).width();
-    }
-    catch (TextError error) {
+    } catch (TextError error) {
         return static_cast<int>(error);
     }
 }
@@ -79,8 +73,7 @@ API Real gm_width(StringRef raw_str) noexcept {
 API Real gm_height(StringRef raw_str) noexcept {
     try {
         return text_cache.get(raw_str, text_option).height();
-    }
-    catch (TextError error) {
+    } catch (TextError error) {
         return static_cast<int>(error);
     }
 }

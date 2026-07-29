@@ -43,8 +43,8 @@ namespace gm {
     public:
         Font() noexcept = default;
 
-        Font(std::string_view name, std::string_view sprite_path) :
-            _name{ name } {
+        Font(std::string_view name, std::string_view sprite_path)
+            : _name{ name } {
 
             static Function sprite_add{ FunctionId::sprite_add };
             _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
@@ -57,11 +57,9 @@ namespace gm {
                 throw FontError::failed_to_open_file;
             }
 
-            auto read{
-                [&](auto& dest) noexcept {
-                    return static_cast<bool>(file.read(reinterpret_cast<char*>(&dest), sizeof(dest)));
-                }
-            };
+            auto read{ [&](auto& dest) noexcept {
+                return static_cast<bool>(file.read(reinterpret_cast<char*>(&dest), sizeof(dest)));
+            } };
 
             static constexpr std::array GLYPH_SIGN{ 'G', 'L', 'Y', '\1', '\1', '\0' };
             std::array<char, GLYPH_SIGN.size()> sign;

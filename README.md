@@ -6,7 +6,7 @@
 Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
 
 > [!warning]
-> Minimum requirement: Windows 10, Version 1903.
+> Minimum system requirement: Windows 10, Version 1903.
 
 ## Functions
 
@@ -36,8 +36,10 @@ Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), w
 
 ## Development
 
-1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) and [vcpkg](https://vcpkg.io/en/).
+1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) with MSVC Build Tools for x64/x86 Preview.
+1. Install [vcpkg](https://vcpkg.io/en/).
 1. `vcpkg install wil:x86-windows`.
+1. Build clang-format 24 from [LLVM](https://github.com/llvm/llvm-project/) if formatting is needed.
 
 ## Credits
 
