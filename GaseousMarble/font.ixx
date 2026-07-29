@@ -29,8 +29,7 @@ namespace gm {
         f32 size{};
         std::wstring locale{ L"en-US" };
 
-        template <class... Args>
-        static FontDesc from(std::wstring_view path, Args&&... args) {
+        static FontDesc from(std::wstring_view path, u16 properties, f32 size, std::wstring_view locale) {
             wil::com_ptr<env::DwFontSetBuilder> builder;
             THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
 
@@ -48,10 +47,34 @@ namespace gm {
             );
             wil::com_ptr collection{ collection_base.query<env::DwFontCollection>() };
 
-            std::wstring name;
-            // TODO
+            wil::com_ptr<env::DwLocalizedStrings> names;
+            BOOL exists;
+            THROW_IF_FAILED(
+                set->GetPropertyValues(0, DWRITE_FONT_PROPERTY_ID_WEIGHT_STRETCH_STYLE_FAMILY_NAME, &exists, &names)
+            );
+            if (!exists) {
+                throw std::runtime_error{ "Font name not found." };
+            }
 
-            return { collection, std::move(name), std::forward<Args>(args)... };
+            std::wstring locale_name{ locale };
+            u32 index;
+            BOOL locale_exists;
+            THROW_IF_FAILED(names->FindLocaleName(locale_name.data(), &index, &locale_exists));
+            if (!locale_exists) {
+                THROW_IF_FAILED(names->FindLocaleName(L"en-US", &index, &locale_exists));
+                if (!locale_exists) {
+                    index = 0;
+                }
+            }
+
+            u32 name_size;
+            THROW_IF_FAILED(names->GetStringLength(index, &name_size));
+
+            std::wstring name(name_size + 1, '\0');
+            THROW_IF_FAILED(names->GetString(index, name.data(), name.size()));
+            name.pop_back();
+
+            return { collection, std::move(name), properties, size, std::move(locale_name) };
         }
 
         DWRITE_FONT_WEIGHT weight() const noexcept {

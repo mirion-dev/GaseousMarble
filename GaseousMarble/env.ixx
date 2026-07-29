@@ -38,6 +38,7 @@ namespace gm::env {
         using DwFontSet = IDWriteFontSet4;
         using DwFontSetBuilder = IDWriteFontSetBuilder2;
         using DwFontCollection = IDWriteFontCollection3;
+        using DwLocalizedStrings = IDWriteLocalizedStrings;
         using DwGlyphRunAnalysis = IDWriteGlyphRunAnalysis;
         // UNSUPPORTED: `IDWriteTextRenderer1::orientationAngle`; used for vertical writing mode
         using DwTextRenderer = IDWriteTextRenderer;
