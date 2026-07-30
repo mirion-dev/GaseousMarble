@@ -85,15 +85,15 @@ API Real gm2_set_alignment(Real raw_alignment) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_text_alignment(Real raw_alignment) noexcept {
+API Real gm2_set_text_alignment(Real raw_text_alignment) noexcept {
     draw.option().alignment = draw.option().alignment & ~DrawOption::TEXT_ALIGNMENT_MASK
-                              | saturating_cast<u8>(raw_alignment, 0) & DrawOption::TEXT_ALIGNMENT_MASK;
+                              | saturating_cast<u8>(raw_text_alignment, 0) & DrawOption::TEXT_ALIGNMENT_MASK;
     return S_OK;
 }
 
-API Real gm2_set_par_alignment(Real raw_alignment) noexcept {
+API Real gm2_set_par_alignment(Real raw_par_alignment) noexcept {
     draw.option().alignment = draw.option().alignment & ~DrawOption::PAR_ALIGNMENT_MASK
-                              | saturating_cast<u8>(raw_alignment, 0) & DrawOption::PAR_ALIGNMENT_MASK;
+                              | saturating_cast<u8>(raw_par_alignment, 0) & DrawOption::PAR_ALIGNMENT_MASK;
     return S_OK;
 }
 
@@ -107,8 +107,8 @@ API Real gm2_set_word_wrapping(Real raw_word_wrapping) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_text_direction(Real raw_direction) noexcept {
-    int direction{ saturating_cast<u8>(raw_direction, 0) & DrawOption::TEXT_DIRECTION_MASK };
+API Real gm2_set_text_direction(Real raw_text_direction) noexcept {
+    int direction{ saturating_cast<u8>(raw_text_direction, 0) & DrawOption::TEXT_DIRECTION_MASK };
     if (direction == DWRITE_READING_DIRECTION_TOP_TO_BOTTOM) {
         direction = DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
     } else if (direction == DWRITE_READING_DIRECTION_BOTTOM_TO_TOP) {
@@ -119,8 +119,8 @@ API Real gm2_set_text_direction(Real raw_direction) noexcept {
     return S_OK;
 }
 
-API Real gm2_set_par_direction(Real raw_direction) noexcept {
-    int direction{ saturating_cast<u8>(raw_direction, 0) & DrawOption::PAR_DIRECTION_MASK };
+API Real gm2_set_par_direction(Real raw_par_direction) noexcept {
+    int direction{ saturating_cast<u8>(raw_par_direction, 0) & DrawOption::PAR_DIRECTION_MASK };
     if (direction == DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT) {
         direction = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM;
     } else if (direction == DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT) {
