@@ -1,6 +1,7 @@
+#set quote(block: true)
 #show link: set text(fill: blue)
 
-#quote(block: true)[
+#quote[
     [!note]
 
     v1 won't be developed further. See #link("https://github.com/mirion-dev/GaseousMarble/tree/v2")[v2] for current work.
@@ -10,7 +11,7 @@
 
 Draw Unicode text in #link("https://gm82.cherry-treehouse.com/#News")[GameMaker 8.2], with high performance and rich features.
 
-#quote(block: true)[
+#quote[
     [!warning]
 
     Minimum system requirement: Windows 10, Version 1903.
