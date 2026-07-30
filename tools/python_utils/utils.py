@@ -6,6 +6,8 @@ from pathlib import Path
 from fontTools import ttLib
 from PIL import Image, ImageDraw, ImageFont
 
+__all__ = ('generate_font',)
+
 
 def generate_font(
     font_path: str | PathLike[str] | list[str | PathLike[str]],
@@ -24,8 +26,10 @@ def generate_font(
 ):
     if font_size <= 0:
         raise ValueError('The font size should be positive.')
+
     if stroke_width < 0:
         raise ValueError('The stroke width should be non-negative.')
+
     if shadow_offset < 0:
         raise ValueError('The shadow offset should be non-negative.')
 
@@ -41,6 +45,7 @@ def generate_font(
     for path in font_path_:
         with ttLib.TTFont(path, fontNumber=0) as font:
             code_points = font.getBestCmap()
+
         if code_points is None:
             continue
 
@@ -63,57 +68,63 @@ def generate_font(
     charset_map = [(ImageFont.truetype(path, font_size), ''.join(sorted(chars))) for (path, chars) in chars_map.items()]
 
     # Calculate the sprite size when in a single line
+    baseline = charset_map[0][0].getmetrics()[0] if charset_map else 0
+    glyph_spacing = 0 if dense else 1
+
     def bbox(draw: ImageDraw.ImageDraw, ch: str, stroke_width: int = stroke_width, shadow_offset: int = shadow_offset):
-        (l, t, r, b) = map(round, draw.textbbox((0, 0), ch, stroke_width=stroke_width))
+        if ch.isspace():
+            stroke_width = 0
+            shadow_offset = 0
+
+        (l, t, r, b) = map(round, draw.textbbox((0, baseline), ch, anchor='ls', stroke_width=stroke_width))
         r += shadow_offset
         b += shadow_offset
         return (l, t, r, b)
 
-    image0 = Image.new('RGBA', (1, 1))
-    draw0 = ImageDraw.Draw(image0)
+    dummy_image = Image.new('RGBA', (1, 1))
+    dummy_draw = ImageDraw.Draw(dummy_image)
     if not smoothing:
-        draw0.fontmode = '1'
+        dummy_draw.fontmode = '1'
 
-    glyph_spacing = 0 if dense else 1
     line_width = 0
     min_glyph_top = 0
     max_glyph_bottom = 0
     max_glyph_width = 0
     for (font, chars) in charset_map:
-        draw0.font = font
+        dummy_draw.font = font
         for ch in chars:
-            (l, t, r, b) = bbox(draw0, ch)
+            (l, t, r, b) = bbox(dummy_draw, ch)
             w = r - l
             line_width += w + glyph_spacing
             min_glyph_top = min(min_glyph_top, t)
             max_glyph_bottom = max(max_glyph_bottom, b)
             max_glyph_width = max(max_glyph_width, w)
 
-    line_width -= glyph_spacing
+    line_width = max(line_width - glyph_spacing, 0)
     line_height = max_glyph_bottom - min_glyph_top
 
     # Calculate the sprite size to arrange glyphs into a roughly square
-    sprite_width = max(math.ceil((line_height + math.sqrt(line_height ** 2 + 4 * line_width * (line_height + glyph_spacing))) / 2), max_glyph_width)  # (w / x + 1) * h + w / x * s == x
+    max_line_width = max(math.ceil((line_height + math.sqrt(line_height ** 2 + 4 * line_width * (line_height + glyph_spacing))) / 2), max_glyph_width)  # (w / x + 1) * h + w / x * s == x
+    sprite_width = 0
     line_width = 0
     line_num = 1
-    max_line_width = 0
     for (font, chars) in charset_map:
-        draw0.font = font
+        dummy_draw.font = font
         for ch in chars:
-            (l, t, r, b) = bbox(draw0, ch)
+            (l, t, r, b) = bbox(dummy_draw, ch)
             w = r - l
-            if line_width + w > sprite_width:
-                max_line_width = max(max_line_width, line_width - glyph_spacing)
+            if line_width + w > max_line_width:
+                sprite_width = max(sprite_width, line_width - glyph_spacing)
                 line_width = 0
                 line_num += 1
+
             line_width += w + glyph_spacing
 
-    max_line_width = max(max_line_width, line_width - glyph_spacing)
-    sprite_width = max_line_width
+    sprite_width = max(sprite_width, line_width - glyph_spacing, 0)
     sprite_height = (line_height + glyph_spacing) * line_num - glyph_spacing
 
     # Generate the font sprite and the glyph data
-    image = Image.new('RGBA', (sprite_width, sprite_height))
+    image = Image.new('RGBA', (max(sprite_width, 1), max(sprite_height, 1)))
     draw = ImageDraw.Draw(image)
     if not smoothing:
         draw.fontmode = '1'
@@ -131,22 +142,26 @@ def generate_font(
                 (raw_l, _, raw_r, _) = bbox(draw, ch, 0, 0)
                 raw_w = raw_r - raw_l
                 raw_a = round(draw.textlength(ch))
+
                 (l, t, r, b) = bbox(draw, ch)
                 w = r - l
                 a = w + raw_a - raw_w
                 if x + w > sprite_width:
                     x = 0
                     y += line_height + glyph_spacing
+
                 data.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, l))
 
                 draw_x = x - l
                 draw_y = y - min_glyph_top
                 if debug:
                     draw.rectangle(((draw_x + l - 1, draw_y + t - 1), (draw_x + r, draw_y + b)), outline='#f007', fill='#0f07')
+
                 if shadow_offset != 0:
-                    draw.text((draw_x + shadow_offset, draw_y + shadow_offset), ch, fill=shadow_fill, stroke_width=stroke_width, stroke_fill=shadow_fill)
-                draw.text((draw_x, draw_y), ch, fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
-                draw.text((draw_x, draw_y), ch, fill)  # Make glyphs more clear
+                    draw.text((draw_x + shadow_offset, draw_y + shadow_offset + baseline), ch, anchor='ls', fill=shadow_fill, stroke_width=stroke_width, stroke_fill=shadow_fill)
+
+                draw.text((draw_x, draw_y + baseline), ch, anchor='ls', fill=fill, stroke_width=stroke_width, stroke_fill=stroke_fill)
+                draw.text((draw_x, draw_y + baseline), ch, anchor='ls', fill=fill)  # Make glyphs more clear
 
                 x += w + glyph_spacing
 

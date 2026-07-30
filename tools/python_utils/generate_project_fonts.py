@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from generate_font import generate_font
+from .utils import generate_font
 
 FONT_PATH = Path('simsun.ttc')
 TEST_DIR = Path('../projects/test.gm82/gm_fonts')
