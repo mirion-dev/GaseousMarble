@@ -62,10 +62,10 @@ Set the current font.
 
 <h2><code>gm2_get_font()</code><br />
 <code>gm2_get_font_name()</code> *New<br />
-<code>gm2_get_font_size()</code> *New<br />
 <code>gm2_get_font_weight()</code> *New<br />
 <code>gm2_get_font_style()</code> *New<br />
 <code>gm2_get_font_stretch()</code> *New<br />
+<code>gm2_get_font_size()</code> *New<br />
 <code>gm2_get_font_locale()</code> *New<br />
 <code>gm2_get_font_min_aa_h_size()</code> *New<br />
 <code>gm2_get_font_min_aa_v_size()</code> *New</h2>

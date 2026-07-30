@@ -11,7 +11,4 @@
     <ClCompile Include="layout.ixx" />
     <ClCompile Include="glyph.ixx" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\README.md" />
-  </ItemGroup>
 </Project>

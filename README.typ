@@ -75,7 +75,7 @@ Draw a UTF-8 text or get its visual size.
 
 Set the current font.
 
-= `gm2_get_font()`\ `gm2_get_font_name()` #new\ `gm2_get_font_size()` #new\ `gm2_get_font_weight()` #new\ `gm2_get_font_style()` #new\ `gm2_get_font_stretch()` #new\ `gm2_get_font_locale()` #new\ `gm2_get_font_min_aa_h_size()` #new\ `gm2_get_font_min_aa_v_size()` #new
+= `gm2_get_font()`\ `gm2_get_font_name()` #new\ `gm2_get_font_weight()` #new\ `gm2_get_font_style()` #new\ `gm2_get_font_stretch()` #new\ `gm2_get_font_size()` #new\ `gm2_get_font_locale()` #new\ `gm2_get_font_min_aa_h_size()` #new\ `gm2_get_font_min_aa_v_size()` #new
 
 #quote[
     v1: `gm_get_font()`

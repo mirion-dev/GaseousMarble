@@ -255,11 +255,6 @@ API StringRef gm2_get_font_name() noexcept {
     return string_value.data();
 }
 
-API Real gm2_get_font_size() noexcept {
-    usize id{ draw.option().font.second };
-    return id == 0 ? -1 : font_manager.get(id).desc.size;
-}
-
 API Real gm2_get_font_weight() noexcept {
     usize id{ draw.option().font.second };
     return id == 0 ? -1 : font_manager.get(id).desc.properties & FontDesc::WEIGHT_MASK;
@@ -273,6 +268,11 @@ API Real gm2_get_font_style() noexcept {
 API Real gm2_get_font_stretch() noexcept {
     usize id{ draw.option().font.second };
     return id == 0 ? -1 : font_manager.get(id).desc.properties & FontDesc::STRETCH_MASK;
+}
+
+API Real gm2_get_font_size() noexcept {
+    usize id{ draw.option().font.second };
+    return id == 0 ? -1 : font_manager.get(id).desc.size;
 }
 
 API StringRef gm2_get_font_locale() noexcept {
