@@ -23,16 +23,16 @@ def generate_font(
     debug: bool = False
 ):
     if font_size <= 0:
-        raise ValueError('The `font_size` should be positive.')
+        raise ValueError('The font size should be positive.')
     if stroke_width < 0:
-        raise ValueError('The `stroke_width` should be non-negative.')
+        raise ValueError('The stroke width should be non-negative.')
     if shadow_offset < 0:
-        raise ValueError('The `shadow_offset` should be non-negative.')
+        raise ValueError('The shadow offset should be non-negative.')
 
     if not isinstance(font_path, list):
         font_path = [font_path]
 
-    font_path_ = [Path(p) for p in font_path]
+    font_path_ = list(dict.fromkeys(Path(path) for path in font_path))
     sprite_path = Path(sprite_path)
 
     # Assign fonts to every character in the charset
@@ -50,9 +50,6 @@ def generate_font(
 
     if charset is not None:
         used_chars = {c for c in charset if c.isprintable()}
-        if not used_chars:
-            raise ValueError('The `charset` should be non-empty.')
-
         for (path, chars) in list(chars_map.items()):
             chars &= used_chars
             if chars:
@@ -61,7 +58,7 @@ def generate_font(
                 chars_map.pop(path)
 
         if used_chars:
-            raise ValueError(f'Unable to find a suitable font for following characters: {used_chars}')
+            raise RuntimeError(f'Failed to find a suitable font for {used_chars}.')
 
     charset_map = [(ImageFont.truetype(path, font_size), ''.join(sorted(chars))) for (path, chars) in chars_map.items()]
 
