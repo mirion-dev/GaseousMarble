@@ -119,4 +119,11 @@ namespace gm {
         );
     }
 
+    template <class T>
+    static void unique_deleter(const T&) noexcept {}
+
+    export template <class T, T Null = {}>
+    using Unique = wil::
+        unique_any<T, decltype(unique_deleter<T>), unique_deleter<T>, wil::details::pointer_access_all, T, T, Null, T>;
+
 }

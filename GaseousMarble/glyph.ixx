@@ -117,7 +117,7 @@ namespace gm {
 
         usize _texture_width{};
         usize _texture_height{};
-        usize _max_texture_num{};
+        Unique<usize> _max_texture_num;
         RasterOption _option;
 
         std::unordered_map<GlyphDesc, GlyphMeta, Hash> _data;
@@ -135,35 +135,15 @@ namespace gm {
               _max_texture_num{ max_texture_num },
               _option{ option } {
 
-            assert(_texture_width > 0 && _texture_height > 0 && _max_texture_num > 0);
+            assert(_texture_width > 0 && _texture_height > 0 && _max_texture_num);
 
             if (!option.is_valid()) {
                 throw std::invalid_argument{ "Invalid rasterization options." };
             }
         }
 
-        GlyphAtlas(GlyphAtlas&& other) noexcept {
-            std::ranges::swap(*this, other);
-        }
-
-        GlyphAtlas& operator=(GlyphAtlas&& other) noexcept {
-            std::ranges::swap(*this, other);
-            return *this;
-        }
-
         operator bool() const noexcept {
-            return _max_texture_num > 0;
-        }
-
-        friend void swap(GlyphAtlas& left, GlyphAtlas& right) noexcept {
-            std::ranges::swap(left._texture_width, right._texture_width);
-            std::ranges::swap(left._texture_height, right._texture_height);
-            std::ranges::swap(left._max_texture_num, right._max_texture_num);
-            std::ranges::swap(left._option, right._option);
-            std::ranges::swap(left._data, right._data);
-            std::ranges::swap(left._texture_num, right._texture_num);
-            std::ranges::swap(left._current_texture, right._current_texture);
-            std::ranges::swap(left._current_bin, right._current_bin);
+            return static_cast<bool>(_max_texture_num);
         }
 
         usize texture_width() const noexcept {
@@ -178,7 +158,7 @@ namespace gm {
 
         usize max_texture_num() const noexcept {
             assert(*this);
-            return _max_texture_num;
+            return _max_texture_num.get();
         }
 
         auto& option(this auto&& self) noexcept {
@@ -246,7 +226,7 @@ namespace gm {
                 rectpack2D::empty_spaces bin{ _current_bin };
                 auto insert_result{ bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
                 if (!insert_result) {
-                    if (texture_num++ >= _max_texture_num) {
+                    if (texture_num++ >= _max_texture_num.get()) {
                         throw std::runtime_error{ "Too many textures." };
                     }
 
