@@ -1,7 +1,7 @@
-import math
-import struct
+from math import ceil, floor, sqrt
 from os import PathLike
 from pathlib import Path
+from struct import pack
 
 from fontTools import ttLib
 from PIL import Image, ImageDraw, ImageFont
@@ -76,10 +76,8 @@ def generate_font(
             stroke_width = 0
             shadow_offset = 0
 
-        (l, t, r, b) = map(round, draw.textbbox((0, baseline), ch, anchor='ls', stroke_width=stroke_width))
-        r += shadow_offset
-        b += shadow_offset
-        return (l, t, r, b)
+        (l, t, r, b) = draw.textbbox((0, baseline), ch, anchor='ls', stroke_width=stroke_width)
+        return (floor(l), floor(t), ceil(r) + shadow_offset, ceil(b) + shadow_offset)
 
     dummy_image = Image.new('RGBA', (1, 1))
     dummy_draw = ImageDraw.Draw(dummy_image)
@@ -104,7 +102,7 @@ def generate_font(
     line_height = max_glyph_bottom - min_glyph_top
 
     # Calculate the sprite size to arrange glyphs into a roughly square
-    max_line_width = max(math.ceil((line_height + math.sqrt(line_height ** 2 + 4 * line_width * (line_height + glyph_spacing))) / 2), max_glyph_width)  # (w / x + 1) * h + w / x * s == x
+    max_line_width = max(ceil((line_height + sqrt(line_height ** 2 + 4 * line_width * (line_height + glyph_spacing))) / 2), max_glyph_width)  # (w / x + 1) * h + w / x * s == x
     sprite_width = 0
     line_width = 0
     line_num = 1
@@ -132,7 +130,7 @@ def generate_font(
     data_path = sprite_path.with_suffix('.gly')
     data_path.parent.mkdir(parents=True, exist_ok=True)
     with open(data_path, 'wb+') as data:
-        data.write(b'GLY\x01\x01\x00' + struct.pack('HhI', line_height, min_glyph_top, sum(map(len, chars_map.values()))))
+        data.write(b'GLY\x01\x01\x00' + pack('HhI', line_height, min_glyph_top, sum(map(len, chars_map.values()))))
 
         x = 0
         y = 0
@@ -150,7 +148,7 @@ def generate_font(
                     x = 0
                     y += line_height + glyph_spacing
 
-                data.write(struct.pack('IHHHhh', ord(ch), x, y, w, a, l))
+                data.write(pack('IHHHhh', ord(ch), x, y, w, a, l))
 
                 draw_x = x - l
                 draw_y = y - min_glyph_top
