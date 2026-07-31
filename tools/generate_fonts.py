@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from .utils import generate_font
+from python_utils import utils
 
 FONT_PATH = Path('simsun.ttc')
 TEST_DIR = Path('../projects/test.gm82/gm_fonts')
@@ -32,5 +32,5 @@ string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函
 string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
 '''
 
-generate_font(FONT_PATH, TEST_DIR / 'default.png', font_size=18, charset=CHARSET, stroke_width=1)
+utils.generate_font(FONT_PATH, TEST_DIR / 'default.png', font_size=18, charset=CHARSET, stroke_width=1)
 shutil.copytree(TEST_DIR, EXAMPLE_DIR, dirs_exist_ok=True)
