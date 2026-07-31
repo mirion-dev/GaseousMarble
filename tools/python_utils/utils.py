@@ -45,12 +45,14 @@ def generate_font(
     for path in font_path_:
         with ttLib.TTFont(path, fontNumber=0) as font:
             code_points = font.getBestCmap()
+            if code_points is None:
+                continue
 
-        if code_points is None:
+        chars = {c for c in map(chr, code_points.keys()) if c.isprintable()} - assigned_chars
+        if not chars:
             continue
 
-        chars = {c for c in map(chr, code_points.keys()) if c.isprintable()}
-        chars_map[path] = chars - assigned_chars
+        chars_map[path] = chars
         assigned_chars |= chars_map[path]
 
     if charset is not None:
