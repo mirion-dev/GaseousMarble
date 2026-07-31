@@ -11,6 +11,50 @@ import gm.env;
 
 namespace gm {
 
+    export enum class FontError {
+        failed_to_open_file   = -1,
+        invalid_header        = -2,
+        data_corrupted        = -3,
+        failed_to_load_sprite = -4
+    };
+
+}
+
+export template <>
+struct std::is_error_code_enum<gm::FontError> : std::true_type {};
+
+namespace gm {
+
+    class FontErrorCategory : public std::error_category {
+    public:
+        const char* name() const noexcept {
+            return "gm.font";
+        }
+
+        std::string message(int value) const {
+            switch (static_cast<FontError>(value)) {
+            case FontError::failed_to_open_file:
+                return "Failed to open glyph data file.";
+            case FontError::invalid_header:
+                return "Invalid glyph data header.";
+            case FontError::data_corrupted:
+                return "Glyph data is corrupted.";
+            case FontError::failed_to_load_sprite:
+                return "Failed to load font sprite.";
+            }
+            return "Unknown font error.";
+        }
+    };
+
+    export const std::error_category& font_error_category() noexcept {
+        static FontErrorCategory category;
+        return category;
+    }
+
+    export std::error_code make_error_code(FontError error) noexcept {
+        return { static_cast<int>(error), font_error_category() };
+    }
+
     export struct Glyph {
         u16 x;
         u16 y;
@@ -19,23 +63,14 @@ namespace gm {
         i16 left;
     };
 
-    export enum class FontError {
-        failed_to_open_file   = -1,
-        invalid_header        = -2,
-        data_corrupted        = -3,
-        failed_to_load_sprite = -4
-    };
-
     export class Font {
-        static void _deleter(usize id) noexcept {
+        static void _sprite_deleter(usize id) noexcept {
             static env::Function sprite_delete{ env::FunctionId::sprite_delete };
             sprite_delete(id);
         }
 
-        using Sprite = Handle<usize, _deleter, -1>;
-
         std::string _name;
-        Sprite _sprite;
+        Handle<usize, _sprite_deleter, -1> _sprite;
         u16 _height;
         i16 _top;
         std::unordered_map<u32, Glyph> _glyphs;
@@ -49,12 +84,12 @@ namespace gm {
             static env::Function sprite_add{ env::FunctionId::sprite_add };
             _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (!_sprite) {
-                throw FontError::failed_to_load_sprite;
+                throw std::system_error{ FontError::failed_to_load_sprite };
             }
 
             std::ifstream file{ std::filesystem::path{ sprite_path }.replace_extension("gly"), std::ios::binary };
             if (!file.is_open()) {
-                throw FontError::failed_to_open_file;
+                throw std::system_error{ FontError::failed_to_open_file };
             }
 
             auto read{ [&](auto& dest) noexcept {
@@ -64,24 +99,24 @@ namespace gm {
             static constexpr std::array GLYPH_SIGN{ 'G', 'L', 'Y', '\1', '\1', '\0' };
             std::array<char, GLYPH_SIGN.size()> sign;
             if (!read(sign) || sign != GLYPH_SIGN) {
-                throw FontError::invalid_header;
+                throw std::system_error{ FontError::invalid_header };
             }
 
             u32 size;
             if (!read(_height) || !read(_top) || !read(size)) {
-                throw FontError::data_corrupted;
+                throw std::system_error{ FontError::data_corrupted };
             }
 
             for (usize i{}; i != size; ++i) {
                 u32 ch;
                 Glyph glyph;
                 if (!read(ch) || !read(glyph) || !_glyphs.try_emplace(ch, std::move(glyph)).second) {
-                    throw FontError::data_corrupted;
+                    throw std::system_error{ FontError::data_corrupted };
                 }
             }
 
             if (file.peek() != std::char_traits<char>::eof()) {
-                throw FontError::data_corrupted;
+                throw std::system_error{ FontError::data_corrupted };
             }
         }
 

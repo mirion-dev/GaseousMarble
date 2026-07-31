@@ -13,6 +13,47 @@ import gm.font;
 
 namespace gm {
 
+    export enum class TextError {
+        failed_to_decode     = -1,
+        failed_to_word_break = -2,
+        invalid_option       = -3
+    };
+
+}
+
+export template <>
+struct std::is_error_code_enum<gm::TextError> : std::true_type {};
+
+namespace gm {
+
+    class TextErrorCategory : public std::error_category {
+    public:
+        const char* name() const noexcept {
+            return "gm.text";
+        }
+
+        std::string message(int value) const {
+            switch (static_cast<TextError>(value)) {
+            case TextError::failed_to_decode:
+                return "Failed to decode text.";
+            case TextError::failed_to_word_break:
+                return "Failed to break text into words.";
+            case TextError::invalid_option:
+                return "Invalid text option.";
+            }
+            return "Unknown text error.";
+        }
+    };
+
+    export const std::error_category& text_error_category() noexcept {
+        static TextErrorCategory category;
+        return category;
+    }
+
+    export std::error_code make_error_code(TextError error) noexcept {
+        return { static_cast<int>(error), text_error_category() };
+    }
+
     export struct TextOption {
         const Font* font{};
         f32 letter_spacing{};
@@ -34,12 +75,6 @@ namespace gm {
         f32 scale_x{ 1 };
         f32 scale_y{ 1 };
         f32 rotation{};
-    };
-
-    export enum class TextError {
-        failed_to_decode     = -1,
-        failed_to_word_break = -2,
-        invalid_option       = -3
     };
 
     export class Text {
@@ -71,7 +106,7 @@ namespace gm {
             : _option{ option } {
 
             if (_option.font == nullptr || _option.max_line_length < 0) {
-                throw TextError::invalid_option;
+                throw std::system_error{ TextError::invalid_option };
             }
 
             auto height{ static_cast<f32>(_option.font->height()) };
@@ -168,7 +203,7 @@ namespace gm {
                         }
                         return true;
                     })) {
-                    throw TextError::failed_to_decode;
+                    throw std::system_error{ TextError::failed_to_decode };
                 }
 
                 if (!line_break) {
@@ -181,7 +216,7 @@ namespace gm {
             } };
 
             if (!word_break_for_each(str, push_word)) {
-                throw TextError::failed_to_word_break;
+                throw std::system_error{ TextError::failed_to_word_break };
             }
 
             push_line(true, true);
@@ -195,7 +230,7 @@ namespace gm {
             assert(*this);
 
             if (draw_option.scale_x <= 0 || draw_option.scale_y <= 0) {
-                throw TextError::invalid_option;
+                throw std::system_error{ TextError::invalid_option };
             }
 
             x += draw_option.offset_x;
@@ -263,7 +298,7 @@ namespace gm {
                             }
                             return true;
                         })) {
-                        throw TextError::failed_to_decode;
+                        throw std::system_error{ TextError::failed_to_decode };
                     }
 
                     if (draw_option.justified && !continuous) {

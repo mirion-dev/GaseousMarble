@@ -4,6 +4,8 @@
 #define API extern "C" __declspec(dllimport)
 #endif
 
+#include <cassert>
+
 import std;
 import gm;
 
@@ -19,21 +21,22 @@ static TextCache text_cache{ 1024 };
 API Real gm_font(StringRef raw_key, StringRef raw_sprite_path) noexcept {
     std::string key{ raw_key };
     if (key.empty()) {
-        return -100; // invalid argument
+        return -100; // Invalid argument
     }
 
     try {
-        // font already exists
+        // Font already exists
         return font_map.try_emplace(std::move(key), raw_key, raw_sprite_path).second ? 0 : 1;
-    } catch (FontError error) {
-        return static_cast<int>(error);
+    } catch (const std::system_error& error) {
+        assert(error.code().category() == font_error_category());
+        return error.code().value();
     }
 }
 
 API Real gm_free(StringRef raw_key) noexcept {
     auto iter{ font_map.find(raw_key) };
     if (iter == font_map.end()) {
-        return 1; // font not found
+        return 1; // Font not found
     }
 
     if (text_option.font == &iter->second) {
@@ -57,31 +60,34 @@ API Real gm_draw(Real raw_x, Real raw_y, StringRef raw_str) noexcept {
         text_cache.get(raw_str, text_option)
             .draw(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), draw_option);
         return 0;
-    } catch (TextError error) {
-        return static_cast<int>(error);
+    } catch (const std::system_error& error) {
+        assert(error.code().category() == text_error_category());
+        return error.code().value();
     }
 }
 
 API Real gm_width(StringRef raw_str) noexcept {
     try {
         return text_cache.get(raw_str, text_option).width();
-    } catch (TextError error) {
-        return static_cast<int>(error);
+    } catch (const std::system_error& error) {
+        assert(error.code().category() == text_error_category());
+        return error.code().value();
     }
 }
 
 API Real gm_height(StringRef raw_str) noexcept {
     try {
         return text_cache.get(raw_str, text_option).height();
-    } catch (TextError error) {
-        return static_cast<int>(error);
+    } catch (const std::system_error& error) {
+        assert(error.code().category() == text_error_category());
+        return error.code().value();
     }
 }
 
 API Real gm_set_font(StringRef raw_key) noexcept {
     auto iter{ font_map.find(raw_key) };
     if (iter == font_map.end()) {
-        return -1; // font not found
+        return -1; // Font not found
     }
 
     if (text_option.font != &iter->second) {
@@ -187,7 +193,7 @@ API Real gm_set_offset(Real raw_x, Real raw_y) noexcept {
 
 API Real gm_set_scale(Real raw_x, Real raw_y) noexcept {
     if (raw_x <= 0 || raw_y <= 0) {
-        return -1; // invalid argument(s)
+        return -1; // Invalid argument
     }
 
     draw_option.scale_x = saturating_cast<f32>(raw_x);
@@ -201,7 +207,7 @@ API Real gm_set_rotation(Real raw_rotation) noexcept {
 }
 
 API StringRef gm_get_font() noexcept {
-    string_value = text_option.font == nullptr ? String{} : String{ text_option.font->name() }; // font unspecified
+    string_value = text_option.font == nullptr ? String{} : String{ text_option.font->name() }; // Font unspecified
     return string_value.data();
 }
 
