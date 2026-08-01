@@ -125,7 +125,7 @@ namespace gm {
     export template <class T, T Null = {}>
     using Witness = wil::unique_any<
         T,
-        decltype(witness_deleter<T>),
+        decltype(&witness_deleter<T>),
         witness_deleter<T>,
         wil::details::pointer_access_all,
         T,
