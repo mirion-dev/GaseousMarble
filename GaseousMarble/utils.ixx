@@ -22,7 +22,7 @@ namespace gm {
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    static constexpr Bound upper_bound() {
+    constexpr Bound upper_bound() {
         static constexpr int D{ std::numeric_limits<T>::digits };
         static constexpr int E{ std::numeric_limits<T>::max_exponent };
         return std::integral<T> ? Bound{ D, 0 } : Bound{ E, E - D };
@@ -30,7 +30,7 @@ namespace gm {
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    static constexpr Bound neg_lower_bound() {
+    constexpr Bound neg_lower_bound() {
         static constexpr int D{ std::numeric_limits<T>::digits };
         static constexpr int E{ std::numeric_limits<T>::max_exponent };
         return std::unsigned_integral<T> ? Bound{ 0, 0 }
@@ -120,7 +120,7 @@ namespace gm {
     }
 
     template <class T>
-    static void unique_deleter(const T&) noexcept {}
+    void unique_deleter(const T&) noexcept {}
 
     export template <class T, T Null = {}>
     using Unique = wil::
