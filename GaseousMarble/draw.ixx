@@ -223,7 +223,7 @@ namespace gm {
         }
 
         operator bool() const noexcept {
-            return _option.font != nullptr;
+            return _option.font != nullptr; // TODO
         }
 
         void draw(f32 x, f32 y, const DrawOption& draw_option) const {
@@ -311,10 +311,12 @@ namespace gm {
         }
 
         f32 width() const noexcept {
+            assert(*this);
             return std::abs(_layout.width);
         }
 
         f32 height() const noexcept {
+            assert(*this);
             return std::abs(_layout.height);
         }
     };
@@ -339,7 +341,7 @@ namespace gm {
         TextCache& operator=(TextCache&&) noexcept = default;
 
         operator bool() const noexcept {
-            return _cache_size != 0;
+            return _cache_size > 0;
         }
 
         usize cache_size() const noexcept {
@@ -369,6 +371,7 @@ namespace gm {
         }
 
         void clear() noexcept {
+            assert(*this);
             _map.clear();
             _data.clear();
         }
