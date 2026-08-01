@@ -117,7 +117,7 @@ namespace gm {
 
         usize _texture_width{};
         usize _texture_height{};
-        Unique<usize> _max_texture_num;
+        Witness<usize> _max_texture_num;
         RasterOption _option;
 
         std::unordered_map<GlyphDesc, GlyphMeta, Hash> _data;

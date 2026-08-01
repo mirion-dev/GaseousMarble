@@ -100,7 +100,7 @@ namespace gm {
     };
 
     export class FontManager {
-        Unique<usize> _max_font_num;
+        Witness<usize> _max_font_num;
 
         std::vector<Font> _data;
 

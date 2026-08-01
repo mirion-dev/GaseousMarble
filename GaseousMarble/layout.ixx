@@ -235,7 +235,7 @@ namespace gm {
             }
         };
 
-        Unique<usize> _cache_size;
+        Witness<usize> _cache_size;
 
         std::list<std::pair<LayoutSpec, Layout>> _data;
         std::unordered_map<LayoutSpecRef, decltype(_data)::iterator, Hash> _map;
