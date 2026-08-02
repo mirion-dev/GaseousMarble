@@ -100,7 +100,7 @@ namespace gm {
     };
 
     export class FontManager {
-        Witness<usize> _max_font_num;
+        usize _max_font_num{};
 
         std::vector<Font> _data;
 
@@ -110,16 +110,20 @@ namespace gm {
         FontManager(usize max_font_num) noexcept
             : _max_font_num{ max_font_num } {
 
-            assert(_max_font_num);
+            assert(_max_font_num > 0);
         }
 
+        FontManager(FontManager&&) noexcept = default;
+
+        FontManager& operator=(FontManager&&) noexcept = default;
+
         operator bool() const noexcept {
-            return static_cast<bool>(_max_font_num);
+            return _max_font_num > 0;
         }
 
         usize max_font_num() const noexcept {
             assert(*this);
-            return _max_font_num.get();
+            return _max_font_num;
         }
 
         auto& get(this auto& self, usize id) noexcept {
@@ -131,7 +135,7 @@ namespace gm {
         usize add(Args&&... args) {
             assert(*this);
 
-            if (_data.size() >= _max_font_num.get()) {
+            if (_data.size() >= _max_font_num) {
                 throw std::runtime_error{ "Too many fonts." };
             }
 

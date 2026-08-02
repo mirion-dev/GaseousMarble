@@ -235,7 +235,7 @@ namespace gm {
             }
         };
 
-        Witness<usize> _cache_size;
+        usize _cache_size{};
 
         std::list<std::pair<LayoutSpec, Layout>> _data;
         std::unordered_map<LayoutSpecRef, decltype(_data)::iterator, Hash> _map;
@@ -246,16 +246,20 @@ namespace gm {
         LayoutCache(usize cache_size) noexcept
             : _cache_size{ cache_size } {
 
-            assert(_cache_size);
+            assert(_cache_size > 0);
         }
 
+        LayoutCache(LayoutCache&&) noexcept = default;
+
+        LayoutCache& operator=(LayoutCache&&) noexcept = default;
+
         operator bool() const noexcept {
-            return static_cast<bool>(_cache_size);
+            return _cache_size > 0;
         }
 
         usize cache_size() const noexcept {
             assert(*this);
-            return _cache_size.get();
+            return _cache_size;
         }
 
         const Layout& get(const LayoutSpecRef& spec) {
@@ -349,7 +353,7 @@ namespace gm {
             auto iter{ _data.emplace(_data.end(), LayoutSpec::from(spec), std::move(gm_layout)) };
             _map.try_emplace(iter->first, iter);
 
-            if (_data.size() > _cache_size.get()) {
+            if (_data.size() > _cache_size) {
                 _map.erase(_data.front().first);
                 _data.pop_front();
             }
