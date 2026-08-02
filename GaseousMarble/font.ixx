@@ -107,7 +107,7 @@ namespace gm {
     public:
         FontManager() noexcept = default;
 
-        FontManager(usize max_font_num) noexcept
+        explicit FontManager(usize max_font_num) noexcept
             : _max_font_num{ max_font_num } {
 
             assert(_max_font_num > 0);

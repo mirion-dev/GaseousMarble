@@ -42,7 +42,7 @@ namespace gm {
     public:
         Draw() noexcept = default;
 
-        Draw(usize cache_size) noexcept
+        explicit Draw(usize cache_size) noexcept
             : _layout{ cache_size } {}
 
         operator bool() noexcept {
