@@ -55,18 +55,18 @@ Free a font.
 
 Free all fonts.
 
-<h2><code>gm_draw(x, y, str)</code></h2>
+<h2><code>gm_draw(x, y, text)</code></h2>
 
-Draw a UTF-8 string.
+Draw a UTF-8 text.
 
 | **Returned Value** | **Description** |
 | --- | --- |
 | `0` | OK |
 | `-1` | Failed to decode text |
 | `-2` | Failed to break text into words |
-| `-3` | Invalid text option |
+| `-3` | Invalid layout option |
 
-<h2><code>gm_width(str)</code></h2>
+<h2><code>gm_width(text)</code></h2>
 
 Get the width of the text.
 
@@ -75,9 +75,9 @@ Get the width of the text.
 | Non-negative | Text width |
 | `-1` | Failed to decode text |
 | `-2` | Failed to break text into words |
-| `-3` | Invalid text option |
+| `-3` | Invalid layout option |
 
-<h2><code>gm_height(str)</code></h2>
+<h2><code>gm_height(text)</code></h2>
 
 Get the height of the text.
 
@@ -86,7 +86,7 @@ Get the height of the text.
 | Non-negative | Text height |
 | `-1` | Failed to decode text |
 | `-2` | Failed to break text into words |
-| `-3` | Invalid text option |
+| `-3` | Invalid layout option |
 
 <h2><code>gm_set_font(key)</code></h2>
 
@@ -112,13 +112,13 @@ Get the current font.
 <code>gm_set_valign(valign)</code><br />
 <code>gm_set_justified(justified)</code></h2>
 
-Set the alignment and justification of the text.
+Set the text alignment.
 
 <h2><code>gm_get_halign()</code><br />
 <code>gm_get_valign()</code><br />
 <code>gm_is_justified()</code></h2>
 
-Get the alignment and justification of the text.
+Get the text alignment.
 
 <h2><code>gm_set_color2(color_top, color_bottom)</code><br />
 <code>gm_set_color(color)</code></h2>

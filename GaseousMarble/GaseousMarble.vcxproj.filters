@@ -8,5 +8,6 @@
     <ClCompile Include="font.ixx" />
     <ClCompile Include="types.ixx" />
     <ClCompile Include="gm.ixx" />
+    <ClCompile Include="layout.ixx" />
   </ItemGroup>
 </Project>

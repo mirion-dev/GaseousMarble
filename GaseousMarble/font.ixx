@@ -64,23 +64,23 @@ namespace gm {
     };
 
     export class Font {
+        static inline usize _id_counter{ 1 };
+
         static void _sprite_deleter(usize id) noexcept {
             static env::Function sprite_delete{ env::FunctionId::sprite_delete };
             sprite_delete(id);
         }
 
-        std::string _name;
+        usize _id{ _id_counter++ };
         Handle<usize, _sprite_deleter, -1> _sprite;
-        u16 _height;
-        i16 _top;
+        u16 _glyph_height;
+        i16 _glyph_top;
         std::unordered_map<u32, Glyph> _glyphs;
 
     public:
         Font() noexcept = default;
 
-        Font(std::string_view name, std::string_view sprite_path)
-            : _name{ name } {
-
+        explicit Font(std::string_view sprite_path) {
             static env::Function sprite_add{ env::FunctionId::sprite_add };
             _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (!_sprite) {
@@ -103,7 +103,7 @@ namespace gm {
             }
 
             u32 size;
-            if (!read(_height) || !read(_top) || !read(size)) {
+            if (!read(_glyph_height) || !read(_glyph_top) || !read(size)) {
                 throw std::system_error{ FontError::data_corrupted };
             }
 
@@ -124,9 +124,8 @@ namespace gm {
             return static_cast<bool>(_sprite);
         }
 
-        std::string_view name() const noexcept {
-            assert(*this);
-            return _name;
+        usize id() const noexcept {
+            return _id;
         }
 
         usize sprite() const noexcept {
@@ -134,14 +133,14 @@ namespace gm {
             return _sprite.get();
         }
 
-        u16 height() const noexcept {
+        usize glyph_height() const noexcept {
             assert(*this);
-            return _height;
+            return _glyph_height;
         }
 
-        i16 top() const noexcept {
+        isize glyph_top() const noexcept {
             assert(*this);
-            return _top;
+            return _glyph_top;
         }
 
         const auto& glyphs() const noexcept {

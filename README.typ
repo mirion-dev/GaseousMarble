@@ -74,32 +74,32 @@ Free a font.
 
 Free all fonts.
 
-= `gm_draw(x, y, str)`
+= `gm_draw(x, y, text)`
 
-Draw a UTF-8 string.
+Draw a UTF-8 text.
 
 / `0`: OK
 / `-1`: Failed to decode text
 / `-2`: Failed to break text into words
-/ `-3`: Invalid text option
+/ `-3`: Invalid layout option
 
-= `gm_width(str)`
+= `gm_width(text)`
 
 Get the width of the text.
 
 / Non-negative: Text width
 / `-1`: Failed to decode text
 / `-2`: Failed to break text into words
-/ `-3`: Invalid text option
+/ `-3`: Invalid layout option
 
-= `gm_height(str)`
+= `gm_height(text)`
 
 Get the height of the text.
 
 / Non-negative: Text height
 / `-1`: Failed to decode text
 / `-2`: Failed to break text into words
-/ `-3`: Invalid text option
+/ `-3`: Invalid layout option
 
 = `gm_set_font(key)`
 
@@ -117,11 +117,11 @@ Get the current font.
 
 = `gm_set_align3(halign, valign, justified)`\ `gm_set_align(halign, valign)`\ `gm_set_halign(halign)`\ `gm_set_valign(valign)`\ `gm_set_justified(justified)`
 
-Set the alignment and justification of the text.
+Set the text alignment.
 
 = `gm_get_halign()`\ `gm_get_valign()`\ `gm_is_justified()`
 
-Get the alignment and justification of the text.
+Get the text alignment.
 
 = `gm_set_color2(color_top, color_bottom)`\ `gm_set_color(color)`
 

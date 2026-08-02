@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="layout.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="gm.ixx" />
     <ClCompile Include="utils.ixx" />
