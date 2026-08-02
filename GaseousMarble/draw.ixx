@@ -330,7 +330,7 @@ namespace gm {
     public:
         TextCache() noexcept = default;
 
-        TextCache(usize cache_size) noexcept
+        explicit TextCache(usize cache_size) noexcept
             : _cache_size{ cache_size } {
 
             assert(_cache_size > 0);
