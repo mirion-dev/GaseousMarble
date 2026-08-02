@@ -1,6 +1,5 @@
 module;
 
-#include <cassert>
 #include <dwrite_3.h>
 #include <wil/com.h>
 
@@ -94,53 +93,29 @@ namespace gm {
         }
     };
 
-    export struct Font {
-        FontDesc desc;
-        GlyphAtlas atlas;
-    };
+    export class Font {
+        static inline usize _id_counter{ 1 };
 
-    export class FontManager {
-        usize _max_font_num{};
-
-        std::vector<Font> _data;
+        usize _id{ _id_counter++ };
+        FontDesc _desc;
+        GlyphAtlas _atlas;
 
     public:
-        FontManager() noexcept = default;
+        Font() noexcept = default;
 
-        explicit FontManager(usize max_font_num) noexcept
-            : _max_font_num{ max_font_num } {
+        Font(FontDesc desc, GlyphAtlas&& atlas) noexcept
+            : _desc{ std::move(desc) }, _atlas{ std::move(atlas) } {}
 
-            assert(_max_font_num > 0);
+        usize id() const noexcept {
+            return _id;
         }
 
-        FontManager(FontManager&&) noexcept = default;
-
-        FontManager& operator=(FontManager&&) noexcept = default;
-
-        operator bool() const noexcept {
-            return _max_font_num > 0;
+        const FontDesc& desc() const noexcept {
+            return _desc;
         }
 
-        usize max_font_num() const noexcept {
-            assert(*this);
-            return _max_font_num;
-        }
-
-        auto& get(this auto& self, usize id) noexcept {
-            assert(self && id > 0 && id <= self._data.size());
-            return std::forward_like<decltype(self)>(self._data[id - 1]);
-        }
-
-        template <class... Args>
-        usize add(Args&&... args) {
-            assert(*this);
-
-            if (_data.size() >= _max_font_num) {
-                throw std::runtime_error{ "Too many fonts." };
-            }
-
-            _data.emplace_back(std::forward<Args>(args)...);
-            return _data.size();
+        auto& atlas(this auto& self) noexcept {
+            return std::forward_like<decltype(self)>(self._atlas);
         }
     };
 

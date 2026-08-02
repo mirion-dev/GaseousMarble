@@ -123,7 +123,7 @@ namespace gm {
         // [IDWriteTextLayout]
         f32 max_width{ std::numeric_limits<f32>::max() };
         f32 max_height{ std::numeric_limits<f32>::max() };
-        std::pair<FontManager*, usize> font{};
+        std::pair<Font*, usize> font{};
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
         // UNSUPPORTED: `Typography`                                 ; advanced typography properties
@@ -221,7 +221,6 @@ namespace gm {
                     value.trimming,
                     value.max_width,
                     value.max_height,
-                    value.font.first,
                     value.font.second,
                     value.letter_spacing,
                     value.line_spacing_type,
@@ -273,7 +272,7 @@ namespace gm {
             }
 
             auto& [text, option]{ spec };
-            FontDesc& font_desc{ option.font.first->get(option.font.second).desc };
+            const FontDesc& font_desc{ option.font.first->desc() };
             wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(

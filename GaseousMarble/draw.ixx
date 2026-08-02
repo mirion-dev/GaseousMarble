@@ -61,7 +61,7 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            GlyphAtlas& atlas{ _option.font.first->get(_option.font.second).atlas };
+            GlyphAtlas& atlas{ _option.font.first->atlas() };
             f32 texture_width{ static_cast<f32>(atlas.texture_width()) };
             f32 texture_height{ static_cast<f32>(atlas.texture_height()) };
             auto glyphs{ _layout.get({ text, _option }).glyphs };
