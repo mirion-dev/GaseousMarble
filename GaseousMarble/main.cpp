@@ -161,7 +161,7 @@ API Real gm_set_line_height(Real raw_line_height) noexcept {
 }
 
 API Real gm_set_max_line_length(Real raw_max_line_length) noexcept {
-    draw.option().max_line_length = saturating_cast<f32>(raw_max_line_length, 0, std::numeric_limits<f32>::max());
+    draw.option().max_line_length = std::max(saturating_cast<f32>(raw_max_line_length), 0.f);
     return 0;
 }
 
