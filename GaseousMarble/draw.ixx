@@ -14,7 +14,6 @@ namespace gm {
     export struct DrawOption : LayoutOption {
         i8 halign{ -1 };
         i8 valign{ -1 };
-        bool justified{};
         u32 color_top{ 0xffffff };
         u32 color_bottom{ 0xffffff };
         f32 alpha{ 1 };
@@ -73,23 +72,25 @@ namespace gm {
             f32 rotation{ -_option.rotation / 180 * std::numbers::pi_v<f32> };
             f32 cos{ std::cos(rotation) };
             f32 sin{ std::sin(rotation) };
-            for (auto& [tokens, line_width, line_height, justified_spacing] : layout.lines) {
+            for (auto& line : layout.lines) {
                 f32 cursor{ x };
                 if (_option.halign == 0) {
-                    cursor -= line_width / 2;
+                    cursor -= line.width / 2;
                 } else if (_option.halign > 0) {
-                    cursor -= line_width;
+                    cursor -= line.width;
                 }
 
-                for (auto& [str, continuous] : tokens) {
-                    if (!unicode_for_each(str, [&](u32 ch) noexcept {
+                for (auto& token : line.tokens) {
+                    f32 token_cursor{ cursor };
+                    std::string_view token_text{ layout.text.data() + token.first, token.visual_last - token.first };
+                    if (!unicode_for_each(token_text, [&](u32 ch) noexcept {
                             auto glyph_iter{ glyphs.find(ch) };
                             if (glyph_iter == glyphs.end()) {
                                 return true;
                             }
 
                             auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
-                            f32 draw_x{ cursor + left };
+                            f32 draw_x{ token_cursor + left };
                             f32 draw_y{ y };
                             f32 delta_x{ (draw_x - origin_x) * _option.scale_x };
                             f32 delta_y{ (draw_y - origin_y) * _option.scale_y };
@@ -112,24 +113,23 @@ namespace gm {
                                 _option.alpha
                             );
 
-                            cursor += advance + _option.letter_spacing;
+                            token_cursor += advance + _option.letter_spacing;
                             if (is_white_space(ch)) {
-                                cursor += _option.word_spacing;
+                                token_cursor += _option.word_spacing;
                             }
-                            if (_option.justified && continuous) {
-                                cursor += justified_spacing;
-                            }
+
                             return true;
                         })) {
                         throw std::system_error{ LayoutError::failed_to_decode };
                     }
 
-                    if (_option.justified && !continuous) {
-                        cursor += justified_spacing;
+                    cursor += token.advance;
+                    if (_option.justified) {
+                        cursor += line.justified_spacing;
                     }
                 }
 
-                y += line_height;
+                y += line.height;
             }
         }
 

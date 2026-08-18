@@ -14,7 +14,7 @@ namespace gm {
 
     export enum class LayoutError {
         failed_to_decode     = -1,
-        failed_to_word_break = -2,
+        failed_to_line_break = -2,
         invalid_option       = -3
     };
 
@@ -35,8 +35,8 @@ namespace gm {
             switch (static_cast<LayoutError>(value)) {
             case LayoutError::failed_to_decode:
                 return "Failed to decode text.";
-            case LayoutError::failed_to_word_break:
-                return "Failed to break text into words.";
+            case LayoutError::failed_to_line_break:
+                return "Failed to find line break points.";
             case LayoutError::invalid_option:
                 return "Invalid layout option.";
             }
@@ -54,30 +54,12 @@ namespace gm {
         return { static_cast<int>(error), layout_error_category() };
     }
 
+    export usize utf8_size(u32 ch) noexcept {
+        return U8_LENGTH(ch);
+    }
+
     export bool is_white_space(u32 ch) noexcept {
         return u_isUWhiteSpace(ch);
-    }
-
-    export bool is_line_break(u32 ch) noexcept {
-        switch (u_getIntPropertyValue(ch, UCHAR_LINE_BREAK)) {
-        case U_LB_MANDATORY_BREAK:
-        case U_LB_CARRIAGE_RETURN:
-        case U_LB_LINE_FEED:
-        case U_LB_NEXT_LINE:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    export bool is_wide(u32 ch) noexcept {
-        switch (u_getIntPropertyValue(ch, UCHAR_EAST_ASIAN_WIDTH)) {
-        case U_EA_FULLWIDTH:
-        case U_EA_WIDE:
-            return true;
-        default:
-            return false;
-        }
     }
 
     export template <class Fn>
@@ -89,22 +71,28 @@ namespace gm {
         }
 
         while (true) {
-            auto ch{ static_cast<u32>(utext_next32(iter.get())) };
+            auto ch{ static_cast<u32>(UTEXT_NEXT32(iter.get())) };
             if (ch == -1 || !func(ch)) {
                 return true;
             }
         }
     }
 
+    export struct LineBreakToken {
+        usize first;
+        usize last;
+        bool hard;
+    };
+
     export template <class Fn>
-    bool word_break_for_each(std::string_view text, Fn&& func) noexcept {
+    bool line_break_for_each(std::string_view text, Fn&& func) noexcept {
         UErrorCode error{};
         Handle<UText*, utext_close> iter{ utext_openUTF8(nullptr, text.data(), text.size(), &error) };
         if (!iter) {
             return false;
         }
 
-        Handle<UBreakIterator*, ubrk_close> breaker{ ubrk_open(UBRK_WORD, "", nullptr, 0, &error) };
+        Handle<UBreakIterator*, ubrk_close> breaker{ ubrk_open(UBRK_LINE, "", nullptr, 0, &error) };
         if (!breaker) {
             return false;
         }
@@ -114,22 +102,20 @@ namespace gm {
             return false;
         }
 
-        const char* ptr{ text.data() };
         usize first{};
         while (true) {
             auto last{ static_cast<usize>(ubrk_next(breaker.get())) };
-            if (last == -1
-                || !func(
-                    std::string_view{ ptr + first, ptr + last }, static_cast<u32>(ubrk_getRuleStatus(breaker.get()))
-                )) {
+            if (last == -1 || !func({ first, last, ubrk_getRuleStatus(breaker.get()) == UBRK_LINE_HARD })) {
                 return true;
             }
+
             first = last;
         }
     }
 
     export struct LayoutOption {
         std::pair<const Font*, usize> font{};
+        bool justified{};
         f32 letter_spacing{};
         f32 word_spacing{};
         f32 paragraph_spacing{};
@@ -144,21 +130,58 @@ namespace gm {
     };
 
     export struct LayoutToken {
-        std::string str;
-        bool continuous;
+        usize first;
+        usize last;
+        usize visual_last;
+        f32 advance;
+        f32 width;
+
+        static LayoutToken from(const LineBreakToken& lb_token, std::string_view text, const LayoutOption& option) {
+            LayoutToken token{ lb_token.first, lb_token.last, lb_token.first };
+            std::string_view token_text{ text.data() + lb_token.first, lb_token.last - lb_token.first };
+            auto& glyphs{ option.font.first->glyphs() };
+            usize next{ token.first };
+            if (!unicode_for_each(token_text, [&](u32 ch) noexcept {
+                    next += utf8_size(ch);
+
+                    auto glyph_iter{ glyphs.find(ch) };
+                    if (glyph_iter == glyphs.end()) {
+                        return true;
+                    }
+
+                    auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
+                    if (!is_white_space(ch)) {
+                        token.visual_last = next;
+                        token.width = token.advance + left + width;
+                    }
+
+                    token.advance += advance + option.letter_spacing;
+                    if (is_white_space(ch)) {
+                        token.advance += option.word_spacing;
+                    }
+
+                    return true;
+                })) {
+                throw std::system_error{ LayoutError::failed_to_decode };
+            }
+
+            return token;
+        }
     };
 
     export struct LayoutLine {
         std::vector<LayoutToken> tokens;
+        bool hard;
         f32 width;
         f32 height;
         f32 justified_spacing;
     };
 
     export struct Layout {
+        std::string text;
         std::vector<LayoutLine> lines;
-        f32 width{};
-        f32 height{};
+        f32 width;
+        f32 height;
 
         static Layout from(std::string_view text, const LayoutOption& option) {
             if (!option.is_valid()) {
@@ -166,36 +189,32 @@ namespace gm {
             }
 
             auto glyph_height{ static_cast<f32>(option.font.first->glyph_height()) };
-            auto& glyphs{ option.font.first->glyphs() };
-
-            const char* first{ text.data() };
-            const char* last{ first };
-            bool cont{};
-
-            Layout layout;
-            LayoutLine line{ .height = glyph_height };
+            Layout layout{ std::string{ text } };
+            LayoutLine line{};
+            std::optional<LayoutToken> pending;
             f32 cursor{};
-            usize justified_count{};
 
             auto push_token{ [&] noexcept {
-                if (first == last) {
-                    return;
+                f32 next{ cursor + pending->advance };
+                if (pending->first != pending->visual_last) {
+                    line.width = cursor + pending->width;
+                    line.tokens.emplace_back(std::move(*pending));
                 }
 
-                if (!cont) {
-                    ++justified_count;
-                }
-                line.tokens.emplace_back(std::string{ first, last }, cont);
+                pending.reset();
+                cursor = next;
             } };
 
-            auto push_line{ [&](bool hard = false, bool last = false) noexcept {
-                push_token();
-
-                if (!hard && justified_count > 1) {
-                    line.justified_spacing = (option.max_line_length - line.width) / (justified_count - 1);
+            auto push_line{ [&](bool last = false) noexcept {
+                if (option.justified && option.max_line_length != 0 && !line.hard && !last && line.tokens.size() > 1) {
+                    line.justified_spacing = (option.max_line_length - line.width) / (line.tokens.size() - 1);
                     line.width = option.max_line_length;
                 }
 
+                line.height = glyph_height;
+                if (line.hard) {
+                    line.height += option.paragraph_spacing;
+                }
                 if (!last) {
                     line.height *= option.line_height;
                 }
@@ -204,79 +223,39 @@ namespace gm {
                 layout.height += line.height;
                 layout.lines.emplace_back(std::move(line));
 
-                line = { .height = glyph_height };
+                line = {};
                 cursor = 0;
-                justified_count = 0;
             } };
 
-            auto push_word{ [&](std::string_view word, u32 type) {
-                const char* word_begin{ word.data() };
-                const char* word_end{ word_begin + word.size() };
-                f32 next_cursor{ cursor }, next_line_width{ line.width };
-                bool first_ch{ true };
-                bool line_break{};
-                if (!unicode_for_each(word, [&](u32 ch) noexcept {
-                        if (first_ch) {
-                            first_ch = false;
-
-                            if (is_line_break(ch)) {
-                                line.height += option.paragraph_spacing;
-                                push_line(true);
-                                first = word_end;
-                                cont = false;
-                                line_break = true;
-                                return false;
-                            }
-
-                            bool word_cont{ type >= UBRK_WORD_KANA || type == UBRK_WORD_NONE && is_wide(ch) };
-                            if (cont != word_cont) {
-                                push_token();
-                                first = word_begin;
-                                cont = word_cont;
-                            }
-                        }
-
-                        auto glyph_iter{ glyphs.find(ch) };
-                        if (glyph_iter == glyphs.end()) {
-                            return true;
-                        }
-
-                        auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
-                        if (option.max_line_length != 0
-                            && cursor != 0
-                            && next_cursor + left + width > option.max_line_length) {
-                            next_cursor -= cursor;
+            if (!line_break_for_each(layout.text, [&](const LineBreakToken& lb_token) {
+                    auto token{ LayoutToken::from(lb_token, layout.text, option) };
+                    if (pending) {
+                        bool overflow{ option.max_line_length != 0
+                                       && cursor + pending->advance + token.width > option.max_line_length
+                                       && token.first != token.visual_last };
+                        push_token();
+                        if (overflow) {
                             push_line();
-                            first = word_begin;
                         }
+                    }
 
-                        next_line_width = next_cursor + left + width;
-                        next_cursor += advance + option.letter_spacing;
-                        if (is_white_space(ch)) {
-                            next_cursor += option.word_spacing;
-                        }
-                        if (cont) {
-                            ++justified_count;
-                        }
-                        return true;
-                    })) {
-                    throw std::system_error{ LayoutError::failed_to_decode };
-                }
+                    pending = std::move(token);
+                    if (lb_token.hard) {
+                        line.hard = true;
+                        push_token();
+                        push_line();
+                    }
 
-                if (!line_break) {
-                    cursor = next_cursor;
-                    line.width = next_line_width;
-                }
-
-                last = word_end;
-                return true;
-            } };
-
-            if (!word_break_for_each(text, push_word)) {
-                throw std::system_error{ LayoutError::failed_to_word_break };
+                    return true;
+                })) {
+                throw std::system_error{ LayoutError::failed_to_line_break };
             }
 
-            push_line(true, true);
+            if (pending) {
+                push_token();
+            }
+
+            push_line(true);
             return layout;
         }
     };
@@ -312,6 +291,7 @@ namespace gm {
             usize operator()(const LayoutOption& value) const noexcept {
                 return hash_combine(
                     Hash{},
+                    value.justified,
                     value.font.second,
                     value.letter_spacing,
                     value.word_spacing,
