@@ -206,16 +206,16 @@ namespace gm {
             } };
 
             auto push_line{ [&](bool last = false) noexcept {
-                if (option.justified && option.max_line_length != 0 && !line.hard && !last && line.tokens.size() > 1) {
+                if (option.justified && option.max_line_length != 0 && !line.hard && line.tokens.size() > 1) {
                     line.justified_spacing = (option.max_line_length - line.width) / (line.tokens.size() - 1);
                     line.width = option.max_line_length;
                 }
 
                 line.height = glyph_height;
-                if (line.hard) {
-                    line.height += option.paragraph_spacing;
-                }
                 if (!last) {
+                    if (line.hard) {
+                        line.height += option.paragraph_spacing;
+                    }
                     line.height *= option.line_height;
                 }
 
@@ -255,6 +255,7 @@ namespace gm {
                 push_token();
             }
 
+            line.hard = true;
             push_line(true);
             return layout;
         }
