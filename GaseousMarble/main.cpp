@@ -172,12 +172,14 @@ API Real gm_set_offset(Real raw_x, Real raw_y) noexcept {
 }
 
 API Real gm_set_scale(Real raw_x, Real raw_y) noexcept {
-    if (raw_x <= 0 || raw_y <= 0) {
+    f32 x{ saturating_cast<f32>(raw_x) };
+    f32 y{ saturating_cast<f32>(raw_y) };
+    if (x <= 0 || y <= 0) {
         return -1; // Invalid argument
     }
 
-    draw.option().scale_x = saturating_cast<f32>(raw_x);
-    draw.option().scale_y = saturating_cast<f32>(raw_y);
+    draw.option().scale_x = x;
+    draw.option().scale_y = y;
     return 0;
 }
 
