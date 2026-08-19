@@ -133,3 +133,33 @@ var cell_padding{ cell_padding = room_width / 2 * .05 }
     external_call(global.gm_set_align3, -1, -1, false)
     external_call(global.gm_set_max_line_length, 0)
 }
+
+{
+    external_call(global.gm_set_align, 0, 0)
+    external_call(global.gm_draw, room_width / 2, room_height / 2 + title_height / 2, "gm_set_max_line_length()")
+
+    grid_mesh(
+        table_padding,
+        room_height / 2 + title_height,
+        3,
+        1,
+        room_width - table_padding * 2,
+        room_height / 2 - title_height - table_padding,
+        50,
+        0,
+        $e6b689
+    )
+
+    external_call(global.gm_set_justified, true)
+
+    var row{}
+    for (row = 1; row <= 3; row += 1) {
+        var max_length{ max_length = 600 - (row - 1) * 100 }
+        external_call(global.gm_draw, grid_mesh_col[0], grid_mesh_row[row], string(max_length))
+        external_call(global.gm_set_max_line_length, max_length)
+        external_call(global.gm_draw, grid_mesh_col[1], grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
+    }
+
+    external_call(global.gm_set_align3, -1, -1, false)
+    external_call(global.gm_set_max_line_length, 0)
+}
