@@ -46,54 +46,90 @@ global.gm_get_scale_x           = external_define(dll_path, "gm_get_scale_x", dl
 global.gm_get_scale_y           = external_define(dll_path, "gm_get_scale_y", dll_cdecl, ty_real, 0)
 global.gm_get_rotation          = external_define(dll_path, "gm_get_rotation", dll_cdecl, ty_real, 0)
 
-var error{ error = external_call(global.gm_font, "default", "gm_fonts/default.png") }
-if (error < 0) {
-    show_error("gm_font error code: " + string(error), true)
-}
-
+external_call(global.gm_font, "default", "gm_fonts/default.png")
 external_call(global.gm_set_font, "default")
-external_call(global.gm_set_letter_spacing, -1)
-external_call(global.gm_set_max_line_length, room_width)
-external_call(global.gm_set_line_height, .86)
-#define Keyboard_82
+
+page = 0
+#define Keyboard_32
 /*"/*'/**//* YYD ACTION
 lib_id=1
 action_id=603
 applies_to=self
 */
-game_restart()
+page = 0
 #define Draw_0
 /*"/*'/**//* YYD ACTION
 lib_id=1
 action_id=603
 applies_to=self
 */
-draw_set_color(c_white)
-draw_text(0, 0, fps)
+var title_height{ title_height = room_height / 2 * .2 }
+var table_padding{ table_padding = room_width / 2 * .05 }
+var cell_padding{ cell_padding = room_width / 2 * .05 }
 
-var error{ error = external_call(global.gm_draw, 0, 0, "
-在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源创建（不管是在 GM 设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平及垂直坐标。
+{
+    external_call(global.gm_set_align, 0, 0)
+    external_call(global.gm_draw, room_width / 4, title_height / 2, "gm_set_align()")
 
-文本的绘制涉及以下函数：
+    grid_mesh(
+        table_padding,
+        title_height,
+        3,
+        3,
+        room_width / 2 - table_padding * 2,
+        room_height / 2 - title_height,
+        30,
+        30,
+        $e6b689
+    )
 
-draw_set_font(font) 设定绘制文本时将要使用的字体。-1 代表默认字体（Arial 12）。
+    var i{}
+    for (i = 1; i <= 3; i += 1) {
+        external_call(global.gm_draw, grid_mesh_col[i], grid_mesh_row[0], string(i - 2))
+        external_call(global.gm_draw, grid_mesh_col[0], grid_mesh_row[i], string(i - 2))
+    }
 
-draw_set_halign(halign) 设定绘制文本的水平坐标参数。选择下面三个中的一个作为值：
-fa_left 左
-fa_center 中
-fa_right 右
+    var row{}
+    for (row = 1; row <= 3; row += 1) {
+        var col{}
+        for (col = 1; col <= 3; col += 1) {
+            draw_circle_color(grid_mesh_col[col], grid_mesh_row[row], 5, $e6b689, $e6b689, false)
+            external_call(global.gm_set_align, col - 2, row - 2)
+            external_call(global.gm_draw, grid_mesh_col[col], grid_mesh_row[row], "Text")
+        }
+    }
 
-draw_set_valign(valign) 设定绘制文本的垂直坐标参数。选择下面三个中的一个作为值：
-fa_top 上
-fa_middle 中
-fa_bottom 下
+    external_call(global.gm_set_align, -1, -1)
+}
 
-draw_text(x, y, string) 在坐标 (x, y) 处绘制字符串 string，一个 '#' 通配符或者一个回车符 chr(13) 或者断行符 chr(10) 会让字符串另起一行，这样我们就可以实现多行文本的绘制（使用 '\\#' 显示字符 '#' 本身）。
-draw_text_ext(x, y, string, sep, w) 基本与上面的函数作用相同，但增加了两个功能。首先 sep 代表行间距，设成 -1 代表使用默认值。w 代表行宽，单位像素。超出行宽的部分会以空格或 '-' 进行分行。设为 -1 代表不换行。
-string_width(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。
-string_height(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。
-string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
-string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。") }
-if (error < 0) {
-    show_error("gm_draw error code: " + string(error), true)
+{
+    external_call(global.gm_set_align, 0, 0)
+    external_call(global.gm_draw, room_width * 3 / 4, title_height / 2, "gm_set_justified()")
+
+    grid_mesh(
+        room_width / 2 + table_padding,
+        title_height,
+        1,
+        2,
+        room_width / 2 - table_padding * 2,
+        room_height / 2 - title_height,
+        0,
+        30,
+        $e6b689
+    )
+
+    external_call(global.gm_set_max_line_length, grid_mesh_cell_width - cell_padding * 2)
+
+    header[0] = "false"
+    header[1] = "true"
+
+    var col{}
+    for (col = 1; col <= 2; col += 1) {
+        external_call(global.gm_set_justified, col - 1)
+        external_call(global.gm_draw, grid_mesh_col[col], grid_mesh_row[0], header[col - 1])
+        external_call(global.gm_draw, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
+    }
+
+    external_call(global.gm_set_align3, -1, -1, false)
+    external_call(global.gm_set_max_line_length, 0)
 }
