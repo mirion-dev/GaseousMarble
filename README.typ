@@ -36,17 +36,19 @@
     }
 }
 
-#let new = [\*New]
+#show list: el => {
+    table(
+        table.header[*v1*],
+        ..el.children.map(i => i.body),
+    )
+}
 
 #title[Reference]
 
 = `gm2_new_font(key, name, properties, size, locale, min_aa_h_size, min_aa_v_size)`
 
-#quote[
-    v1:
-    - `gm_font()`
-    - `generate_font()`
-]
+- `gm_font()`
+- `generate_font()`
 
 Add a font from system fonts or font files.
 
@@ -54,14 +56,17 @@ Add a font from system fonts or font files.
 
 *Dropped*: Loading from sprites.
 
+= - `gm_free()`\ - `gm_clear()`
+
+Free a font or all fonts.
+
+*Removed*: Glyphs are extracted on demand, making manual memory management no longer necessary.
+
 = `gm2_draw_text(x, y, text)`\ `gm2_text_width(text)`\ `gm2_text_height(text)`
 
-#quote[
-    v1:
-    - `gm_draw()`
-    - `gm_width()`
-    - `gm_height()`
-]
+- `gm_draw()`
+- `gm_width()`
+- `gm_height()`
 
 Draw a UTF-8 text or get its visual size.
 
@@ -69,38 +74,31 @@ Draw a UTF-8 text or get its visual size.
 
 = `gm2_set_font(key)`
 
-#quote[
-    v1: `gm_set_font()`
-]
+- `gm_set_font()`
 
 Set the current font.
 
-= `gm2_get_font()`\ `gm2_get_font_name()` #new\ `gm2_get_font_weight()` #new\ `gm2_get_font_style()` #new\ `gm2_get_font_stretch()` #new\ `gm2_get_font_size()` #new\ `gm2_get_font_locale()` #new\ `gm2_get_font_min_aa_h_size()` #new\ `gm2_get_font_min_aa_v_size()` #new
+= `gm2_get_font()`\ + `gm2_get_font_name()`\ + `gm2_get_font_weight()`\ + `gm2_get_font_style()`\ + `gm2_get_font_stretch()`\ + `gm2_get_font_size()`\ + `gm2_get_font_locale()`\ + `gm2_get_font_min_aa_h_size()`\ + `gm2_get_font_min_aa_v_size()`
 
-#quote[
-    v1: `gm_get_font()`
-]
+- `gm_get_font()`
 
-Get the current font.
+Get the current font or its properties.
 
-= `gm2_set_direction(direction)` #new\ `gm2_set_text_direction(text_direction)` #new\ `gm2_set_par_direction(par_direction)` #new
+= + `gm2_set_direction(direction)`\ + `gm2_set_text_direction(text_direction)`\ + `gm2_set_par_direction(par_direction)`
 
 Set the text direction or the paragraph direction.
 
-= `gm2_get_text_direction()` #new\ `gm2_get_par_direction()` #new
+= + `gm2_get_text_direction()`\ + `gm2_get_par_direction()`
 
 Get the text direction or the paragraph direction.
 
 = `gm2_set_alignment(alignment)`\ `gm2_set_text_alignment(text_alignment)`\ `gm2_set_par_alignment(par_alignment)`
 
-#quote[
-    v1:
-    - `gm_set_align3()`
-    - `gm_set_align()`
-    - `gm_set_halign()`
-    - `gm_set_valign()`
-    - `gm_set_justified()`
-]
+- `gm_set_align3()`
+- `gm_set_align()`
+- `gm_set_halign()`
+- `gm_set_valign()`
+- `gm_set_justified()`
 
 Set the text alignment or the paragraph alignment.
 
@@ -108,62 +106,44 @@ Set the text alignment or the paragraph alignment.
 
 = `gm2_get_text_alignment()`\ `gm2_get_par_alignment()`
 
-#quote[
-    v1:
-    - `gm_get_halign()`
-    - `gm_get_valign()`
-    - `gm_is_justified()`
-]
+- `gm_get_halign()`
+- `gm_get_valign()`
+- `gm_is_justified()`
 
 Get the text alignment or the paragraph alignment.
 
-= `gm2_set_max_width(max_width)`
+= `gm2_set_max_width(max_width)`\ + `gm2_set_max_height(max_height)`
 
-#quote[
-    v1: `gm_set_max_line_length()`
-]
+- `gm_set_max_line_length()`
 
-Set the maximum width of the text.
+Set the maximum size of the text.
 
-= `gm2_get_max_width()`
+= `gm2_get_max_width()`\ + `gm2_get_max_height()`
 
-#quote[
-    v1: `gm_get_max_line_length()`
-]
+- `gm_get_max_line_length()`
 
-Get the maximum width of the text.
+Get the maximum size of the text.
 
-= `gm2_set_max_height(max_height)` #new
-
-Set the maximum height of the text.
-
-= `gm2_get_max_height()` #new
-
-Get the maximum height of the text.
-
-= `gm2_set_word_wrapping(word_wrapping)` #new
+= + `gm2_set_word_wrapping(word_wrapping)`
 
 Set the word wrapping of the text.
 
-= `gm2_get_word_wrapping()` #new
+= + `gm2_get_word_wrapping()`
 
 Get the word wrapping of the text.
 
-= `gm2_set_trimming(trimming)` #new
+= + `gm2_set_trimming(trimming)`
 
 Set the text trimming.
 
-= `gm2_get_trimming()` #new
+= + `gm2_get_trimming()`
 
 Get the text trimming.
 
 = `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_fixed_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`
 
-#quote[
-    v1:
-    - `gm_set_line_height()`
-    - `gm_set_paragraph_spacing()`
-]
+- `gm_set_line_height()`
+- `gm_set_paragraph_spacing()`
 
 Set the line spacing of the text.
 
@@ -171,45 +151,32 @@ Set the line spacing of the text.
 
 = `gm2_get_line_spacing_type()`\ `gm2_get_line_height()`\ `gm2_get_baseline()`
 
-#quote[
-    v1:
-    - `gm_get_line_height()`
-    - `gm_get_paragraph_spacing()`
-]
+- `gm_get_line_height()`
+- `gm_get_paragraph_spacing()`
 
 Get the line spacing of the text.
 
-= `gm2_set_tab_spacing(tab_spacing)` #new
+= + `gm2_set_tab_spacing(tab_spacing)`
 
 Set the tab spacing of the text.
 
-= `gm2_get_tab_spacing()` #new
+= + `gm2_get_tab_spacing()`
 
 Get the tab spacing of the text.
 
 = `gm2_set_letter_spacing(letter_spacing)`
 
-#quote[
-    v1: `gm_set_letter_spacing()`
-]
+- `gm_set_letter_spacing()`
 
 Set the letter spacing of the text.
 
 = `gm2_get_letter_spacing()`
 
-#quote[
-    v1: `gm_get_letter_spacing()`
-]
+- `gm_get_letter_spacing()`
 
 Get the letter spacing of the text.
 
-= #strike[`gm_free()`\ `gm_clear()`]
-
-Free a font or all fonts.
-
-*Removed*: Glyphs are extracted on demand, making manual memory management no longer necessary.
-
-= #strike[`gm_set_word_spacing()`\ `gm_get_word_spacing()`]
+= - `gm_set_word_spacing()`\ - `gm_get_word_spacing()`
 
 Set or get the word spacing of the text.
 
