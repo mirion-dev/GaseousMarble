@@ -66,7 +66,7 @@ applies_to=self
 var title_height{ title_height = room_height / 2 * .2 }
 var table_padding{ table_padding = room_width / 2 * .05 }
 var cell_padding{ cell_padding = room_width / 2 * .05 }
-if (page = 0) {
+if (page == 0) {
     {
         external_call(global.gm_set_align, 0, 0)
         external_call(global.gm_draw, room_width / 4, title_height / 2, "gm_set_align()")
