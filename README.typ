@@ -80,7 +80,7 @@ Draw a UTF-8 text.
 
 / `0`: OK
 / `-1`: Failed to decode text
-/ `-2`: Failed to break text into words
+/ `-2`: Failed to find line break points
 / `-3`: Invalid layout option
 
 = `gm_width(text)`
@@ -89,7 +89,7 @@ Get the width of the text.
 
 / Non-negative: Text width
 / `-1`: Failed to decode text
-/ `-2`: Failed to break text into words
+/ `-2`: Failed to find line break points
 / `-3`: Invalid layout option
 
 = `gm_height(text)`
@@ -98,7 +98,7 @@ Get the height of the text.
 
 / Non-negative: Text height
 / `-1`: Failed to decode text
-/ `-2`: Failed to break text into words
+/ `-2`: Failed to find line break points
 / `-3`: Invalid layout option
 
 = `gm_set_font(key)`

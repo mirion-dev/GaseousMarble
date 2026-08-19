@@ -1,5 +1,5 @@
 > \[!note\]
->
+> 
 > v1 won’t be developed further. See [v2](https://github.com/mirion-dev/GaseousMarble/tree/v2) for current work.
 
 <h1>GaseousMarble</h1>
@@ -7,7 +7,7 @@
 Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
 
 > \[!warning\]
->
+> 
 > Minimum system requirement: Windows 10, Version 1903.
 
 ## Development
@@ -63,7 +63,7 @@ Draw a UTF-8 text.
 | --- | --- |
 | `0` | OK |
 | `-1` | Failed to decode text |
-| `-2` | Failed to find line break points. |
+| `-2` | Failed to find line break points |
 | `-3` | Invalid layout option |
 
 <h2><code>gm_width(text)</code></h2>
@@ -74,7 +74,7 @@ Get the width of the text.
 | --- | --- |
 | Non-negative | Text width |
 | `-1` | Failed to decode text |
-| `-2` | Failed to find line break points. |
+| `-2` | Failed to find line break points |
 | `-3` | Invalid layout option |
 
 <h2><code>gm_height(text)</code></h2>
@@ -85,7 +85,7 @@ Get the height of the text.
 | --- | --- |
 | Non-negative | Text height |
 | `-1` | Failed to decode text |
-| `-2` | Failed to find line break points. |
+| `-2` | Failed to find line break points |
 | `-3` | Invalid layout option |
 
 <h2><code>gm_set_font(key)</code></h2>
