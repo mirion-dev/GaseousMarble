@@ -4,54 +4,162 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-var error{ error = gm_font("default", "gm_fonts/default.png") }
-if (error < 0) {
-    show_error("gm_font error code: " + string(error), true)
-}
-
+gm_font("default", "gm_fonts/default.png")
 gm_set_font("default")
-gm_set_letter_spacing(-1)
-gm_set_max_line_length(room_width)
-gm_set_line_height(.86)
-#define Keyboard_82
+
+page = 0
+#define KeyPress_32
 /*"/*'/**//* YYD ACTION
 lib_id=1
 action_id=603
 applies_to=self
 */
-game_restart()
+page = 1 - page
 #define Draw_0
 /*"/*'/**//* YYD ACTION
 lib_id=1
 action_id=603
 applies_to=self
 */
-draw_set_color(c_white)
-draw_text(0, 0, fps)
+var title_height{ title_height = room_height / 2 * .2 }
+var table_padding{ table_padding = room_width / 2 * .05 }
+var cell_padding{ cell_padding = room_width / 2 * .05 }
+if (page = 0) {
+    {
+        gm_set_align(0, 0)
+        gm_draw(room_width / 4, title_height / 2, "gm_set_align()")
 
-var error{ error = gm_draw(0, 0, "
-在游戏中你需要绘制文本。要绘制文本你需要先指定要使用的字体。字体可以通过字体资源创建（不管是在 GM 设计界面里还是使用函数创建资源）。这里有很多函数可以通过不同方法绘制文本。每个函数你都要指定文本在屏幕上显示的位置。有两个函数负责指定文本的水平及垂直坐标。
+        grid_mesh(
+            table_padding,
+            title_height,
+            3,
+            3,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height,
+            30,
+            30,
+            $e6b689
+        )
 
-文本的绘制涉及以下函数：
+        var i{}
+        for (i = 1; i <= 3; i += 1) {
+            gm_draw(grid_mesh_col[i], grid_mesh_row[0], string(i - 2))
+            gm_draw(grid_mesh_col[0], grid_mesh_row[i], string(i - 2))
+        }
 
-draw_set_font(font) 设定绘制文本时将要使用的字体。-1 代表默认字体（Arial 12）。
+        var row{}
+        for (row = 1; row <= 3; row += 1) {
+            var col{}
+            for (col = 1; col <= 3; col += 1) {
+                draw_circle_color(grid_mesh_col[col], grid_mesh_row[row], 5, $e6b689, $e6b689, false)
+                gm_set_align(col - 2, row - 2)
+                gm_draw(grid_mesh_col[col], grid_mesh_row[row], "Text")
+            }
+        }
 
-draw_set_halign(halign) 设定绘制文本的水平坐标参数。选择下面三个中的一个作为值：
-fa_left 左
-fa_center 中
-fa_right 右
+        gm_set_align(-1, -1)
+    }
 
-draw_set_valign(valign) 设定绘制文本的垂直坐标参数。选择下面三个中的一个作为值：
-fa_top 上
-fa_middle 中
-fa_bottom 下
+    {
+        gm_set_align(0, 0)
+        gm_draw(room_width * 3 / 4, title_height / 2, "gm_set_justified()")
 
-draw_text(x, y, string) 在坐标 (x, y) 处绘制字符串 string，一个 '#' 通配符或者一个回车符 chr(13) 或者断行符 chr(10) 会让字符串另起一行，这样我们就可以实现多行文本的绘制（使用 '\\#' 显示字符 '#' 本身）。
-draw_text_ext(x, y, string, sep, w) 基本与上面的函数作用相同，但增加了两个功能。首先 sep 代表行间距，设成 -1 代表使用默认值。w 代表行宽，单位像素。超出行宽的部分会以空格或 '-' 进行分行。设为 -1 代表不换行。
-string_width(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。
-string_height(string) 当前字体及将要通过 draw_text() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。
-string_width_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的宽度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。
-string_height_ext(string, sep, w) 当前字体及将要通过 draw_text_ext() 函数绘制的字符串 string 的高度。可以用来精确定位图像位置。sep 代表行间距，w 代表行宽。") }
-if (error < 0) {
-    show_error("gm_draw error code: " + string(error), true)
+        grid_mesh(
+            room_width / 2 + table_padding,
+            title_height,
+            1,
+            2,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height,
+            0,
+            30,
+            $e6b689
+        )
+
+        gm_set_max_line_length(grid_mesh_cell_width - cell_padding * 2)
+
+        header[0] = "false"
+        header[1] = "true"
+
+        var col{}
+        for (col = 1; col <= 2; col += 1) {
+            gm_set_justified(col - 1)
+            gm_draw(grid_mesh_col[col], grid_mesh_row[0], header[col - 1])
+            gm_draw(grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
+        }
+
+        gm_set_align3(-1, -1, false)
+        gm_set_max_line_length(0)
+    }
+
+    {
+        gm_set_align(0, 0)
+        gm_draw(room_width / 2, room_height / 2 + title_height / 2, "gm_set_max_line_length()")
+
+        grid_mesh(
+            table_padding,
+            room_height / 2 + title_height,
+            3,
+            1,
+            room_width - table_padding * 2,
+            room_height / 2 - title_height - table_padding,
+            50,
+            0,
+            $e6b689
+        )
+
+        gm_set_justified(true)
+
+        var row{}
+        for (row = 1; row <= 3; row += 1) {
+            var max_length{ max_length = 600 - (row - 1) * 100 }
+            gm_draw(grid_mesh_col[0], grid_mesh_row[row], string(max_length))
+            gm_set_max_line_length(max_length)
+            gm_draw(grid_mesh_col[1], grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
+        }
+
+        gm_set_align3(-1, -1, false)
+        gm_set_max_line_length(0)
+    }
+} else {
+    grid_mesh(
+        table_padding,
+        table_padding,
+        5,
+        1,
+        room_width - table_padding * 2,
+        room_height - table_padding * 2,
+        180,
+        0,
+        $e6b689
+    )
+
+    gm_set_align(0, 0)
+    gm_draw(grid_mesh_col[0], grid_mesh_row[1], "gm_set_color2()")
+    gm_draw(grid_mesh_col[0], grid_mesh_row[2], "gm_set_alpha()")
+    gm_draw(grid_mesh_col[0], grid_mesh_row[3], "gm_set_offset()")
+    gm_draw(grid_mesh_col[0], grid_mesh_row[4], "gm_set_scale()")
+    gm_draw(grid_mesh_col[0], grid_mesh_row[5], "gm_set_rotation()")
+
+    gm_set_color2(make_color_hsv((1 + sin(current_time / 900)) / 2 * 255, 255, 255), make_color_hsv((1 + sin(current_time / 900 + 2)) / 2 * 255, 255, 255))
+    gm_draw(grid_mesh_col[1], grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
+    gm_set_color(c_white)
+
+    gm_set_alpha((1 + sin(current_time / 700)) / 2)
+    gm_draw(grid_mesh_col[1], grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
+    gm_set_alpha(1)
+
+    gm_set_offset(sin(current_time / 500) * 20, sin(current_time / 700) * 10)
+    gm_draw(grid_mesh_col[1], grid_mesh_row[3], "Lorem ipsum dolor sit amet.")
+    gm_set_offset(0, 0)
+
+    gm_set_scale(1 + sin(current_time / 600) * .5, 1 + sin(current_time / 750) * .5)
+    gm_draw(grid_mesh_col[1], grid_mesh_row[4], "Lorem ipsum dolor sit amet.")
+    gm_set_scale(1, 1)
+
+    gm_set_rotation(sin(current_time / 800) * 10)
+    gm_draw(grid_mesh_col[1], grid_mesh_row[5], "Lorem ipsum dolor sit amet.")
+    gm_set_rotation(0)
+
+    gm_set_align(-1, -1)
 }
