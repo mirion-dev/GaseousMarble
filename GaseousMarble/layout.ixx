@@ -174,10 +174,15 @@ namespace gm {
 
             return token;
         }
+
+        bool is_visible() const noexcept {
+            return first != visual_last;
+        }
     };
 
     export struct LayoutLine {
         std::vector<LayoutToken> tokens;
+        usize visual_size;
         bool hard;
         f32 width;
         f32 height;
@@ -198,23 +203,11 @@ namespace gm {
             auto glyph_height{ static_cast<f32>(option.font.first->glyph_height()) };
             Layout layout{ std::string{ text } };
             LayoutLine line{};
-            std::optional<LayoutToken> pending;
             f32 cursor{};
 
-            auto push_token{ [&] noexcept {
-                f32 next{ cursor + pending->advance };
-                if (pending->first != pending->visual_last) {
-                    line.width = cursor + pending->width;
-                    line.tokens.emplace_back(std::move(*pending));
-                }
-
-                pending.reset();
-                cursor = next;
-            } };
-
             auto push_line{ [&](bool last = false) noexcept {
-                if (option.justified && option.max_line_length != 0 && !line.hard && line.tokens.size() > 1) {
-                    line.justified_spacing = (option.max_line_length - line.width) / (line.tokens.size() - 1);
+                if (option.justified && option.max_line_length != 0 && !line.hard && line.visual_size > 1) {
+                    line.justified_spacing = (option.max_line_length - line.width) / (line.visual_size - 1);
                     line.width = option.max_line_length;
                 }
 
@@ -230,26 +223,28 @@ namespace gm {
                 layout.height += line.height;
                 layout.lines.emplace_back(std::move(line));
 
-                line = {};
                 cursor = 0;
+                line = {};
             } };
 
             if (!line_break_for_each(layout.text, [&](const LineBreakToken& lb_token) {
                     auto token{ LayoutToken::from(lb_token, layout.text, option) };
-                    if (pending) {
-                        bool overflow{ option.max_line_length != 0
-                                       && cursor + pending->advance + token.width > option.max_line_length
-                                       && token.first != token.visual_last };
-                        push_token();
-                        if (overflow) {
+                    if (token.is_visible()) {
+                        if (line.visual_size != 0
+                            && option.max_line_length != 0
+                            && cursor + token.width > option.max_line_length) {
                             push_line();
                         }
+
+                        line.visual_size = line.tokens.size() + 1;
+                        line.width = cursor + token.width;
                     }
 
-                    pending = std::move(token);
+                    cursor += token.advance;
+                    line.tokens.emplace_back(std::move(token));
+
                     if (lb_token.hard) {
                         line.hard = true;
-                        push_token();
                         push_line();
                     }
 
@@ -258,12 +253,9 @@ namespace gm {
                 throw std::system_error{ LayoutError::failed_to_line_break };
             }
 
-            if (pending) {
-                push_token();
-            }
-
             line.hard = true;
             push_line(true);
+
             return layout;
         }
     };

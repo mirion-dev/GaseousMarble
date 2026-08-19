@@ -89,7 +89,7 @@ namespace gm {
                     cursor -= line.width;
                 }
 
-                for (auto& token : line.tokens) {
+                for (auto& token : line.tokens | std::views::take(line.visual_size)) {
                     f32 token_cursor{ cursor };
                     std::string_view token_text{ layout.text.data() + token.first, token.visual_last - token.first };
                     if (!unicode_for_each(token_text, [&](const UnicodeToken& u_token) noexcept {
