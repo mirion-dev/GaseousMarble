@@ -32,6 +32,15 @@ namespace gm {
         DrawOption _option;
         LayoutCache _layout;
 
+        std::pair<f32, f32> _text_size(const Layout& layout) const noexcept {
+            f32 rotation{ -_option.rotation / 180 * std::numbers::pi_v<f32> };
+            f32 cos{ std::abs(std::cos(rotation)) };
+            f32 sin{ std::abs(std::sin(rotation)) };
+            f32 width{ std::abs(layout.width * _option.scale_x) };
+            f32 height{ std::abs(layout.height * _option.scale_y) };
+            return { width * cos + height * sin, width * sin + height * cos };
+        }
+
     public:
         Draw() noexcept = default;
 
@@ -140,7 +149,7 @@ namespace gm {
                 throw std::system_error{ LayoutError::invalid_option };
             }
 
-            return std::abs(_layout.get({ text, _option }).width);
+            return _text_size(_layout.get({ text, _option })).first;
         }
 
         f32 text_height(std::string_view text) {
@@ -150,7 +159,7 @@ namespace gm {
                 throw std::system_error{ LayoutError::invalid_option };
             }
 
-            return std::abs(_layout.get({ text, _option }).height);
+            return _text_size(_layout.get({ text, _option })).second;
         }
     };
 
