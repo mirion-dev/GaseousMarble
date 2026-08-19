@@ -82,7 +82,7 @@ namespace gm {
 
         explicit Font(std::string_view sprite_path) {
             static env::Function sprite_add{ env::FunctionId::sprite_add };
-            _sprite.reset(static_cast<usize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
+            _sprite.reset(static_cast<isize>(sprite_add(sprite_path, 1, false, false, 0, 0)));
             if (!_sprite) {
                 throw std::system_error{ FontError::failed_to_load_sprite };
             }
