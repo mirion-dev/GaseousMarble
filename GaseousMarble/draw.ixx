@@ -66,12 +66,12 @@ namespace gm {
             const Layout& layout{ _layout.get({ text, _option }) };
             x += _option.offset_x;
             y += _option.offset_y + _option.font.first->glyph_top();
-            f32 origin_x{ x }, origin_y{ y };
 
+            f32 line_cursor{ y };
             if (_option.valign == 0) {
-                y -= layout.height / 2;
+                line_cursor -= layout.height / 2;
             } else if (_option.valign > 0) {
-                y -= layout.height;
+                line_cursor -= layout.height;
             }
 
             static env::Function draw_sprite_general{ env::FunctionId::draw_sprite_general };
@@ -100,9 +100,9 @@ namespace gm {
 
                             auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
                             f32 draw_x{ token_cursor + left };
-                            f32 draw_y{ y };
-                            f32 delta_x{ (draw_x - origin_x) * _option.scale_x };
-                            f32 delta_y{ (draw_y - origin_y) * _option.scale_y };
+                            f32 draw_y{ line_cursor };
+                            f32 delta_x{ (draw_x - x) * _option.scale_x };
+                            f32 delta_y{ (draw_y - y) * _option.scale_y };
                             draw_sprite_general(
                                 sprite,
                                 0,
@@ -110,8 +110,8 @@ namespace gm {
                                 sprite_y,
                                 width,
                                 glyph_height,
-                                origin_x + delta_x * cos - delta_y * sin,
-                                origin_y + delta_y * cos + delta_x * sin,
+                                x + delta_x * cos - delta_y * sin,
+                                y + delta_y * cos + delta_x * sin,
                                 _option.scale_x,
                                 _option.scale_y,
                                 _option.rotation,
@@ -138,7 +138,7 @@ namespace gm {
                     }
                 }
 
-                y += line.height;
+                line_cursor += line.height;
             }
         }
 
