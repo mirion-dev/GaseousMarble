@@ -54,13 +54,15 @@ namespace gm {
         return { static_cast<int>(error), layout_error_category() };
     }
 
-    export usize utf8_size(u32 ch) noexcept {
-        return U8_LENGTH(ch);
-    }
-
     export bool is_white_space(u32 ch) noexcept {
         return u_isUWhiteSpace(ch);
     }
+
+    export struct UnicodeToken {
+        u32 ch;
+        usize first;
+        usize last;
+    };
 
     export template <class Fn>
     bool unicode_for_each(std::string_view text, Fn&& func) noexcept {
@@ -70,11 +72,19 @@ namespace gm {
             return false;
         }
 
+        usize first{};
         while (true) {
             auto ch{ static_cast<u32>(UTEXT_NEXT32(iter.get())) };
-            if (ch == -1 || !func(ch)) {
+            if (ch == -1) {
                 return true;
             }
+
+            auto last{ static_cast<usize>(UTEXT_GETNATIVEINDEX(iter.get())) };
+            if (!func({ ch, first, last })) {
+                return true;
+            }
+
+            first = last;
         }
     }
 
@@ -140,23 +150,20 @@ namespace gm {
             LayoutToken token{ lb_token.first, lb_token.last, lb_token.first };
             std::string_view token_text{ text.data() + lb_token.first, lb_token.last - lb_token.first };
             auto& glyphs{ option.font.first->glyphs() };
-            usize next{ token.first };
-            if (!unicode_for_each(token_text, [&](u32 ch) noexcept {
-                    next += utf8_size(ch);
-
-                    auto glyph_iter{ glyphs.find(ch) };
+            if (!unicode_for_each(token_text, [&](const UnicodeToken& u_token) noexcept {
+                    auto glyph_iter{ glyphs.find(u_token.ch) };
                     if (glyph_iter == glyphs.end()) {
                         return true;
                     }
 
                     auto& [sprite_x, sprite_y, width, advance, left]{ glyph_iter->second };
-                    if (!is_white_space(ch)) {
-                        token.visual_last = next;
+                    if (!is_white_space(u_token.ch)) {
+                        token.visual_last = token.first + u_token.last;
                         token.width = token.advance + left + width;
                     }
 
                     token.advance += advance + option.letter_spacing;
-                    if (is_white_space(ch)) {
+                    if (is_white_space(u_token.ch)) {
                         token.advance += option.word_spacing;
                     }
 

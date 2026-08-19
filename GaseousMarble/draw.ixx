@@ -83,8 +83,8 @@ namespace gm {
                 for (auto& token : line.tokens) {
                     f32 token_cursor{ cursor };
                     std::string_view token_text{ layout.text.data() + token.first, token.visual_last - token.first };
-                    if (!unicode_for_each(token_text, [&](u32 ch) noexcept {
-                            auto glyph_iter{ glyphs.find(ch) };
+                    if (!unicode_for_each(token_text, [&](const UnicodeToken& u_token) noexcept {
+                            auto glyph_iter{ glyphs.find(u_token.ch) };
                             if (glyph_iter == glyphs.end()) {
                                 return true;
                             }
@@ -114,7 +114,7 @@ namespace gm {
                             );
 
                             token_cursor += advance + _option.letter_spacing;
-                            if (is_white_space(ch)) {
+                            if (is_white_space(u_token.ch)) {
                                 token_cursor += _option.word_spacing;
                             }
 
