@@ -59,11 +59,11 @@ namespace gm {
             u32 index;
             BOOL locale_exists;
             THROW_IF_FAILED(names->FindLocaleName(locale_name.data(), &index, &locale_exists));
-            if (!locale_exists) {
+            if (!locale_exists && locale_name != L"en-US") {
                 THROW_IF_FAILED(names->FindLocaleName(L"en-US", &index, &locale_exists));
-                if (!locale_exists) {
-                    index = 0;
-                }
+            }
+            if (!locale_exists) {
+                index = 0;
             }
 
             u32 name_size;

@@ -47,18 +47,18 @@ namespace gm::env {
         }
     };
 
-    static Config _config{ [] noexcept {
+    static Config _config{ [] noexcept -> Config {
         std::string raw;
         try {
             std::ifstream file{ "gm.toml" };
             raw = { std::istreambuf_iterator{ file }, {} };
         } catch (const std::exception&) {
-            return Config{};
+            return {};
         }
 
         Config result;
         if (glz::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw) || !result.is_valid()) {
-            return Config{};
+            return {};
         }
 
         return result;
