@@ -45,7 +45,7 @@
 
 #title[Reference]
 
-= `gm.toml`
+= `gm2.toml`
 
 #table(
     columns: 3,

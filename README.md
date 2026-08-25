@@ -25,7 +25,7 @@
 
 <h1>Reference</h1>
 
-<h2><code>gm.toml</code></h2>
+<h2><code>gm2.toml</code></h2>
 
 | **Option** | **Default Value** | **Description** |
 | --- | --- | --- |

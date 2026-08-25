@@ -50,7 +50,7 @@ namespace gm::env {
     static Config _config{ [] noexcept -> Config {
         std::string raw;
         try {
-            std::ifstream file{ "gm.toml" };
+            std::ifstream file{ "gm2.toml" };
             raw = { std::istreambuf_iterator{ file }, {} };
         } catch (const std::exception&) {
             return {};
