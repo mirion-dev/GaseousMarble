@@ -17,6 +17,7 @@ static String string_value;
 static std::unordered_map<std::string, Font> font_map;
 static std::unordered_map<usize, std::string_view> id_map;
 static Draw draw{ env::config().layout_cache_size };
+static std::vector<DrawOption> option_stack;
 
 template <std::floating_point R>
 static R saturating_cast(Real value) noexcept {
@@ -78,6 +79,22 @@ API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_widt
 CATCH_RETURN()
 
 API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_height(to_wstring(raw_text)); }
+CATCH_RETURN()
+
+API Real gm2_push_options() noexcept {
+    option_stack.emplace_back(draw.option());
+    return S_OK;
+}
+
+API Real gm2_pop_options() noexcept try {
+    if (option_stack.empty()) {
+        throw std::runtime_error{ "No saved draw options." };
+    }
+
+    draw.option() = option_stack.back();
+    option_stack.pop_back();
+    return S_OK;
+}
 CATCH_RETURN()
 
 API Real gm2_set_alignment(Real raw_alignment) noexcept {

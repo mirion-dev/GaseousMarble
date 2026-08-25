@@ -123,6 +123,10 @@ Draw a UTF-8 text or get its visual size.
 
 *New*: Professional typography based on DirectWrite.
 
+= + `gm2_push_options()`\ + `gm2_pop_options()`
+
+Save or restore the current draw options.
+
 = `gm2_set_font(key)`
 
 Set the current font.
