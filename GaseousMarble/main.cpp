@@ -184,6 +184,12 @@ API Real gm2_set_max_height(Real raw_max_height) noexcept {
     return S_OK;
 }
 
+API Real gm2_set_max_size(Real raw_max_width, Real raw_max_height) noexcept {
+    gm2_set_max_width(raw_max_width);
+    gm2_set_max_height(raw_max_height);
+    return S_OK;
+}
+
 API Real gm2_set_font(StringRef raw_key) noexcept try {
     auto iter{ font_map.find(raw_key) };
     if (iter == font_map.end()) {

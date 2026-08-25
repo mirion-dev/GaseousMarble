@@ -178,7 +178,8 @@ Set or get the text alignment and the paragraph alignment.
 
 **Dropped**: `justified` is no longer independent of `left`/`center`/`right`.
 
-<h2><code>gm2_set_max_width(max_width)</code><br />
+<h2>+ <code>gm2_set_max_size(max_width, max_height)</code><br />
+<code>gm2_set_max_width(max_width)</code><br />
 + <code>gm2_set_max_height(max_height)</code><br />
 <code>gm2_get_max_width()</code><br />
 + <code>gm2_get_max_height()</code></h2>

@@ -21,6 +21,7 @@ global.gm2_set_text_direction     = external_define(dll_path, "gm2_set_text_dire
 global.gm2_set_par_direction      = external_define(dll_path, "gm2_set_par_direction", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_tab_spacing        = external_define(dll_path, "gm2_set_tab_spacing", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_trimming           = external_define(dll_path, "gm2_set_trimming", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_max_size           = external_define(dll_path, "gm2_set_max_size", dll_cdecl, ty_real, 2, ty_real, ty_real)
 global.gm2_set_max_width          = external_define(dll_path, "gm2_set_max_width", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_max_height         = external_define(dll_path, "gm2_set_max_height", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_font               = external_define(dll_path, "gm2_set_font", dll_cdecl, ty_real, 1, ty_string)
@@ -106,8 +107,7 @@ if (error < 0) {
 }
 
 external_call(global.gm2_set_font, "default")
-external_call(global.gm2_set_max_width, room_width)
-external_call(global.gm2_set_max_height, room_height)
+external_call(global.gm2_set_max_size, room_width, room_height)
 #define Keyboard_82
 /*"/*'/**//* YYD ACTION
 lib_id=1
