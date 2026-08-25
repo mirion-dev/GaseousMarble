@@ -68,6 +68,20 @@ namespace gm::env {
         return _config;
     }
 
+    static std::wstring _default_locale{ [] noexcept -> std::wstring {
+        std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> raw;
+        auto size{ static_cast<usize>(GetUserDefaultLocaleName(raw.data(), raw.size())) };
+        if (size == 0) {
+            return L"en-US";
+        }
+
+        return { raw.data(), size - 1 };
+    }() };
+
+    export const std::wstring& default_locale() noexcept {
+        return _default_locale;
+    }
+
     struct D3dResource {
         IDirect3D8* interface;
         IDirect3DDevice8* device;

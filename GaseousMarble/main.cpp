@@ -45,6 +45,9 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
     u16 properties{ saturating_cast<u16>(raw_properties, FontDesc{}.properties) };
     f32 size{ saturating_cast<f32>(raw_size) };
     std::wstring locale{ to_wstring(internal_from_real(raw_locale)) };
+    if (locale.empty()) {
+        locale = env::default_locale();
+    }
 
     FontDesc desc{ std::filesystem::is_regular_file(name)
                        ? FontDesc::from(name, properties, size, locale)

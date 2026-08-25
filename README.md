@@ -41,6 +41,8 @@
 
 Add a font from system fonts or font files.
 
+If `locale` is empty, the user default locale applies.
+
 | **Constant** | **Value** |
 | --- | --- |
 | `gm2_font_weight_thin` | `100` |

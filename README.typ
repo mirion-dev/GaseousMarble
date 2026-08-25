@@ -63,6 +63,8 @@
 
 Add a font from system fonts or font files.
 
+If `locale` is empty, the user default locale applies.
+
 #table(
     columns: 2,
     table.header[*Constant*][*Value*],
