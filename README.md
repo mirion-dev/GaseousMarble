@@ -20,6 +20,7 @@
 ### Credits
 
 - [GMAPI](https://github.com/snakedeveloper/gmapi) (references their reverse engineering results only)
+- [Glaze](https://github.com/stephenberry/glaze)
 - [rectpack2D](https://github.com/TeamHypersomnia/rectpack2D)
 - [WIL](https://github.com/microsoft/wil/wiki)
 

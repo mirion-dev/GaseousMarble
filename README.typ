@@ -25,6 +25,7 @@
 == Credits
 
 - #link("https://github.com/snakedeveloper/gmapi")[GMAPI] (references their reverse engineering results only)
+- #link("https://github.com/stephenberry/glaze")[Glaze]
 - #link("https://github.com/TeamHypersomnia/rectpack2D")[rectpack2D]
 - #link("https://github.com/microsoft/wil/wiki")[WIL]
 
