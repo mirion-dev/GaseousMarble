@@ -14,12 +14,18 @@ import gm.types;
 namespace gm::env {
 
     export struct Config {
+        usize atlas_texture_width{ 1024 };
+        usize atlas_texture_height{ 1024 };
         usize atlas_max_texture_num{ 16 };
         usize max_font_num{ 64 };
         usize layout_cache_size{ 1024 };
 
         bool is_valid() const noexcept {
-            return atlas_max_texture_num > 0 && max_font_num > 0 && layout_cache_size > 0;
+            return atlas_texture_width > 0
+                   && atlas_texture_height > 0
+                   && atlas_max_texture_num > 0
+                   && max_font_num > 0
+                   && layout_cache_size > 0;
         }
     };
 
