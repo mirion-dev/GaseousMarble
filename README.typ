@@ -47,10 +47,45 @@
 
 = `gm2_new_font(key, name, properties, size, locale, min_aa_h_size, min_aa_v_size)`
 
-- `gm_font()`
-- `generate_font()`
-
 Add a font from system fonts or font files.
+
+#table(
+    columns: 2,
+    table.header[*Constant*][*Value*],
+    `gm2_font_weight_thin`, `100`,
+    `gm2_font_weight_extra_light`, `200`,
+    `gm2_font_weight_light`, `300`,
+    `gm2_font_weight_normal`, `400`,
+    `gm2_font_weight_medium`, `500`,
+    `gm2_font_weight_semi_bold`, `600`,
+    `gm2_font_weight_bold`, `700`,
+    `gm2_font_weight_extra_bold`, `800`,
+    `gm2_font_weight_black`, `900`,
+    `gm2_font_weight_extra_black`, `950`,
+)
+
+#table(
+    table.header[*Constant*],
+    `gm2_font_style_normal`,
+    `gm2_font_style_italic`,
+    `gm2_font_style_oblique`,
+)
+
+#table(
+    table.header[*Constant*],
+    `gm2_font_stretch_ultra_condensed`,
+    `gm2_font_stretch_extra_condensed`,
+    `gm2_font_stretch_condensed`,
+    `gm2_font_stretch_semi_condensed`,
+    `gm2_font_stretch_normal`,
+    `gm2_font_stretch_semi_expanded`,
+    `gm2_font_stretch_expanded`,
+    `gm2_font_stretch_extra_expanded`,
+    `gm2_font_stretch_ultra_expanded`,
+)
+
+- `generate_font()`
+- `gm_font()`
 
 *New*: Dynamic creation and more options.
 
@@ -64,29 +99,41 @@ Free a font or all fonts.
 
 = `gm2_draw_text(x, y, text)`\ `gm2_text_width(text)`\ `gm2_text_height(text)`
 
+Draw a UTF-8 text or get its visual size.
+
 - `gm_draw()`
 - `gm_width()`
 - `gm_height()`
-
-Draw a UTF-8 text or get its visual size.
 
 *New*: Professional typography based on DirectWrite.
 
 = `gm2_set_font(key)`
 
-- `gm_set_font()`
-
 Set the current font.
+
+- `gm_set_font()`
 
 = `gm2_get_font()`\ + `gm2_get_font_name()`\ + `gm2_get_font_weight()`\ + `gm2_get_font_style()`\ + `gm2_get_font_stretch()`\ + `gm2_get_font_size()`\ + `gm2_get_font_locale()`\ + `gm2_get_font_min_aa_h_size()`\ + `gm2_get_font_min_aa_v_size()`
 
-- `gm_get_font()`
-
 Get the current font or its properties.
+
+- `gm_get_font()`
 
 = + `gm2_set_direction(direction)`\ + `gm2_set_text_direction(text_direction)`\ + `gm2_set_par_direction(par_direction)`
 
 Set the text direction or the paragraph direction.
+
+#table(
+    table.header[*Constant*],
+    `gm2_text_direction_ltr`,
+    `gm2_text_direction_rtl`,
+)
+
+#table(
+    table.header[*Constant*],
+    `gm2_par_direction_ttb`,
+    `gm2_par_direction_btt`,
+)
 
 = + `gm2_get_text_direction()`\ + `gm2_get_par_direction()`
 
@@ -94,39 +141,68 @@ Get the text direction or the paragraph direction.
 
 = `gm2_set_alignment(alignment)`\ `gm2_set_text_alignment(text_alignment)`\ `gm2_set_par_alignment(par_alignment)`
 
+Set the text alignment or the paragraph alignment.
+
 - `gm_set_align3()`
 - `gm_set_align()`
 - `gm_set_halign()`
 - `gm_set_valign()`
 - `gm_set_justified()`
 
-Set the text alignment or the paragraph alignment.
-
 *Dropped*: `justified` is no longer independent of `left`/`center`/`right`.
 
 = `gm2_get_text_alignment()`\ `gm2_get_par_alignment()`
+
+Get the text alignment or the paragraph alignment.
+
+#table(
+    table.header[*Constant*],
+    `gm2_text_alignment_leading`,
+    `gm2_text_alignment_center`,
+    `gm2_text_alignment_trailing`,
+    `gm2_text_alignment_justified`,
+)
+
+#table(
+    table.header[*Constant*],
+    `gm2_par_alignment_near`,
+    `gm2_par_alignment_center`,
+    `gm2_par_alignment_far`,
+)
 
 - `gm_get_halign()`
 - `gm_get_valign()`
 - `gm_is_justified()`
 
-Get the text alignment or the paragraph alignment.
-
 = `gm2_set_max_width(max_width)`\ + `gm2_set_max_height(max_height)`
-
-- `gm_set_max_line_length()`
 
 Set the maximum size of the text.
 
+#table(
+    columns: 2,
+    table.header[*Constant*][*Value*],
+    `gm2_infinity`, `1e10`,
+)
+
+- `gm_set_max_line_length()`
+
 = `gm2_get_max_width()`\ + `gm2_get_max_height()`
 
-- `gm_get_max_line_length()`
-
 Get the maximum size of the text.
+
+- `gm_get_max_line_length()`
 
 = + `gm2_set_word_wrapping(word_wrapping)`
 
 Set the word wrapping of the text.
+
+#table(
+    table.header[*Constant*],
+    `gm2_word_wrapping_none`,
+    `gm2_word_wrapping_char`,
+    `gm2_word_wrapping_word`,
+    `gm2_word_wrapping_whole_word`,
+)
 
 = + `gm2_get_word_wrapping()`
 
@@ -136,25 +212,38 @@ Get the word wrapping of the text.
 
 Set the text trimming.
 
+#table(
+    table.header[*Constant*],
+    `gm2_trimming_none`,
+    `gm2_trimming_char`,
+    `gm2_trimming_word`,
+)
+
 = + `gm2_get_trimming()`
 
 Get the text trimming.
 
-= `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_fixed_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`
+= `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_uniform_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`
+
+Set the line spacing of the text.
+
+#table(
+    table.header[*Constant*],
+    `gm2_line_spacing_type_proportional`,
+    `gm2_line_spacing_type_uniform`,
+)
 
 - `gm_set_line_height()`
 - `gm_set_paragraph_spacing()`
-
-Set the line spacing of the text.
 
 *New*: Proportional line height.
 
 = `gm2_get_line_spacing_type()`\ `gm2_get_line_height()`\ `gm2_get_baseline()`
 
+Get the line spacing of the text.
+
 - `gm_get_line_height()`
 - `gm_get_paragraph_spacing()`
-
-Get the line spacing of the text.
 
 = + `gm2_set_tab_spacing(tab_spacing)`
 
@@ -166,15 +255,15 @@ Get the tab spacing of the text.
 
 = `gm2_set_letter_spacing(letter_spacing)`
 
-- `gm_set_letter_spacing()`
-
 Set the letter spacing of the text.
+
+- `gm_set_letter_spacing()`
 
 = `gm2_get_letter_spacing()`
 
-- `gm_get_letter_spacing()`
-
 Get the letter spacing of the text.
+
+- `gm_get_letter_spacing()`
 
 = - `gm_set_word_spacing()`\ - `gm_get_word_spacing()`
 
