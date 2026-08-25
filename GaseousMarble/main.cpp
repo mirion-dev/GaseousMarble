@@ -62,6 +62,7 @@ API Real gm2_internal_new_font(
 
     GlyphAtlas atlas{ env::config().atlas_texture_width,
                       env::config().atlas_texture_height,
+                      env::config().atlas_max_texture_num,
                       { std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
                         std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f) } };
     auto iter{ font_map.try_emplace(std::move(key), std::move(desc), std::move(atlas)).first };

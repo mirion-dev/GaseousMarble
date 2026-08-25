@@ -117,6 +117,7 @@ namespace gm {
 
         usize _texture_width{};
         usize _texture_height{};
+        usize _max_texture_num{};
         RasterOption _option;
 
         std::unordered_map<GlyphDesc, GlyphMeta, Hash> _data;
@@ -128,10 +129,13 @@ namespace gm {
     public:
         GlyphAtlas() noexcept = default;
 
-        GlyphAtlas(usize texture_width, usize texture_height, RasterOption option = {})
-            : _texture_width{ texture_width }, _texture_height{ texture_height }, _option{ option } {
+        GlyphAtlas(usize texture_width, usize texture_height, usize max_texture_num, RasterOption option = {})
+            : _texture_width{ texture_width },
+              _texture_height{ texture_height },
+              _max_texture_num{ max_texture_num },
+              _option{ option } {
 
-            assert(_texture_width > 0 && _texture_height > 0);
+            assert(_texture_width > 0 && _texture_height > 0 && _max_texture_num > 0);
 
             if (!option.is_valid()) {
                 throw std::invalid_argument{ "Invalid rasterization options." };
@@ -143,7 +147,7 @@ namespace gm {
         GlyphAtlas& operator=(GlyphAtlas&&) noexcept = default;
 
         operator bool() const noexcept {
-            return _texture_width > 0 && _texture_height > 0;
+            return _max_texture_num > 0;
         }
 
         usize texture_width() const noexcept {
@@ -154,6 +158,11 @@ namespace gm {
         usize texture_height() const noexcept {
             assert(*this);
             return _texture_height;
+        }
+
+        usize max_texture_num() const noexcept {
+            assert(*this);
+            return _max_texture_num;
         }
 
         auto& option(this auto&& self) noexcept {
@@ -221,7 +230,7 @@ namespace gm {
                 rectpack2D::empty_spaces bin{ _current_bin };
                 auto insert_result{ bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
                 if (!insert_result) {
-                    if (texture_num++ >= env::config().atlas_max_texture_num) {
+                    if (texture_num++ >= _max_texture_num) {
                         throw std::runtime_error{ "Too many textures." };
                     }
 
