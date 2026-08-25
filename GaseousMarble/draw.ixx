@@ -62,8 +62,8 @@ namespace gm {
             }
 
             GlyphAtlas& atlas{ _option.font.first->atlas() };
-            f32 texture_width{ static_cast<f32>(atlas.texture_width()) };
-            f32 texture_height{ static_cast<f32>(atlas.texture_height()) };
+            f32 texture_width{ static_cast<f32>(atlas.option().texture_width) };
+            f32 texture_height{ static_cast<f32>(atlas.option().texture_height) };
             auto glyphs{ _layout.get({ text, _option }).glyphs };
             auto glyph_meta{ atlas.get(
                 glyphs,

@@ -99,15 +99,6 @@ namespace gm {
         f32 size;
     };
 
-    export struct RasterOption {
-        f32 min_aa_h_size{};
-        f32 min_aa_v_size{ 24 };
-
-        bool is_valid() const noexcept {
-            return min_aa_h_size >= 0 && min_aa_v_size >= 0;
-        }
-    };
-
     export class GlyphAtlas {
         struct Hash {
             usize operator()(GlyphDesc value) const noexcept {
@@ -115,13 +106,10 @@ namespace gm {
             }
         };
 
-        usize _texture_width{};
-        usize _texture_height{};
-        usize _max_texture_num{};
-        RasterOption _option;
+        AtlasOption _option{ .max_texture_num = 0 };
+        RasterOption _raster_option;
 
         std::unordered_map<GlyphDesc, GlyphMeta, Hash> _data;
-
         usize _texture_num{};
         wil::com_ptr<IDirect3DTexture8> _current_texture;
         rectpack2D::empty_spaces<false> _current_bin{ {} };
@@ -129,17 +117,10 @@ namespace gm {
     public:
         GlyphAtlas() noexcept = default;
 
-        GlyphAtlas(usize texture_width, usize texture_height, usize max_texture_num, RasterOption option = {})
-            : _texture_width{ texture_width },
-              _texture_height{ texture_height },
-              _max_texture_num{ max_texture_num },
-              _option{ option } {
+        GlyphAtlas(const AtlasOption& option, const RasterOption& raster_option) noexcept
+            : _option{ option }, _raster_option{ raster_option } {
 
-            assert(_texture_width > 0 && _texture_height > 0 && _max_texture_num > 0);
-
-            if (!option.is_valid()) {
-                throw std::invalid_argument{ "Invalid rasterization options." };
-            }
+            assert(_option.is_valid() && _raster_option.is_valid());
         }
 
         GlyphAtlas(GlyphAtlas&&) noexcept = default;
@@ -147,27 +128,17 @@ namespace gm {
         GlyphAtlas& operator=(GlyphAtlas&&) noexcept = default;
 
         operator bool() const noexcept {
-            return _max_texture_num > 0;
+            return _option.max_texture_num > 0;
         }
 
-        usize texture_width() const noexcept {
+        const AtlasOption& option() const noexcept {
             assert(*this);
-            return _texture_width;
+            return _option;
         }
 
-        usize texture_height() const noexcept {
+        const RasterOption& raster_option() const noexcept {
             assert(*this);
-            return _texture_height;
-        }
-
-        usize max_texture_num() const noexcept {
-            assert(*this);
-            return _max_texture_num;
-        }
-
-        auto& option(this auto&& self) noexcept {
-            assert(self);
-            return std::forward_like<decltype(self)>(self._option);
+            return _raster_option;
         }
 
         template <std::ranges::input_range R, class DescFn, class SpecFn>
@@ -185,16 +156,17 @@ namespace gm {
 
                 GlyphSpec spec{ std::forward<SpecFn>(spec_func)(item) };
                 DWRITE_GLYPH_RUN run{ spec.face.get(), spec.size, 1, &spec.gid };
-                DWRITE_RENDERING_MODE1 aa{ spec.size < _option.min_aa_h_size ? DWRITE_RENDERING_MODE1_ALIASED
-                                           : spec.size < _option.min_aa_v_size
-                                               ? DWRITE_RENDERING_MODE1_NATURAL
-                                               : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC };
+                DWRITE_RENDERING_MODE1 antialiasing{ spec.size < _raster_option.min_antialiasing_h_size
+                                                         ? DWRITE_RENDERING_MODE1_ALIASED
+                                                     : spec.size < _raster_option.min_antialiasing_v_size
+                                                         ? DWRITE_RENDERING_MODE1_NATURAL
+                                                         : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC };
                 wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
                 THROW_IF_FAILED(
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
-                        aa,
+                        antialiasing,
                         DWRITE_MEASURING_MODE_NATURAL,
                         DWRITE_GRID_FIT_MODE_DISABLED,
                         DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE,
@@ -216,7 +188,7 @@ namespace gm {
                     continue;
                 }
 
-                if (width > _texture_width || height > _texture_height) {
+                if (width > _option.texture_width || height > _option.texture_height) {
                     throw std::runtime_error{ "Glyph too large." };
                 }
 
@@ -230,25 +202,33 @@ namespace gm {
                 rectpack2D::empty_spaces bin{ _current_bin };
                 auto insert_result{ bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
                 if (!insert_result) {
-                    if (texture_num++ >= _max_texture_num) {
+                    if (texture_num++ >= _option.max_texture_num) {
                         throw std::runtime_error{ "Too many textures." };
                     }
 
                     THROW_IF_FAILED(
                         env::d3d_device()->CreateTexture(
-                            _texture_width, _texture_height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texture
+                            _option.texture_width,
+                            _option.texture_height,
+                            1,
+                            0,
+                            D3DFMT_A8R8G8B8,
+                            D3DPOOL_MANAGED,
+                            &texture
                         )
                     );
 
-                    lock = { texture, 0, 0, _texture_width, _texture_height };
-                    bin.reset({ static_cast<isize>(_texture_width), static_cast<isize>(_texture_height) });
+                    lock = { texture, 0, 0, _option.texture_width, _option.texture_height };
+                    bin.reset(
+                        { static_cast<isize>(_option.texture_width), static_cast<isize>(_option.texture_height) }
+                    );
                     insert_result = bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
                 }
 
                 auto x{ static_cast<usize>(insert_result->x) }, y{ static_cast<usize>(insert_result->y) };
                 auto w{ static_cast<usize>(insert_result->w) }, h{ static_cast<usize>(insert_result->h) };
                 if (!lock) {
-                    lock = { _current_texture, 0, 0, _texture_width, _texture_height };
+                    lock = { _current_texture, 0, 0, _option.texture_width, _option.texture_height };
                 }
                 lock.update(x, y, std::mdspan{ alpha.data(), h, w });
 

@@ -29,13 +29,15 @@
 
 | **Option** | **Default Value** | **Description** |
 | --- | --- | --- |
-| `atlas_texture_width` | `1024` | Texture width of glyph atlases |
-| `atlas_texture_height` | `1024` | Texture height of glyph atlases |
-| `atlas_max_texture_num` | `16` | Maximum number of textures for each glyph atlas |
+| `atlas.texture_width` | `1024` | Texture width of glyph atlases |
+| `atlas.texture_height` | `1024` | Texture height of glyph atlases |
+| `atlas.max_texture_num` | `16` | Maximum number of textures for each glyph atlas |
+| `raster.min_antialiasing_h_size` | `0` | Font horizontal antialiasing threshold |
+| `raster.min_antialiasing_v_size` | `24` | Font vertical antialiasing threshold |
 | `max_font_num` | `64` | Maximum number of fonts |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 
-<h2><code>gm2_new_font(key, name, properties, size, locale, min_aa_h_size, min_aa_v_size)</code></h2>
+<h2><code>gm2_new_font(key, name, properties, size, locale)</code></h2>
 
 Add a font from system fonts or font files.
 
@@ -114,9 +116,7 @@ Set the current font.
 + <code>gm2_get_font_style()</code><br />
 + <code>gm2_get_font_stretch()</code><br />
 + <code>gm2_get_font_size()</code><br />
-+ <code>gm2_get_font_locale()</code><br />
-+ <code>gm2_get_font_min_aa_h_size()</code><br />
-+ <code>gm2_get_font_min_aa_v_size()</code></h2>
++ <code>gm2_get_font_locale()</code></h2>
 
 Get the current font or its properties.
 

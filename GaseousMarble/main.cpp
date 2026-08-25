@@ -26,15 +26,8 @@ static StringRef internal_from_real(Real real) noexcept {
     return reinterpret_cast<const char*>(static_cast<usize>(real));
 }
 
-API Real gm2_internal_new_font(
-    Real raw_key,
-    Real raw_name,
-    Real raw_properties,
-    Real raw_size,
-    Real raw_locale,
-    Real raw_min_aa_h_size,
-    Real raw_min_aa_v_size
-) noexcept try {
+API Real
+gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw_size, Real raw_locale) noexcept try {
     std::string key{ internal_from_real(raw_key) };
     if (key.empty()) {
         throw std::invalid_argument{ "Font key must not be empty." };
@@ -60,11 +53,7 @@ API Real gm2_internal_new_font(
         throw std::invalid_argument{ "Invalid font description." };
     }
 
-    GlyphAtlas atlas{ env::config().atlas_texture_width,
-                      env::config().atlas_texture_height,
-                      env::config().atlas_max_texture_num,
-                      { std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
-                        std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f) } };
+    GlyphAtlas atlas{ env::config().atlas, env::config().raster };
     auto iter{ font_map.try_emplace(std::move(key), std::move(desc), std::move(atlas)).first };
     id_map.try_emplace(iter->second.id(), iter->first);
     return S_OK;
@@ -282,16 +271,6 @@ API StringRef gm2_get_font_locale() noexcept {
     Font* font{ draw.option().font.first };
     string_value = font == nullptr ? String{} : String{ to_string(font->desc().locale) };
     return string_value.data();
-}
-
-API Real gm2_get_font_min_aa_h_size() noexcept {
-    Font* font{ draw.option().font.first };
-    return font == nullptr ? -1 : font->atlas().option().min_aa_h_size;
-}
-
-API Real gm2_get_font_min_aa_v_size() noexcept {
-    Font* font{ draw.option().font.first };
-    return font == nullptr ? -1 : font->atlas().option().min_aa_v_size;
 }
 
 API Real gm2_get_letter_spacing() noexcept {

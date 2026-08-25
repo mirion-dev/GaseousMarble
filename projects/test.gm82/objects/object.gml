@@ -6,7 +6,7 @@ applies_to=self
 */
 var dll_path{ dll_path = parameter_string(1) }
 global.gm2_internal_to_real       = external_define(dll_path, "gm2_internal_to_real", dll_cdecl, ty_real, 1, ty_string)
-global.gm2_internal_new_font      = external_define(dll_path, "gm2_internal_new_font", dll_cdecl, ty_real, 7, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
+global.gm2_internal_new_font      = external_define(dll_path, "gm2_internal_new_font", dll_cdecl, ty_real, 5, ty_real, ty_real, ty_real, ty_real, ty_real)
 global.gm2_draw_text              = external_define(dll_path, "gm2_draw_text", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm2_text_width             = external_define(dll_path, "gm2_text_width", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_text_height            = external_define(dll_path, "gm2_text_height", dll_cdecl, ty_real, 1, ty_string)
@@ -43,8 +43,6 @@ global.gm2_get_font_weight        = external_define(dll_path, "gm2_get_font_weig
 global.gm2_get_font_style         = external_define(dll_path, "gm2_get_font_style", dll_cdecl, ty_real, 0)
 global.gm2_get_font_stretch       = external_define(dll_path, "gm2_get_font_stretch", dll_cdecl, ty_real, 0)
 global.gm2_get_font_locale        = external_define(dll_path, "gm2_get_font_locale", dll_cdecl, ty_string, 0)
-global.gm2_get_font_min_aa_h_size = external_define(dll_path, "gm2_get_font_min_aa_h_size", dll_cdecl, ty_real, 0)
-global.gm2_get_font_min_aa_v_size = external_define(dll_path, "gm2_get_font_min_aa_v_size", dll_cdecl, ty_real, 0)
 global.gm2_get_letter_spacing     = external_define(dll_path, "gm2_get_letter_spacing", dll_cdecl, ty_real, 0)
 global.gm2_get_line_spacing_type  = external_define(dll_path, "gm2_get_line_spacing_type", dll_cdecl, ty_real, 0)
 global.gm2_get_line_height        = external_define(dll_path, "gm2_get_line_height", dll_cdecl, ty_real, 0)
@@ -99,9 +97,7 @@ var error{ error = external_call(
     external_call(global.gm2_internal_to_real, "SimSun"),
     400 | 0 << 10 | 5 << 12,
     18,
-    external_call(global.gm2_internal_to_real, ""),
-    0,
-    24
+    external_call(global.gm2_internal_to_real, "")
 ) }
 if (error < 0) {
     show_error("gm2_internal_new_font error code: " + string(error), true)

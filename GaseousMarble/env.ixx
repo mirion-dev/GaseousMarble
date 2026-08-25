@@ -11,21 +11,39 @@ export module gm.env;
 import std;
 import gm.types;
 
+namespace gm {
+
+    export struct AtlasOption {
+        usize texture_width{ 1024 };
+        usize texture_height{ 1024 };
+        usize max_texture_num{ 16 };
+
+        bool is_valid() const noexcept {
+            return texture_width > 0 && texture_height > 0 && max_texture_num > 0;
+        }
+    };
+
+    export struct RasterOption {
+        f32 min_antialiasing_h_size{};
+        f32 min_antialiasing_v_size{ 24 };
+
+        bool is_valid() const noexcept {
+            return min_antialiasing_h_size >= 0 && min_antialiasing_v_size >= 0;
+        }
+    };
+
+}
+
 namespace gm::env {
 
     export struct Config {
-        usize atlas_texture_width{ 1024 };
-        usize atlas_texture_height{ 1024 };
-        usize atlas_max_texture_num{ 16 };
+        AtlasOption atlas;
+        RasterOption raster;
         usize max_font_num{ 64 };
         usize layout_cache_size{ 1024 };
 
         bool is_valid() const noexcept {
-            return atlas_texture_width > 0
-                   && atlas_texture_height > 0
-                   && atlas_max_texture_num > 0
-                   && max_font_num > 0
-                   && layout_cache_size > 0;
+            return atlas.is_valid() && raster.is_valid() && max_font_num > 0 && layout_cache_size > 0;
         }
     };
 
