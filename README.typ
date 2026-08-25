@@ -18,7 +18,7 @@
 + Install #link("https://visualstudio.microsoft.com/")[Visual Studio 2026] with MSVC Build Tools for x64/x86 Preview.
 + Install #link("https://vcpkg.io/en/")[vcpkg].
 + Install #link("https://archive.org/details/dx81sdk_full")[DirectX 8.1 SDK] to `third_party/dx81`.
-+ `vcpkg install wil:x86-windows`.
++ `vcpkg install glaze:x86-windows wil:x86-windows`.
 + `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
 + Build clang-format 24 from #link("https://github.com/llvm/llvm-project/")[LLVM] if formatting is needed.
 
@@ -64,7 +64,7 @@
 
 Add a font from system fonts or font files.
 
-If `locale` is empty, the user default locale applies.
+If `locale` is empty, the user's default locale applies.
 
 #table(
     columns: 2,
@@ -128,21 +128,16 @@ Draw a UTF-8 text or get its visual size.
 
 Save or restore the current draw options.
 
-= `gm2_set_font(key)`
+= `gm2_set_font(key)`\ `gm2_get_font()`\ + `gm2_get_font_name()`\ + `gm2_get_font_weight()`\ + `gm2_get_font_style()`\ + `gm2_get_font_stretch()`\ + `gm2_get_font_size()`\ + `gm2_get_font_locale()`
 
-Set the current font.
+Set or get the current font.
 
 - `gm_set_font()`
-
-= `gm2_get_font()`\ + `gm2_get_font_name()`\ + `gm2_get_font_weight()`\ + `gm2_get_font_style()`\ + `gm2_get_font_stretch()`\ + `gm2_get_font_size()`\ + `gm2_get_font_locale()`
-
-Get the current font or its properties.
-
 - `gm_get_font()`
 
-= + `gm2_set_direction(direction)`\ + `gm2_set_text_direction(text_direction)`\ + `gm2_set_par_direction(par_direction)`
+= + `gm2_set_direction(direction)`\ + `gm2_set_text_direction(text_direction)`\ + `gm2_set_par_direction(par_direction)`\ + `gm2_get_text_direction()`\ + `gm2_get_par_direction()`
 
-Set the text direction or the paragraph direction.
+Set or get the text direction and the paragraph direction.
 
 #table(
     table.header[*Constant*],
@@ -156,25 +151,9 @@ Set the text direction or the paragraph direction.
     `gm2_par_direction_btt`,
 )
 
-= + `gm2_get_text_direction()`\ + `gm2_get_par_direction()`
+= `gm2_set_alignment(alignment)`\ `gm2_set_text_alignment(text_alignment)`\ `gm2_set_par_alignment(par_alignment)`\ `gm2_get_text_alignment()`\ `gm2_get_par_alignment()`
 
-Get the text direction or the paragraph direction.
-
-= `gm2_set_alignment(alignment)`\ `gm2_set_text_alignment(text_alignment)`\ `gm2_set_par_alignment(par_alignment)`
-
-Set the text alignment or the paragraph alignment.
-
-- `gm_set_align3()`
-- `gm_set_align()`
-- `gm_set_halign()`
-- `gm_set_valign()`
-- `gm_set_justified()`
-
-*Dropped*: `justified` is no longer independent of `left`/`center`/`right`.
-
-= `gm2_get_text_alignment()`\ `gm2_get_par_alignment()`
-
-Get the text alignment or the paragraph alignment.
+Set or get the text alignment and the paragraph alignment.
 
 #table(
     table.header[*Constant*],
@@ -191,13 +170,20 @@ Get the text alignment or the paragraph alignment.
     `gm2_par_alignment_far`,
 )
 
+- `gm_set_align3()`
+- `gm_set_align()`
+- `gm_set_halign()`
+- `gm_set_valign()`
+- `gm_set_justified()`
 - `gm_get_halign()`
 - `gm_get_valign()`
 - `gm_is_justified()`
 
-= `gm2_set_max_width(max_width)`\ + `gm2_set_max_height(max_height)`
+*Dropped*: `justified` is no longer independent of `left`/`center`/`right`.
 
-Set the maximum size of the text.
+= `gm2_set_max_width(max_width)`\ + `gm2_set_max_height(max_height)`\ `gm2_get_max_width()`\ + `gm2_get_max_height()`
+
+Set or get the maximum size of the text.
 
 #table(
     columns: 2,
@@ -206,16 +192,11 @@ Set the maximum size of the text.
 )
 
 - `gm_set_max_line_length()`
-
-= `gm2_get_max_width()`\ + `gm2_get_max_height()`
-
-Get the maximum size of the text.
-
 - `gm_get_max_line_length()`
 
-= + `gm2_set_word_wrapping(word_wrapping)`
+= + `gm2_set_word_wrapping(word_wrapping)`\ + `gm2_get_word_wrapping()`
 
-Set the word wrapping of the text.
+Set or get the word wrapping of the text.
 
 #table(
     table.header[*Constant*],
@@ -225,13 +206,9 @@ Set the word wrapping of the text.
     `gm2_word_wrapping_whole_word`,
 )
 
-= + `gm2_get_word_wrapping()`
+= + `gm2_set_trimming(trimming)`\ + `gm2_get_trimming()`
 
-Get the word wrapping of the text.
-
-= + `gm2_set_trimming(trimming)`
-
-Set the text trimming.
+Set or get the text trimming.
 
 #table(
     table.header[*Constant*],
@@ -240,13 +217,9 @@ Set the text trimming.
     `gm2_trimming_word`,
 )
 
-= + `gm2_get_trimming()`
+= `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_uniform_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`\ `gm2_get_line_spacing_type()`\ `gm2_get_line_height()`\ `gm2_get_baseline()`
 
-Get the text trimming.
-
-= `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_uniform_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`
-
-Set the line spacing of the text.
+Set or get the line spacing of the text.
 
 #table(
     table.header[*Constant*],
@@ -256,34 +229,20 @@ Set the line spacing of the text.
 
 - `gm_set_line_height()`
 - `gm_set_paragraph_spacing()`
-
-*New*: Proportional line height.
-
-= `gm2_get_line_spacing_type()`\ `gm2_get_line_height()`\ `gm2_get_baseline()`
-
-Get the line spacing of the text.
-
 - `gm_get_line_height()`
 - `gm_get_paragraph_spacing()`
 
-= + `gm2_set_tab_spacing(tab_spacing)`
+*New*: Proportional line height.
 
-Set the tab spacing of the text.
+= + `gm2_set_tab_spacing(tab_spacing)`\ + `gm2_get_tab_spacing()`
 
-= + `gm2_get_tab_spacing()`
+Set or get the tab spacing of the text.
 
-Get the tab spacing of the text.
+= `gm2_set_letter_spacing(letter_spacing)`\ `gm2_get_letter_spacing()`
 
-= `gm2_set_letter_spacing(letter_spacing)`
-
-Set the letter spacing of the text.
+Set or get the letter spacing of the text.
 
 - `gm_set_letter_spacing()`
-
-= `gm2_get_letter_spacing()`
-
-Get the letter spacing of the text.
-
 - `gm_get_letter_spacing()`
 
 = - `gm_set_word_spacing()`\ - `gm_get_word_spacing()`

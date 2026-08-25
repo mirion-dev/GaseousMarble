@@ -13,7 +13,7 @@
 1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) with MSVC Build Tools for x64/x86 Preview.
 2. Install [vcpkg](https://vcpkg.io/en/).
 3. Install [DirectX 8.1 SDK](https://archive.org/details/dx81sdk_full) to `third_party/dx81`.
-4. `vcpkg install wil:x86-windows`.
+4. `vcpkg install glaze:x86-windows wil:x86-windows`.
 5. `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
 6. Build clang-format 24 from [LLVM](https://github.com/llvm/llvm-project/) if formatting is needed.
 
@@ -42,7 +42,7 @@
 
 Add a font from system fonts or font files.
 
-If `locale` is empty, the user default locale applies.
+If `locale` is empty, the user’s default locale applies.
 
 | **Constant** | **Value** |
 | --- | --- |
@@ -110,15 +110,8 @@ Draw a UTF-8 text or get its visual size.
 
 Save or restore the current draw options.
 
-<h2><code>gm2_set_font(key)</code></h2>
-
-Set the current font.
-
-| **v1** |
-| --- |
-| `gm_set_font()` |
-
-<h2><code>gm2_get_font()</code><br />
+<h2><code>gm2_set_font(key)</code><br />
+<code>gm2_get_font()</code><br />
 + <code>gm2_get_font_name()</code><br />
 + <code>gm2_get_font_weight()</code><br />
 + <code>gm2_get_font_style()</code><br />
@@ -126,17 +119,20 @@ Set the current font.
 + <code>gm2_get_font_size()</code><br />
 + <code>gm2_get_font_locale()</code></h2>
 
-Get the current font or its properties.
+Set or get the current font.
 
 | **v1** |
 | --- |
+| `gm_set_font()` |
 | `gm_get_font()` |
 
 <h2>+ <code>gm2_set_direction(direction)</code><br />
 + <code>gm2_set_text_direction(text_direction)</code><br />
-+ <code>gm2_set_par_direction(par_direction)</code></h2>
++ <code>gm2_set_par_direction(par_direction)</code><br />
++ <code>gm2_get_text_direction()</code><br />
++ <code>gm2_get_par_direction()</code></h2>
 
-Set the text direction or the paragraph direction.
+Set or get the text direction and the paragraph direction.
 
 | **Constant** |
 | --- |
@@ -148,31 +144,13 @@ Set the text direction or the paragraph direction.
 | `gm2_par_direction_ttb` |
 | `gm2_par_direction_btt` |
 
-<h2>+ <code>gm2_get_text_direction()</code><br />
-+ <code>gm2_get_par_direction()</code></h2>
-
-Get the text direction or the paragraph direction.
-
 <h2><code>gm2_set_alignment(alignment)</code><br />
 <code>gm2_set_text_alignment(text_alignment)</code><br />
-<code>gm2_set_par_alignment(par_alignment)</code></h2>
-
-Set the text alignment or the paragraph alignment.
-
-| **v1** |
-| --- |
-| `gm_set_align3()` |
-| `gm_set_align()` |
-| `gm_set_halign()` |
-| `gm_set_valign()` |
-| `gm_set_justified()` |
-
-**Dropped**: `justified` is no longer independent of `left`/`center`/`right`.
-
-<h2><code>gm2_get_text_alignment()</code><br />
+<code>gm2_set_par_alignment(par_alignment)</code><br />
+<code>gm2_get_text_alignment()</code><br />
 <code>gm2_get_par_alignment()</code></h2>
 
-Get the text alignment or the paragraph alignment.
+Set or get the text alignment and the paragraph alignment.
 
 | **Constant** |
 | --- |
@@ -189,14 +167,23 @@ Get the text alignment or the paragraph alignment.
 
 | **v1** |
 | --- |
+| `gm_set_align3()` |
+| `gm_set_align()` |
+| `gm_set_halign()` |
+| `gm_set_valign()` |
+| `gm_set_justified()` |
 | `gm_get_halign()` |
 | `gm_get_valign()` |
 | `gm_is_justified()` |
 
-<h2><code>gm2_set_max_width(max_width)</code><br />
-+ <code>gm2_set_max_height(max_height)</code></h2>
+**Dropped**: `justified` is no longer independent of `left`/`center`/`right`.
 
-Set the maximum size of the text.
+<h2><code>gm2_set_max_width(max_width)</code><br />
++ <code>gm2_set_max_height(max_height)</code><br />
+<code>gm2_get_max_width()</code><br />
++ <code>gm2_get_max_height()</code></h2>
+
+Set or get the maximum size of the text.
 
 | **Constant** | **Value** |
 | --- | --- |
@@ -205,19 +192,12 @@ Set the maximum size of the text.
 | **v1** |
 | --- |
 | `gm_set_max_line_length()` |
-
-<h2><code>gm2_get_max_width()</code><br />
-+ <code>gm2_get_max_height()</code></h2>
-
-Get the maximum size of the text.
-
-| **v1** |
-| --- |
 | `gm_get_max_line_length()` |
 
-<h2>+ <code>gm2_set_word_wrapping(word_wrapping)</code></h2>
+<h2>+ <code>gm2_set_word_wrapping(word_wrapping)</code><br />
++ <code>gm2_get_word_wrapping()</code></h2>
 
-Set the word wrapping of the text.
+Set or get the word wrapping of the text.
 
 | **Constant** |
 | --- |
@@ -226,13 +206,10 @@ Set the word wrapping of the text.
 | `gm2_word_wrapping_word` |
 | `gm2_word_wrapping_whole_word` |
 
-<h2>+ <code>gm2_get_word_wrapping()</code></h2>
+<h2>+ <code>gm2_set_trimming(trimming)</code><br />
++ <code>gm2_get_trimming()</code></h2>
 
-Get the word wrapping of the text.
-
-<h2>+ <code>gm2_set_trimming(trimming)</code></h2>
-
-Set the text trimming.
+Set or get the text trimming.
 
 | **Constant** |
 | --- |
@@ -240,16 +217,15 @@ Set the text trimming.
 | `gm2_trimming_char` |
 | `gm2_trimming_word` |
 
-<h2>+ <code>gm2_get_trimming()</code></h2>
-
-Get the text trimming.
-
 <h2><code>gm2_set_line_spacing(line_height, baseline)</code><br />
 <code>gm2_set_uniform_line_spacing(line_height, baseline)</code><br />
 <code>gm2_set_line_height(line_height)</code><br />
-<code>gm2_set_baseline(baseline)</code></h2>
+<code>gm2_set_baseline(baseline)</code><br />
+<code>gm2_get_line_spacing_type()</code><br />
+<code>gm2_get_line_height()</code><br />
+<code>gm2_get_baseline()</code></h2>
 
-Set the line spacing of the text.
+Set or get the line spacing of the text.
 
 | **Constant** |
 | --- |
@@ -260,42 +236,24 @@ Set the line spacing of the text.
 | --- |
 | `gm_set_line_height()` |
 | `gm_set_paragraph_spacing()` |
-
-**New**: Proportional line height.
-
-<h2><code>gm2_get_line_spacing_type()</code><br />
-<code>gm2_get_line_height()</code><br />
-<code>gm2_get_baseline()</code></h2>
-
-Get the line spacing of the text.
-
-| **v1** |
-| --- |
 | `gm_get_line_height()` |
 | `gm_get_paragraph_spacing()` |
 
-<h2>+ <code>gm2_set_tab_spacing(tab_spacing)</code></h2>
+**New**: Proportional line height.
 
-Set the tab spacing of the text.
+<h2>+ <code>gm2_set_tab_spacing(tab_spacing)</code><br />
++ <code>gm2_get_tab_spacing()</code></h2>
 
-<h2>+ <code>gm2_get_tab_spacing()</code></h2>
+Set or get the tab spacing of the text.
 
-Get the tab spacing of the text.
+<h2><code>gm2_set_letter_spacing(letter_spacing)</code><br />
+<code>gm2_get_letter_spacing()</code></h2>
 
-<h2><code>gm2_set_letter_spacing(letter_spacing)</code></h2>
-
-Set the letter spacing of the text.
+Set or get the letter spacing of the text.
 
 | **v1** |
 | --- |
 | `gm_set_letter_spacing()` |
-
-<h2><code>gm2_get_letter_spacing()</code></h2>
-
-Get the letter spacing of the text.
-
-| **v1** |
-| --- |
 | `gm_get_letter_spacing()` |
 
 <h2>- <code>gm_set_word_spacing()</code><br />
