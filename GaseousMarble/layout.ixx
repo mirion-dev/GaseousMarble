@@ -97,6 +97,8 @@ namespace gm {
     };
 
     export struct LayoutOption {
+        static constexpr f32 INFINITY_{ 1e10 };
+
         static constexpr u8 TEXT_ALIGNMENT_MASK{ 0x3 };
         static constexpr int TEXT_ALIGNMENT_OFFSET{};
         static constexpr u8 PAR_ALIGNMENT_MASK{ 0xc };
@@ -121,8 +123,8 @@ namespace gm {
         DWRITE_TRIMMING_GRANULARITY trimming{};
 
         // [IDWriteTextLayout]
-        f32 max_width{ std::numeric_limits<f32>::max() };
-        f32 max_height{ std::numeric_limits<f32>::max() };
+        f32 max_width{ INFINITY_ };
+        f32 max_height{ INFINITY_ };
         std::pair<Font*, usize> font{};
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
@@ -294,8 +296,8 @@ namespace gm {
                     text.data(),
                     text.size(),
                     format.get(),
-                    std::numeric_limits<f32>::max(),
-                    std::numeric_limits<f32>::max(),
+                    LayoutOption::INFINITY_,
+                    LayoutOption::INFINITY_,
                     &layout_base
                 )
             );
