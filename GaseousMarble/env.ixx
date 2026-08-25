@@ -2,6 +2,7 @@ module;
 
 #include <d3d8.h>
 #include <dwrite_3.h>
+#include <glaze/toml.hpp>
 #include <wil/com.h>
 #undef interface
 
@@ -11,6 +12,37 @@ import std;
 import gm.types;
 
 namespace gm::env {
+
+    export struct Config {
+        usize atlas_max_texture_num{ 16 };
+        usize max_font_num{ 64 };
+        usize layout_cache_size{ 1024 };
+
+        bool is_valid() const noexcept {
+            return atlas_max_texture_num > 0 && max_font_num > 0 && layout_cache_size > 0;
+        }
+    };
+
+    static Config _config{ [] noexcept {
+        std::string raw;
+        try {
+            std::ifstream file{ "gm.toml" };
+            raw = { std::istreambuf_iterator{ file }, {} };
+        } catch (const std::exception&) {
+            return Config{};
+        }
+
+        Config result;
+        if (glz::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw) || !result.is_valid()) {
+            return Config{};
+        }
+
+        return result;
+    }() };
+
+    export const Config& config() noexcept {
+        return _config;
+    }
 
     struct D3dResource {
         IDirect3D8* interface;
@@ -48,17 +80,17 @@ namespace gm::env {
 
     struct DwResource {
         wil::com_ptr<DwFactory> factory;
-
-        DwResource() {
-            THROW_IF_FAILED(
-                DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(DwFactory), factory.put_unknown())
-            );
-        }
     };
 
     static const DwResource& dw_resource() {
-        static DwResource resource;
-        return resource;
+        static DwResource value{ [] {
+            DwResource result;
+            THROW_IF_FAILED(
+                DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(DwFactory), result.factory.put_unknown())
+            );
+            return result;
+        }() };
+        return value;
     }
 
     export DwFactory* dw_factory() {

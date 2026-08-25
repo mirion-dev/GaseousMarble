@@ -14,11 +14,9 @@ using namespace gm;
 
 static String string_value;
 
-static constexpr usize MAX_FONT_NUM{ 64 };
-
 static std::unordered_map<std::string, Font> font_map;
 static std::unordered_map<usize, std::string_view> id_map;
-static Draw draw{ 1024 };
+static Draw draw{ env::config().layout_cache_size };
 
 API Real gm2_internal_to_real(StringRef string) noexcept {
     return reinterpret_cast<usize>(string);
@@ -46,7 +44,7 @@ API Real gm2_internal_new_font(
         return S_FALSE;
     }
 
-    if (font_map.size() >= MAX_FONT_NUM) {
+    if (font_map.size() >= env::config().max_font_num) {
         throw std::runtime_error{ "Too many fonts." };
     }
 
@@ -64,7 +62,6 @@ API Real gm2_internal_new_font(
 
     GlyphAtlas atlas{ 1024,
                       1024,
-                      16,
                       { std::max(saturating_cast<f32>(raw_min_aa_h_size), 0.f),
                         std::max(saturating_cast<f32>(raw_min_aa_v_size), 0.f) } };
     auto iter{ font_map.try_emplace(std::move(key), std::move(desc), std::move(atlas)).first };
