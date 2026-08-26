@@ -11,7 +11,7 @@
 1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) with MSVC Build Tools for x64/x86 Preview.
 2. Install [vcpkg](https://vcpkg.io/en/).
 3. Install [DirectX 8.1 SDK](https://archive.org/details/dx81sdk_full) to `third_party/dx81`.
-4. `vcpkg install --triplet x86-windows glaze spdlog wil`.
+4. `vcpkg install --triplet x86-windows-static-md glaze spdlog wil`.
 5. `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
 6. Build clang-format 24 from [LLVM](https://github.com/llvm/llvm-project/) if formatting is needed.
 
@@ -220,11 +220,11 @@ Set or get the text trimming.
 | `gm2_trimming_char` |
 | `gm2_trimming_word` |
 
-<h2><code>gm2_set_line_spacing(line_height, baseline)</code><br />
+<h2>+ <code>gm2_set_line_spacing(line_height, baseline)</code><br />
 <code>gm2_set_uniform_line_spacing(line_height, baseline)</code><br />
 <code>gm2_set_line_height(line_height)</code><br />
 <code>gm2_set_baseline(baseline)</code><br />
-<code>gm2_get_line_spacing_type()</code><br />
++ <code>gm2_get_line_spacing_type()</code><br />
 <code>gm2_get_line_height()</code><br />
 <code>gm2_get_baseline()</code></h2>
 

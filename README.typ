@@ -219,7 +219,7 @@ Set or get the text trimming.
     `gm2_trimming_word`,
 )
 
-= `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_uniform_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`\ `gm2_get_line_spacing_type()`\ `gm2_get_line_height()`\ `gm2_get_baseline()`
+= + `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_uniform_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`\ + `gm2_get_line_spacing_type()`\ `gm2_get_line_height()`\ `gm2_get_baseline()`
 
 Set or get the line spacing of the text.
 
