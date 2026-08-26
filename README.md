@@ -186,9 +186,11 @@ Set or get the text alignment and the paragraph alignment.
 
 Set or get the maximum size of the text.
 
+If the maximum size is 0, the alignment point is the drawing point; otherwise, it is the text box.
+
 | **Constant** | **Value** |
 | --- | --- |
-| `gm2_infinity` | `1e10` |
+| `gm2_infinity` | `1e5` |
 
 | **v1** |
 | --- |

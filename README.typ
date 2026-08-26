@@ -185,10 +185,12 @@ Set or get the text alignment and the paragraph alignment.
 
 Set or get the maximum size of the text.
 
+If the maximum size is 0, the alignment point is the drawing point; otherwise, it is the text box.
+
 #table(
     columns: 2,
     table.header[*Constant*][*Value*],
-    `gm2_infinity`, `1e10`,
+    `gm2_infinity`, `1e5`,
 )
 
 - `gm_set_max_line_length()`

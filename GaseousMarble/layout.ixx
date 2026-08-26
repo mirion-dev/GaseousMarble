@@ -97,7 +97,7 @@ namespace gm {
     };
 
     export struct LayoutOption {
-        static constexpr f32 INFINITY_{ 1e10 };
+        static constexpr f32 INFINITY_{ 1e5 };
 
         static constexpr u8 TEXT_ALIGNMENT_MASK{ 0x3 };
         static constexpr int TEXT_ALIGNMENT_OFFSET{};
@@ -123,8 +123,8 @@ namespace gm {
         DWRITE_TRIMMING_GRANULARITY trimming{};
 
         // [IDWriteTextLayout]
-        f32 max_width{ INFINITY_ };
-        f32 max_height{ INFINITY_ };
+        f32 max_width{};
+        f32 max_height{};
         std::pair<Font*, usize> font{};
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
@@ -318,8 +318,35 @@ namespace gm {
             THROW_IF_FAILED(layout->SetTrimming(&trimming, nullptr));
 
             // [IDWriteTextLayout]
-            THROW_IF_FAILED(layout->SetMaxWidth(option.max_width + option.letter_spacing));
-            THROW_IF_FAILED(layout->SetMaxHeight(option.max_height));
+            f32 max_width{ option.max_width }, max_height{ option.max_height };
+            if (max_width == 0) {
+                max_width = LayoutOption::INFINITY_;
+            }
+            if (max_height == 0) {
+                max_height = LayoutOption::INFINITY_;
+            }
+            THROW_IF_FAILED(layout->SetMaxWidth(max_width + option.letter_spacing));
+            THROW_IF_FAILED(layout->SetMaxHeight(max_height));
+
+            if (option.max_width == 0 || option.max_height == 0) {
+                if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
+                    x -= max_width / 2;
+                } else if (
+                    (option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
+                    == (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
+                ) {
+                    x -= max_width;
+                }
+
+                if (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_CENTER) {
+                    y -= max_height / 2;
+                } else if (
+                    (option.par_direction() == DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM)
+                    == (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_FAR)
+                ) {
+                    y -= max_height;
+                }
+            }
 
             // [IDWriteTextLayout1]
             if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
