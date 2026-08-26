@@ -5,8 +5,6 @@
 > \[!warning\]
 > 
 > Minimum system requirement: Windows 10, Version 1803.
-> 
-> Incompatible with 3D mode.
 
 ### Development
 
