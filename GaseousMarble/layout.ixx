@@ -20,12 +20,6 @@ namespace gm {
         f32 y;
     };
 
-    export struct Layout {
-        std::vector<GlyphInstance> glyphs;
-        f32 width;
-        f32 height;
-    };
-
     // UNSUPPORTED: `DWRITE_GLYPH_RUN::isSideways`; used for vertical writing mode
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
     public:
@@ -55,7 +49,7 @@ namespace gm {
         ) noexcept {
             assert(client_drawing_context != nullptr);
 
-            auto& glyphs{ static_cast<Layout*>(client_drawing_context)->glyphs };
+            auto& glyphs{ *static_cast<std::vector<GlyphInstance>*>(client_drawing_context) };
             f32 x{ baseline_origin_x }, y{ baseline_origin_y };
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
@@ -185,95 +179,14 @@ namespace gm {
         friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
     };
 
-    export struct LayoutSpecRef {
-        std::wstring_view text;
-        const LayoutOption& option;
+    export struct Layout {
+        std::vector<GlyphInstance> glyphs;
+        f32 width;
+        f32 height;
 
-        friend bool operator==(const LayoutSpecRef& left, const LayoutSpecRef& right) noexcept {
-            return left.text == right.text && left.option == right.option;
-        }
-    };
+        static Layout from(std::wstring_view text, const LayoutOption& option) {
+            assert(option.is_valid());
 
-    export struct LayoutSpec {
-        std::wstring text;
-        LayoutOption option;
-
-        template <std::convertible_to<LayoutSpecRef> R>
-        static LayoutSpec from(R&& spec) noexcept {
-            auto [text, option]{ static_cast<LayoutSpecRef>(spec) };
-            return { std::wstring{ text }, option };
-        }
-
-        operator LayoutSpecRef() const noexcept {
-            return { text, option };
-        }
-    };
-
-    export class LayoutCache {
-        struct Hash : gm::Hash {
-            using gm::Hash::operator();
-
-            usize operator()(const LayoutOption& value) const noexcept {
-                return hash_combine(
-                    Hash{},
-                    value.alignment,
-                    value.word_wrapping,
-                    value.direction,
-                    value.tab_spacing,
-                    value.trimming,
-                    value.max_width,
-                    value.max_height,
-                    value.font.second,
-                    value.letter_spacing,
-                    value.line_spacing_type,
-                    value.line_height,
-                    value.baseline
-                );
-            }
-
-            usize operator()(const LayoutSpecRef& value) const noexcept {
-                return hash_combine(Hash{}, value.text, value.option);
-            }
-        };
-
-        usize _cache_size{};
-
-        std::list<std::pair<LayoutSpec, Layout>> _data;
-        std::unordered_map<LayoutSpecRef, decltype(_data)::iterator, Hash> _map;
-
-    public:
-        LayoutCache() noexcept = default;
-
-        explicit LayoutCache(usize cache_size) noexcept
-            : _cache_size{ cache_size } {
-
-            assert(_cache_size > 0);
-        }
-
-        LayoutCache(LayoutCache&&) noexcept = default;
-
-        LayoutCache& operator=(LayoutCache&&) noexcept = default;
-
-        operator bool() const noexcept {
-            return _cache_size > 0;
-        }
-
-        usize cache_size() const noexcept {
-            assert(*this);
-            return _cache_size;
-        }
-
-        const Layout& get(const LayoutSpecRef& spec) {
-            assert(*this && spec.option.is_valid());
-
-            auto map_iter{ _map.find(spec) };
-            if (map_iter != _map.end()) {
-                auto iter{ map_iter->second };
-                _data.splice(_data.end(), _data, iter);
-                return iter->second;
-            }
-
-            auto& [text, option]{ spec };
             const FontDesc& font_desc{ option.font.first->desc() };
             wil::com_ptr<IDWriteTextFormat> format_base;
             THROW_IF_FAILED(
@@ -367,18 +280,109 @@ namespace gm {
             };
             THROW_IF_FAILED(layout->SetLineSpacing(&line_spacing));
 
-            Layout gm_layout;
+            Layout result;
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            THROW_IF_FAILED(layout->Draw(&gm_layout, collector.get(), x, y));
+            THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), x, y));
 
             DWRITE_TEXT_METRICS metrics;
             THROW_IF_FAILED(layout->GetMetrics(&metrics));
 
-            gm_layout.width = std::max(metrics.width - option.letter_spacing, 0.f);
-            gm_layout.height = metrics.height;
+            result.width = std::max(metrics.width - option.letter_spacing, 0.f);
+            result.height = metrics.height;
+            return result;
+        }
+    };
 
-            auto iter{ _data.emplace(_data.end(), LayoutSpec::from(spec), std::move(gm_layout)) };
+    export struct LayoutSpecRef {
+        std::wstring_view text;
+        const LayoutOption& option;
+
+        friend bool operator==(const LayoutSpecRef& left, const LayoutSpecRef& right) noexcept {
+            return left.text == right.text && left.option == right.option;
+        }
+    };
+
+    export struct LayoutSpec {
+        std::wstring text;
+        LayoutOption option;
+
+        template <std::convertible_to<LayoutSpecRef> R>
+        static LayoutSpec from(R&& spec) noexcept {
+            auto [text, option]{ static_cast<LayoutSpecRef>(spec) };
+            return { std::wstring{ text }, option };
+        }
+
+        operator LayoutSpecRef() const noexcept {
+            return { text, option };
+        }
+    };
+
+    export class LayoutCache {
+        struct Hash : gm::Hash {
+            using gm::Hash::operator();
+
+            usize operator()(const LayoutOption& value) const noexcept {
+                return hash_combine(
+                    Hash{},
+                    value.alignment,
+                    value.word_wrapping,
+                    value.direction,
+                    value.tab_spacing,
+                    value.trimming,
+                    value.max_width,
+                    value.max_height,
+                    value.font.second,
+                    value.letter_spacing,
+                    value.line_spacing_type,
+                    value.line_height,
+                    value.baseline
+                );
+            }
+
+            usize operator()(const LayoutSpecRef& value) const noexcept {
+                return hash_combine(Hash{}, value.text, value.option);
+            }
+        };
+
+        usize _cache_size{};
+
+        std::list<std::pair<LayoutSpec, Layout>> _data;
+        std::unordered_map<LayoutSpecRef, decltype(_data)::iterator, Hash> _map;
+
+    public:
+        LayoutCache() noexcept = default;
+
+        explicit LayoutCache(usize cache_size) noexcept
+            : _cache_size{ cache_size } {
+
+            assert(_cache_size > 0);
+        }
+
+        LayoutCache(LayoutCache&&) noexcept = default;
+
+        LayoutCache& operator=(LayoutCache&&) noexcept = default;
+
+        operator bool() const noexcept {
+            return _cache_size > 0;
+        }
+
+        usize cache_size() const noexcept {
+            assert(*this);
+            return _cache_size;
+        }
+
+        const Layout& get(const LayoutSpecRef& spec) {
+            assert(*this && spec.option.is_valid());
+
+            auto map_iter{ _map.find(spec) };
+            if (map_iter != _map.end()) {
+                auto iter{ map_iter->second };
+                _data.splice(_data.end(), _data, iter);
+                return iter->second;
+            }
+
+            auto iter{ _data.emplace(_data.end(), LayoutSpec::from(spec), Layout::from(spec.text, spec.option)) };
             _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {
