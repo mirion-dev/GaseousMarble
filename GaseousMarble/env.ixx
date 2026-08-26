@@ -47,39 +47,37 @@ namespace gm::env {
         }
     };
 
-    static Config _config{ [] noexcept -> Config {
-        std::string raw;
-        try {
-            std::ifstream file{ "gm2.toml" };
-            raw = { std::istreambuf_iterator{ file }, {} };
-        } catch (const std::exception&) {
-            return {};
-        }
-
-        Config result;
-        if (glz::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw) || !result.is_valid()) {
-            return {};
-        }
-
-        return result;
-    }() };
-
     export const Config& config() noexcept {
-        return _config;
+        static auto value{ [] noexcept -> Config {
+            std::string raw;
+            try {
+                std::ifstream file{ "gm2.toml" };
+                raw = { std::istreambuf_iterator{ file }, {} };
+            } catch (const std::exception&) {
+                return {};
+            }
+
+            Config result;
+            if (glz::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw) || !result.is_valid()) {
+                return {};
+            }
+
+            return result;
+        }() };
+        return value;
     }
 
-    static std::wstring _default_locale{ [] noexcept -> std::wstring {
-        std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> raw;
-        auto size{ static_cast<usize>(GetUserDefaultLocaleName(raw.data(), raw.size())) };
-        if (size == 0) {
-            return L"en-US";
-        }
-
-        return { raw.data(), size - 1 };
-    }() };
-
     export const std::wstring& default_locale() noexcept {
-        return _default_locale;
+        static auto value{ [] noexcept -> std::wstring {
+            std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> raw;
+            auto size{ static_cast<usize>(GetUserDefaultLocaleName(raw.data(), raw.size())) };
+            if (size == 0) {
+                return L"en-US";
+            }
+
+            return { raw.data(), size - 1 };
+        }() };
+        return value;
     }
 
     struct D3dResource {
@@ -121,7 +119,7 @@ namespace gm::env {
     };
 
     static const DwResource& dw_resource() {
-        static DwResource value{ [] {
+        static auto value{ [] {
             DwResource result;
             THROW_IF_FAILED(
                 DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(DwFactory), result.factory.put_unknown())
