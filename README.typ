@@ -16,7 +16,7 @@
 + Install #link("https://visualstudio.microsoft.com/")[Visual Studio 2026] with MSVC Build Tools for x64/x86 Preview.
 + Install #link("https://vcpkg.io/en/")[vcpkg].
 + Install #link("https://archive.org/details/dx81sdk_full")[DirectX 8.1 SDK] to `third_party/dx81`.
-+ `vcpkg install glaze:x86-windows wil:x86-windows`.
++ `vcpkg install --triplet x86-windows-static-md glaze spdlog wil`.
 + `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
 + Build clang-format 24 from #link("https://github.com/llvm/llvm-project/")[LLVM] if formatting is needed.
 
@@ -24,6 +24,7 @@
 
 - #link("https://github.com/snakedeveloper/gmapi")[GMAPI] (references their reverse engineering results only)
 - #link("https://github.com/stephenberry/glaze")[Glaze]
+- #link("https://github.com/gabime/spdlog")[spdlog]
 - #link("https://github.com/TeamHypersomnia/rectpack2D")[rectpack2D]
 - #link("https://github.com/microsoft/wil/wiki")[WIL]
 
@@ -49,6 +50,7 @@
 #table(
     columns: 3,
     table.header[*Option*][*Default Value*][*Description*],
+    `log_path`, `"gm2.log"`, [Log path],
     `atlas.texture_width`, `1024`, [Texture width of glyph atlases],
     `atlas.texture_height`, `1024`, [Texture height of glyph atlases],
     `atlas.max_texture_num`, `16`, [Maximum number of textures for each glyph atlas],

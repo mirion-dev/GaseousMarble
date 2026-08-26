@@ -11,7 +11,7 @@
 1. Install [Visual Studio 2026](https://visualstudio.microsoft.com/) with MSVC Build Tools for x64/x86 Preview.
 2. Install [vcpkg](https://vcpkg.io/en/).
 3. Install [DirectX 8.1 SDK](https://archive.org/details/dx81sdk_full) to `third_party/dx81`.
-4. `vcpkg install glaze:x86-windows wil:x86-windows`.
+4. `vcpkg install --triplet x86-windows glaze spdlog wil`.
 5. `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
 6. Build clang-format 24 from [LLVM](https://github.com/llvm/llvm-project/) if formatting is needed.
 
@@ -19,6 +19,7 @@
 
 - [GMAPI](https://github.com/snakedeveloper/gmapi) (references their reverse engineering results only)
 - [Glaze](https://github.com/stephenberry/glaze)
+- [spdlog](https://github.com/gabime/spdlog)
 - [rectpack2D](https://github.com/TeamHypersomnia/rectpack2D)
 - [WIL](https://github.com/microsoft/wil/wiki)
 
@@ -28,6 +29,7 @@
 
 | **Option** | **Default Value** | **Description** |
 | --- | --- | --- |
+| `log_path` | `"gm2.log"` | Log path |
 | `atlas.texture_width` | `1024` | Texture width of glyph atlases |
 | `atlas.texture_height` | `1024` | Texture height of glyph atlases |
 | `atlas.max_texture_num` | `16` | Maximum number of textures for each glyph atlas |

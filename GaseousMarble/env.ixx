@@ -3,6 +3,9 @@ module;
 #include <d3d8.h>
 #include <dwrite_3.h>
 #include <glaze/toml.hpp>
+#include <spdlog/logger.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/null_sink.h>
 #include <wil/com.h>
 #undef interface
 
@@ -37,6 +40,7 @@ namespace gm {
 namespace gm::env {
 
     export struct Config {
+        std::string log_path{ "gm2.log" };
         AtlasOption atlas;
         RasterOption raster;
         usize max_font_num{ 64 };
@@ -63,6 +67,17 @@ namespace gm::env {
             }
 
             return result;
+        }() };
+        return value;
+    }
+
+    export spdlog::logger& logger() noexcept {
+        static auto value{ [] noexcept -> spdlog::logger {
+            try {
+                return { "gm2", std::make_shared<spdlog::sinks::basic_file_sink_st>(config().log_path) };
+            } catch (const std::exception&) {
+                return { "gm2", std::make_shared<spdlog::sinks::null_sink_st>() };
+            }
         }() };
         return value;
     }
