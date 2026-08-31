@@ -101,8 +101,8 @@ namespace gm {
             DWORD state_block;
             GM_THROW_IF_FAILED(device->CreateStateBlock(D3DSBT_ALL, &state_block));
             auto _{ wil::scope_exit([&] noexcept {
-                device->ApplyStateBlock(state_block);
-                device->DeleteStateBlock(state_block);
+                GM_WARN_IF_FAILED(device->ApplyStateBlock(state_block));
+                GM_WARN_IF_FAILED(device->DeleteStateBlock(state_block));
             }) };
 
             GM_THROW_IF_FAILED(device->SetPixelShader(0));

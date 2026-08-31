@@ -46,7 +46,7 @@ namespace gm {
 
         ~TextureLock() noexcept {
             if (_texture) {
-                _texture->UnlockRect(0);
+                GM_WARN_IF_FAILED(_texture->UnlockRect(0));
             }
         }
 

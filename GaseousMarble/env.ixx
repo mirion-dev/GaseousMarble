@@ -56,16 +56,26 @@ namespace gm::env {
 
     export const Config& config() noexcept {
         static auto value{ [] noexcept -> Config {
+            std::ifstream file{ CONFIG_PATH };
+            if (!file.is_open()) {
+                return {};
+            }
+
             std::string raw;
             try {
-                std::ifstream file{ CONFIG_PATH };
                 raw = { std::istreambuf_iterator{ file }, {} };
             } catch (const std::exception&) {
+                GM_WARN("Failed to read the config, falling back to the default config.");
                 return {};
             }
 
             Config result;
-            if (glz::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw) || !result.is_valid()) {
+            if (glz::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw)) {
+                GM_WARN("Failed to parse the config, falling back to the default config.");
+                return {};
+            }
+            if (!result.is_valid()) {
+                GM_WARN("Invalid config, falling back to the default config.");
                 return {};
             }
 
@@ -79,6 +89,7 @@ namespace gm::env {
             std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> raw;
             auto size{ static_cast<usize>(GetUserDefaultLocaleName(raw.data(), raw.size())) };
             if (size == 0) {
+                GM_WARN("Failed to get the user's default locale, falling back to \"en-US\".");
                 return L"en-US";
             }
 

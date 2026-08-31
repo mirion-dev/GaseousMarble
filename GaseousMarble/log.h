@@ -1,12 +1,21 @@
 #pragma once
 
+#define GM_WARN(...) SPDLOG_LOGGER_WARN(gm::logger(), __VA_ARGS__)
+#define GM_ERROR(...) SPDLOG_LOGGER_ERROR(gm::logger(), __VA_ARGS__)
+
+#define GM_WARN_IF_FAILED(result)                                                                                      \
+    do {                                                                                                               \
+        HRESULT value{ result };                                                                                       \
+        if (value < 0) {                                                                                               \
+            GM_WARN("Error {:#x}.", static_cast<std::make_unsigned_t<HRESULT>>(value));                                \
+        }                                                                                                              \
+    } while (false)
+
 #define GM_THROW_IF_FAILED(result)                                                                                     \
     do {                                                                                                               \
         HRESULT value{ result };                                                                                       \
         if (value < 0) {                                                                                               \
-            SPDLOG_LOGGER_ERROR(                                                                                       \
-                gm::logger(), "{}(): Error {:#x}.", __FUNCTION__, static_cast<std::make_unsigned_t<HRESULT>>(value)    \
-            );                                                                                                         \
+            GM_ERROR("Error {:#x}.", static_cast<std::make_unsigned_t<HRESULT>>(value));                               \
             THROW_HR(value);                                                                                           \
         }                                                                                                              \
     } while (false)
@@ -15,9 +24,7 @@
     do {                                                                                                               \
         HRESULT value{ result };                                                                                       \
         if (value < 0) {                                                                                               \
-            SPDLOG_LOGGER_ERROR(                                                                                       \
-                gm::logger(), "{}(): Error {:#x}.", __FUNCTION__, static_cast<std::make_unsigned_t<HRESULT>>(value)    \
-            );                                                                                                         \
+            GM_ERROR("Error {:#x}.", static_cast<std::make_unsigned_t<HRESULT>>(value));                               \
             RETURN_HR(value);                                                                                          \
         }                                                                                                              \
     } while (false)
@@ -25,10 +32,8 @@
 #define GM_CATCH_RETURN()                                                                                              \
     catch (const wil::ResultException& error) {                                                                        \
         const wil::FailureInfo& info{ error.GetFailureInfo() };                                                        \
-        SPDLOG_LOGGER_ERROR(                                                                                           \
-            gm::logger(),                                                                                              \
-            "{}() -> [{}:{}] {}(): Error {:#x}.",                                                                      \
-            __FUNCTION__,                                                                                              \
+        GM_ERROR(                                                                                                      \
+            "-> [{}:{}:{}] Error {:#x}.",                                                                              \
             std::filesystem::path{ info.pszFile }.filename().string(),                                                 \
             info.uLineNumber,                                                                                          \
             info.pszFunction,                                                                                          \
@@ -37,10 +42,10 @@
         RETURN_CAUGHT_EXCEPTION();                                                                                     \
     }                                                                                                                  \
     catch (const std::exception& error) {                                                                              \
-        SPDLOG_LOGGER_ERROR(gm::logger(), "{}", error.what());                                                         \
+        GM_ERROR("{}", error.what());                                                                                  \
         RETURN_CAUGHT_EXCEPTION();                                                                                     \
     }                                                                                                                  \
     catch (...) {                                                                                                      \
-        SPDLOG_LOGGER_ERROR(gm::logger(), "Unknown exception.");                                                       \
+        GM_ERROR("Unknown exception.");                                                                                \
         RETURN_CAUGHT_EXCEPTION();                                                                                     \
     }

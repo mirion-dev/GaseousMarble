@@ -64,9 +64,11 @@ namespace gm {
             BOOL locale_exists;
             GM_THROW_IF_FAILED(names->FindLocaleName(locale_name.data(), &index, &locale_exists));
             if (!locale_exists && locale_name != L"en-US") {
+                GM_WARN("Failed to find the specified locale, falling back to \"en-US\".");
                 GM_THROW_IF_FAILED(names->FindLocaleName(L"en-US", &index, &locale_exists));
             }
             if (!locale_exists) {
+                GM_WARN("Failed to find the specified locale, falling back to the first font family.");
                 index = 0;
             }
 
