@@ -1,12 +1,16 @@
 module;
 
+#include "log.h"
+
 #include <dwrite_3.h>
+#include <spdlog/spdlog.h>
 #include <wil/com.h>
 #include <wil/cppwinrt.h>
 
 export module gm.layout;
 
 import std;
+import gm.log;
 import gm.types;
 import gm.utils;
 import gm.env;
@@ -54,7 +58,7 @@ namespace gm {
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
             wil::com_ptr<env::DwFontFace> face;
-            RETURN_IF_FAILED(face_base.query_to<env::DwFontFace>(&face));
+            GM_RETURN_IF_FAILED(face_base.query_to<env::DwFontFace>(&face));
 
             f32 size{ glyph_run->fontEmSize };
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
@@ -189,7 +193,7 @@ namespace gm {
 
             const FontDesc& font_desc{ option.font.first->desc() };
             wil::com_ptr<IDWriteTextFormat> format_base;
-            THROW_IF_FAILED(
+            GM_THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
                     font_desc.name.data(),
                     font_desc.collection.get(),
@@ -204,7 +208,7 @@ namespace gm {
             wil::com_ptr format{ format_base.query<env::DwTextFormat>() };
 
             wil::com_ptr<IDWriteTextLayout> layout_base;
-            THROW_IF_FAILED(
+            GM_THROW_IF_FAILED(
                 env::dw_factory()->CreateTextLayout(
                     text.data(),
                     text.size(),
@@ -220,15 +224,15 @@ namespace gm {
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
             // [IDWriteTextFormat]
-            THROW_IF_FAILED(layout->SetTextAlignment(option.text_alignment()));
-            THROW_IF_FAILED(layout->SetParagraphAlignment(option.par_alignment()));
-            THROW_IF_FAILED(layout->SetWordWrapping(option.word_wrapping));
-            THROW_IF_FAILED(layout->SetReadingDirection(option.text_direction()));
-            THROW_IF_FAILED(layout->SetFlowDirection(option.par_direction()));
-            THROW_IF_FAILED(layout->SetIncrementalTabStop(option.tab_spacing));
+            GM_THROW_IF_FAILED(layout->SetTextAlignment(option.text_alignment()));
+            GM_THROW_IF_FAILED(layout->SetParagraphAlignment(option.par_alignment()));
+            GM_THROW_IF_FAILED(layout->SetWordWrapping(option.word_wrapping));
+            GM_THROW_IF_FAILED(layout->SetReadingDirection(option.text_direction()));
+            GM_THROW_IF_FAILED(layout->SetFlowDirection(option.par_direction()));
+            GM_THROW_IF_FAILED(layout->SetIncrementalTabStop(option.tab_spacing));
 
             DWRITE_TRIMMING trimming{ option.trimming };
-            THROW_IF_FAILED(layout->SetTrimming(&trimming, nullptr));
+            GM_THROW_IF_FAILED(layout->SetTrimming(&trimming, nullptr));
 
             // [IDWriteTextLayout]
             f32 max_width{ option.max_width }, max_height{ option.max_height };
@@ -238,8 +242,8 @@ namespace gm {
             if (max_height == 0) {
                 max_height = LayoutOption::INFINITY_;
             }
-            THROW_IF_FAILED(layout->SetMaxWidth(max_width + option.letter_spacing));
-            THROW_IF_FAILED(layout->SetMaxHeight(max_height));
+            GM_THROW_IF_FAILED(layout->SetMaxWidth(max_width + option.letter_spacing));
+            GM_THROW_IF_FAILED(layout->SetMaxHeight(max_height));
 
             if (option.max_width == 0 || option.max_height == 0) {
                 if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
@@ -263,12 +267,12 @@ namespace gm {
 
             // [IDWriteTextLayout1]
             if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
-                THROW_IF_FAILED(layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
+                GM_THROW_IF_FAILED(layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             } else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
-                THROW_IF_FAILED(layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
+                GM_THROW_IF_FAILED(layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
                 x -= option.letter_spacing;
             } else {
-                THROW_IF_FAILED(
+                GM_THROW_IF_FAILED(
                     layout->SetCharacterSpacing(option.letter_spacing / 2, option.letter_spacing / 2, 0, range)
                 );
                 x -= option.letter_spacing / 2;
@@ -278,15 +282,15 @@ namespace gm {
             DWRITE_LINE_SPACING line_spacing{
                 option.line_spacing_type, option.line_height, option.baseline, 0, DWRITE_FONT_LINE_GAP_USAGE_ENABLED
             };
-            THROW_IF_FAILED(layout->SetLineSpacing(&line_spacing));
+            GM_THROW_IF_FAILED(layout->SetLineSpacing(&line_spacing));
 
             Layout result;
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), x, y));
+            GM_THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), x, y));
 
             DWRITE_TEXT_METRICS metrics;
-            THROW_IF_FAILED(layout->GetMetrics(&metrics));
+            GM_THROW_IF_FAILED(layout->GetMetrics(&metrics));
 
             result.width = std::max(metrics.width - option.letter_spacing, 0.f);
             result.height = metrics.height;

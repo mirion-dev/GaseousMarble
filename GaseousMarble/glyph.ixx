@@ -1,13 +1,17 @@
 module;
 
+#include "log.h"
+
 #include <d3d8.h>
 #include <dwrite_3.h>
 #include <rectpack2D/finders_interface.h>
+#include <spdlog/spdlog.h>
 #include <wil/com.h>
 
 export module gm.glyph;
 
 import std;
+import gm.log;
 import gm.types;
 import gm.utils;
 import gm.env;
@@ -29,7 +33,7 @@ namespace gm {
                        static_cast<isize>(y),
                        static_cast<isize>(x + width),
                        static_cast<isize>(y + height) };
-            THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, D3DLOCK_NO_DIRTY_UPDATE));
+            GM_THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, D3DLOCK_NO_DIRTY_UPDATE));
 
             _texture = texture;
             _data = { static_cast<u32*>(lock.pBits),
@@ -68,7 +72,7 @@ namespace gm {
                        static_cast<isize>(y),
                        static_cast<isize>(x + width),
                        static_cast<isize>(y + height) };
-            THROW_IF_FAILED(_texture->AddDirtyRect(&rect));
+            GM_THROW_IF_FAILED(_texture->AddDirtyRect(&rect));
 
             for (usize j{}; j < height; ++j) {
                 for (usize i{}; i < width; ++i) {
@@ -162,7 +166,7 @@ namespace gm {
                                                          ? DWRITE_RENDERING_MODE1_NATURAL
                                                          : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC };
                 wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
-                THROW_IF_FAILED(
+                GM_THROW_IF_FAILED(
                     env::dw_factory()->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
@@ -177,7 +181,7 @@ namespace gm {
                 );
 
                 RECT bbox;
-                THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
+                GM_THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
 
                 auto width{ static_cast<usize>(bbox.right - bbox.left) };
                 auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
@@ -193,7 +197,7 @@ namespace gm {
                 }
 
                 std::vector<u8> alpha(width * height);
-                THROW_IF_FAILED(
+                GM_THROW_IF_FAILED(
                     rasterizer->CreateAlphaTexture(DWRITE_TEXTURE_ALIASED_1x1, &bbox, alpha.data(), alpha.size())
                 );
 
@@ -206,7 +210,7 @@ namespace gm {
                         throw std::runtime_error{ "Too many textures." };
                     }
 
-                    THROW_IF_FAILED(
+                    GM_THROW_IF_FAILED(
                         env::d3d_device()->CreateTexture(
                             _option.texture_width,
                             _option.texture_height,

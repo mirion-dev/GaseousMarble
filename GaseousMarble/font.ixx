@@ -1,11 +1,15 @@
 module;
 
+#include "log.h"
+
 #include <dwrite_3.h>
+#include <spdlog/spdlog.h>
 #include <wil/com.h>
 
 export module gm.font;
 
 import std;
+import gm.log;
 import gm.types;
 import gm.utils;
 import gm.env;
@@ -30,16 +34,16 @@ namespace gm {
 
         static FontDesc from(std::wstring_view path, u16 properties, f32 size, std::wstring_view locale) {
             wil::com_ptr<env::DwFontSetBuilder> builder;
-            THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
+            GM_THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
 
             auto abs_path{ std::filesystem::absolute(path) };
             wil::com_ptr<IDWriteFontSet> set_base;
-            THROW_IF_FAILED(builder->AddFontFile(abs_path.c_str()));
-            THROW_IF_FAILED(builder->CreateFontSet(&set_base));
+            GM_THROW_IF_FAILED(builder->AddFontFile(abs_path.c_str()));
+            GM_THROW_IF_FAILED(builder->CreateFontSet(&set_base));
             wil::com_ptr set{ set_base.query<env::DwFontSet>() };
 
             wil::com_ptr<IDWriteFontCollection2> collection_base;
-            THROW_IF_FAILED(
+            GM_THROW_IF_FAILED(
                 env::dw_factory()->CreateFontCollectionFromFontSet(
                     set.get(), DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE, &collection_base
                 )
@@ -48,7 +52,7 @@ namespace gm {
 
             wil::com_ptr<env::DwLocalizedStrings> names;
             BOOL exists;
-            THROW_IF_FAILED(
+            GM_THROW_IF_FAILED(
                 set->GetPropertyValues(0, DWRITE_FONT_PROPERTY_ID_WEIGHT_STRETCH_STYLE_FAMILY_NAME, &exists, &names)
             );
             if (!exists) {
@@ -58,19 +62,19 @@ namespace gm {
             std::wstring locale_name{ locale };
             u32 index;
             BOOL locale_exists;
-            THROW_IF_FAILED(names->FindLocaleName(locale_name.data(), &index, &locale_exists));
+            GM_THROW_IF_FAILED(names->FindLocaleName(locale_name.data(), &index, &locale_exists));
             if (!locale_exists && locale_name != L"en-US") {
-                THROW_IF_FAILED(names->FindLocaleName(L"en-US", &index, &locale_exists));
+                GM_THROW_IF_FAILED(names->FindLocaleName(L"en-US", &index, &locale_exists));
             }
             if (!locale_exists) {
                 index = 0;
             }
 
             u32 name_size;
-            THROW_IF_FAILED(names->GetStringLength(index, &name_size));
+            GM_THROW_IF_FAILED(names->GetStringLength(index, &name_size));
 
             std::wstring name(name_size + 1, '\0');
-            THROW_IF_FAILED(names->GetString(index, name.data(), name.size()));
+            GM_THROW_IF_FAILED(names->GetString(index, name.data(), name.size()));
             name.pop_back();
 
             return { collection, std::move(name), properties, size, std::move(locale_name) };

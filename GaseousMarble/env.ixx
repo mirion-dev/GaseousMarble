@@ -1,14 +1,19 @@
 module;
 
+#include "log.h"
+
 #include <d3d8.h>
 #include <dwrite_3.h>
 #include <glaze/toml.hpp>
+#include <spdlog/spdlog.h>
 #include <wil/com.h>
+
 #undef interface
 
 export module gm.env;
 
 import std;
+import gm.log;
 import gm.types;
 
 namespace gm {
@@ -123,7 +128,7 @@ namespace gm::env {
     static const DwResource& dw_resource() {
         static auto value{ [] {
             DwResource result;
-            THROW_IF_FAILED(
+            GM_THROW_IF_FAILED(
                 DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(DwFactory), result.factory.put_unknown())
             );
             return result;

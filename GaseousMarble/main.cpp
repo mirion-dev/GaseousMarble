@@ -4,7 +4,10 @@
 #define API extern "C" __declspec(dllimport)
 #endif
 
+#include "log.h"
+
 #include <dwrite_3.h>
+#include <spdlog/spdlog.h>
 #include <wil/result.h>
 
 import std;
@@ -67,19 +70,19 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
     id_map.try_emplace(iter->second.id(), iter->first);
     return S_OK;
 }
-CATCH_RETURN()
+GM_CATCH_RETURN()
 
 API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try {
     draw.text(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), to_wstring(raw_text));
     return S_OK;
 }
-CATCH_RETURN()
+GM_CATCH_RETURN()
 
 API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_width(to_wstring(raw_text)); }
-CATCH_RETURN()
+GM_CATCH_RETURN()
 
 API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_height(to_wstring(raw_text)); }
-CATCH_RETURN()
+GM_CATCH_RETURN()
 
 API Real gm2_push_options() noexcept {
     option_stack.emplace_back(draw.option());
@@ -95,7 +98,7 @@ API Real gm2_pop_options() noexcept try {
     option_stack.pop_back();
     return S_OK;
 }
-CATCH_RETURN()
+GM_CATCH_RETURN()
 
 API Real gm2_set_alignment(Real raw_alignment) noexcept {
     draw.option().alignment = saturating_cast<u8>(raw_alignment, 0) & DrawOption::ALIGNMENT_MASK;
@@ -199,7 +202,7 @@ API Real gm2_set_font(StringRef raw_key) noexcept try {
     draw.option().font = { &iter->second, iter->second.id() };
     return S_OK;
 }
-CATCH_RETURN()
+GM_CATCH_RETURN()
 
 API Real gm2_set_letter_spacing(Real raw_letter_spacing) noexcept {
     draw.option().letter_spacing = saturating_cast<f32>(raw_letter_spacing);

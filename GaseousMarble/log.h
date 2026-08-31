@@ -5,7 +5,7 @@
         HRESULT value{ result };                                                                                       \
         if (value < 0) {                                                                                               \
             SPDLOG_LOGGER_ERROR(                                                                                       \
-                gm::logger(), "{}(): Error {:#x}.", __func__, static_cast<std::make_unsigned_t<HRESULT>>(value)        \
+                gm::logger(), "{}(): Error {:#x}.", __FUNCTION__, static_cast<std::make_unsigned_t<HRESULT>>(value)    \
             );                                                                                                         \
             THROW_HR(value);                                                                                           \
         }                                                                                                              \
@@ -16,7 +16,7 @@
         HRESULT value{ result };                                                                                       \
         if (value < 0) {                                                                                               \
             SPDLOG_LOGGER_ERROR(                                                                                       \
-                gm::logger(), "{}(): Error {:#x}.", __func__, static_cast<std::make_unsigned_t<HRESULT>>(value)        \
+                gm::logger(), "{}(): Error {:#x}.", __FUNCTION__, static_cast<std::make_unsigned_t<HRESULT>>(value)    \
             );                                                                                                         \
             RETURN_HR(value);                                                                                          \
         }                                                                                                              \
@@ -28,7 +28,7 @@
         SPDLOG_LOGGER_ERROR(                                                                                           \
             gm::logger(),                                                                                              \
             "{}() -> [{}:{}] {}(): Error {:#x}.",                                                                      \
-            __func__,                                                                                                  \
+            __FUNCTION__,                                                                                              \
             std::filesystem::path{ info.pszFile }.filename().string(),                                                 \
             info.uLineNumber,                                                                                          \
             info.pszFunction,                                                                                          \

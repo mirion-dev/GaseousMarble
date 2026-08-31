@@ -16,7 +16,8 @@ namespace gm {
     export spdlog::logger* logger() noexcept {
         static auto value{ [] noexcept -> spdlog::logger {
             try {
-                spdlog::logger result{ LOGGER_NAME, std::make_shared<spdlog::sinks::basic_file_sink_st>(LOG_PATH) };
+                spdlog::logger result{ LOGGER_NAME,
+                                       std::make_shared<spdlog::sinks::basic_file_sink_st>(LOG_PATH, true) };
                 result.set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
                 return result;
             } catch (const std::exception&) {
