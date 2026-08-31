@@ -10,5 +10,6 @@
     <ClCompile Include="font.ixx" />
     <ClCompile Include="layout.ixx" />
     <ClCompile Include="glyph.ixx" />
+    <ClCompile Include="log.ixx" />
   </ItemGroup>
 </Project>

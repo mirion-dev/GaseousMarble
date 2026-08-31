@@ -50,7 +50,6 @@
 #table(
     columns: 3,
     table.header[*Option*][*Default Value*][*Description*],
-    `log_path`, `"gm2.log"`, [Log path],
     `atlas.texture_width`, `1024`, [Texture width of glyph atlases],
     `atlas.texture_height`, `1024`, [Texture height of glyph atlases],
     `atlas.max_texture_num`, `16`, [Maximum number of textures for each glyph atlas],

@@ -17,6 +17,7 @@
     <ClCompile Include="glyph.ixx" />
     <ClCompile Include="gm.ixx" />
     <ClCompile Include="layout.ixx" />
+    <ClCompile Include="log.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
