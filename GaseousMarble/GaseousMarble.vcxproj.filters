@@ -12,4 +12,7 @@
     <ClCompile Include="glyph.ixx" />
     <ClCompile Include="log.ixx" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="log.h" />
+  </ItemGroup>
 </Project>

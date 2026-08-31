@@ -11,16 +11,19 @@ import std;
 namespace gm {
 
     static constexpr auto LOG_PATH{ "gm2.log" };
+    static constexpr auto LOGGER_NAME{ "gm2" };
 
-    export spdlog::logger& logger() noexcept {
+    export spdlog::logger* logger() noexcept {
         static auto value{ [] noexcept -> spdlog::logger {
             try {
-                return { "gm2", std::make_shared<spdlog::sinks::basic_file_sink_st>(LOG_PATH) };
+                spdlog::logger result{ LOGGER_NAME, std::make_shared<spdlog::sinks::basic_file_sink_st>(LOG_PATH) };
+                result.set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
+                return result;
             } catch (const std::exception&) {
-                return { "gm2", std::make_shared<spdlog::sinks::null_sink_st>() };
+                return { LOGGER_NAME, std::make_shared<spdlog::sinks::null_sink_st>() };
             }
         }() };
-        return value;
+        return &value;
     }
 
 }

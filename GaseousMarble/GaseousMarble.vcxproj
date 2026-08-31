@@ -22,6 +22,9 @@
     <ClCompile Include="types.ixx" />
     <ClCompile Include="utils.ixx" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="log.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
