@@ -34,7 +34,7 @@
         const wil::FailureInfo& info{ error.GetFailureInfo() };                                                        \
         GM_ERROR(                                                                                                      \
             "-> [{}:{}:{}] Error {:#x}.",                                                                              \
-            std::filesystem::path{ info.pszFile }.filename().string(),                                                 \
+            gm::filename(info.pszFile),                                                                                \
             info.uLineNumber,                                                                                          \
             info.pszFunction,                                                                                          \
             static_cast<std::make_unsigned_t<HRESULT>>(info.hr)                                                        \

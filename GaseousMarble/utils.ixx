@@ -98,6 +98,11 @@ namespace gm {
         return std::filesystem::path{ str_u8 }.wstring();
     }
 
+    export std::string filename(std::string_view path) noexcept {
+        usize pos{ path.find_last_of("/\\") };
+        return std::string{ pos == -1 ? path : path.substr(pos + 1) };
+    }
+
     export struct Hash {
         template <class T>
         usize operator()(const T& value) const noexcept {

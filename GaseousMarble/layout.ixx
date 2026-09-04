@@ -27,17 +27,17 @@ namespace gm {
     // UNSUPPORTED: `DWRITE_GLYPH_RUN::isSideways`; used for vertical writing mode
     class LayoutCollector : public winrt::implements<LayoutCollector, env::DwTextRenderer> {
     public:
-        STDMETHODIMP IsPixelSnappingDisabled(void* client_drawing_context, BOOL* is_disabled) noexcept {
+        STDMETHODIMP IsPixelSnappingDisabled(void* client_drawing_context, BOOL* is_disabled) noexcept override {
             *is_disabled = true;
             return S_OK;
         }
 
-        STDMETHODIMP GetCurrentTransform(void* client_drawing_context, DWRITE_MATRIX* transform) noexcept {
+        STDMETHODIMP GetCurrentTransform(void* client_drawing_context, DWRITE_MATRIX* transform) noexcept override {
             *transform = { 1, 0, 0, 1 };
             return S_OK;
         }
 
-        STDMETHODIMP GetPixelsPerDip(void* client_drawing_context, FLOAT* pixels_per_dip) noexcept {
+        STDMETHODIMP GetPixelsPerDip(void* client_drawing_context, FLOAT* pixels_per_dip) noexcept override {
             *pixels_per_dip = 1;
             return S_OK;
         }
@@ -50,7 +50,7 @@ namespace gm {
             const DWRITE_GLYPH_RUN* glyph_run,
             const DWRITE_GLYPH_RUN_DESCRIPTION* glyph_run_description,
             IUnknown* client_drawing_effect
-        ) noexcept {
+        ) noexcept override {
             assert(client_drawing_context != nullptr);
 
             auto& glyphs{ *static_cast<std::vector<GlyphInstance>*>(client_drawing_context) };
@@ -81,15 +81,16 @@ namespace gm {
             return S_OK;
         }
 
-        STDMETHODIMP DrawInlineObject(void*, FLOAT, FLOAT, IDWriteInlineObject*, BOOL, BOOL, IUnknown*) noexcept {
+        STDMETHODIMP
+        DrawInlineObject(void*, FLOAT, FLOAT, IDWriteInlineObject*, BOOL, BOOL, IUnknown*) noexcept override {
             return S_OK;
         }
 
-        STDMETHODIMP DrawStrikethrough(void*, FLOAT, FLOAT, const DWRITE_STRIKETHROUGH*, IUnknown*) noexcept {
+        STDMETHODIMP DrawStrikethrough(void*, FLOAT, FLOAT, const DWRITE_STRIKETHROUGH*, IUnknown*) noexcept override {
             return S_OK;
         }
 
-        STDMETHODIMP DrawUnderline(void*, FLOAT, FLOAT, const DWRITE_UNDERLINE*, IUnknown*) noexcept {
+        STDMETHODIMP DrawUnderline(void*, FLOAT, FLOAT, const DWRITE_UNDERLINE*, IUnknown*) noexcept override {
             return S_OK;
         }
     };
