@@ -17,7 +17,7 @@ namespace gm {
     static constexpr auto LOG_PATH{ "gm2.log" };
     static constexpr auto LOGGER_NAME{ "gm2" };
     static constexpr auto RATE_LIMIT_INTERVAL{ 1s };
-    static constexpr usize RATE_LIMIT_COUNT{ 10 };
+    static constexpr usize RATE_LIMIT_COUNT{ 3 };
 
     class RateLimitSink : public spdlog::sinks::sink {
         struct Location {
