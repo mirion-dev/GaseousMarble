@@ -305,5 +305,40 @@ if (page == 0) {
         external_call(global.gm2_pop_options)
     }
 } else if (page == 1) {
+    {
+        external_call(global.gm2_push_options)
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm_set_max_width()")
 
+        grid_mesh(
+            table_padding,
+            title_height,
+            3,
+            1,
+            room_width - table_padding * 2,
+            room_height / 2 - title_height,
+            50,
+            0,
+            $e6b689
+        )
+
+        var row_param{}
+        row_param[1] = 600
+        row_param[2] = 500
+        row_param[3] = 400
+
+        var i{}
+        for (i = 1; i <= 3; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
+        }
+
+        var row{}
+        for (row = 1; row <= 3; row += 1) {
+            draw_circle_color(grid_mesh_col[1], grid_mesh_row[row], 5, $e6b689, $e6b689, false)
+            external_call(global.gm2_set_max_width, row_param[row])
+            external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
+        }
+
+        external_call(global.gm2_pop_options)
+    }
 }
