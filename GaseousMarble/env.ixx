@@ -15,6 +15,7 @@ export module gm.env;
 import std;
 import gm.log;
 import gm.types;
+import gm.utils;
 
 namespace gm {
 
@@ -56,13 +57,15 @@ namespace gm::env {
 
     export const Config& config() noexcept {
         static auto value{ [] noexcept -> Config {
-            std::ifstream file{ CONFIG_PATH };
-            if (!file.is_open()) {
+            std::error_code error;
+            if (!std::filesystem::exists(CONFIG_PATH, error)) {
+                GM_INFO("Config not found, using the default config.");
                 return {};
             }
 
             std::string raw;
             try {
+                std::ifstream file{ CONFIG_PATH };
                 raw = { std::istreambuf_iterator{ file }, {} };
             } catch (const std::exception&) {
                 GM_WARN("Failed to read the config, falling back to the default config.");
@@ -93,7 +96,9 @@ namespace gm::env {
                 return L"en-US";
             }
 
-            return { raw.data(), size - 1 };
+            std::wstring result{ raw.data(), size - 1 };
+            GM_INFO("Resolved the user's default locale to \"{}\".", to_string(result));
+            return result;
         }() };
         return value;
     }

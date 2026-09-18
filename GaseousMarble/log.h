@@ -1,5 +1,6 @@
 #pragma once
 
+#define GM_INFO(...) SPDLOG_LOGGER_INFO(gm::logger(), __VA_ARGS__)
 #define GM_WARN(...) SPDLOG_LOGGER_WARN(gm::logger(), __VA_ARGS__)
 #define GM_ERROR(...) SPDLOG_LOGGER_ERROR(gm::logger(), __VA_ARGS__)
 
