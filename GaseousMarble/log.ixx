@@ -57,8 +57,15 @@ namespace gm {
                 return;
             }
 
-            ++record.count;
-            _sink->log(message);
+            if (++record.count == RATE_LIMIT_COUNT) {
+                std::string payload{ message.payload.data() };
+                payload += " (Log rate limit reached; entering cooldown.)";
+                auto new_message{ message };
+                new_message.payload = payload;
+                _sink->log(new_message);
+            } else {
+                _sink->log(message);
+            }
         }
 
         void flush() override {
