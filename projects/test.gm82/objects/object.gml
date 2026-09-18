@@ -111,7 +111,7 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-page = 1 - page
+page = (page + 1) mod 2
 #define Draw_0
 /*"/*'/**//* YYD ACTION
 lib_id=1
@@ -268,7 +268,7 @@ if (page == 0) {
     {
         external_call(global.gm2_push_options)
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
-        external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_text_alignment_justified")
+        external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_text_alignment()")
 
         grid_mesh(
             room_width / 2 + table_padding,
@@ -283,8 +283,8 @@ if (page == 0) {
         )
 
         var col_header{}
-        col_header[1] = "Enabled"
-        col_header[2] = "Disabled"
+        col_header[1] = "leading"
+        col_header[2] = "justified"
 
         var col_param{}
         col_param[1] = global.gm2_text_alignment_leading
@@ -304,4 +304,6 @@ if (page == 0) {
 
         external_call(global.gm2_pop_options)
     }
+} else if (page == 1) {
+
 }
