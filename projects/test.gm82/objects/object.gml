@@ -206,4 +206,62 @@ if (page == 0) {
 
         external_call(global.gm2_pop_options)
     }
+
+    {
+        external_call(global.gm2_push_options)
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_direction()")
+
+        grid_mesh(
+            table_padding,
+            room_height / 2 + title_height,
+            2,
+            2,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height - table_padding,
+            70,
+            30,
+            $e6b689
+        )
+
+        var col_header{}
+        col_header[1] = "ltr"
+        col_header[2] = "rtl"
+
+        var row_header{}
+        row_header[1] = "ttb"
+        row_header[2] = "btt"
+
+        var col_param{}
+        col_param[1] = global.gm2_text_direction_ltr
+        col_param[2] = global.gm2_text_direction_rtl
+
+        var row_param{}
+        row_param[1] = global.gm2_par_direction_ttb
+        row_param[2] = global.gm2_par_direction_btt
+
+        var text{}
+        text[1] = "The quick brown fox jumps over the lazy dog."
+        text[2] = "يقفز الثعلب البني السريع فوق الكلب الكسول."
+
+        var i{}
+        for (i = 1; i <= 2; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
+        }
+
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_line_height, .9)
+        var row{}
+        for (row = 1; row <= 2; row += 1) {
+            var col{}
+            for (col = 1; col <= 2; col += 1) {
+                external_call(global.gm2_set_direction, col_param[col] | row_param[row])
+                external_call(global.gm2_draw_text, grid_mesh_col[col] - grid_mesh_cell_width / 2, grid_mesh_row[row] - grid_mesh_cell_height / 2, text[col])
+            }
+        }
+
+        external_call(global.gm2_pop_options)
+    }
 }
