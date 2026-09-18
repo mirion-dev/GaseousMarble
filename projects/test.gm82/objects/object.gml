@@ -264,4 +264,44 @@ if (page == 0) {
 
         external_call(global.gm2_pop_options)
     }
+
+    {
+        external_call(global.gm2_push_options)
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_text_alignment_justified")
+
+        grid_mesh(
+            room_width / 2 + table_padding,
+            room_height / 2 + title_height,
+            1,
+            2,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height - table_padding,
+            0,
+            30,
+            $e6b689
+        )
+
+        var col_header{}
+        col_header[1] = "Enabled"
+        col_header[2] = "Disabled"
+
+        var col_param{}
+        col_param[1] = global.gm2_text_alignment_leading
+        col_param[2] = global.gm2_text_alignment_justified
+
+        var i{}
+        for (i = 1; i <= 2; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+        }
+
+        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        var col{}
+        for (col = 1; col <= 2; col += 1) {
+            external_call(global.gm2_set_text_alignment, col_param[col])
+            external_call(global.gm2_draw_text, grid_mesh_col[col] - grid_mesh_cell_width / 2, grid_mesh_row[1] - grid_mesh_cell_height / 2, "The quick brown fox jumps over the lazy dog.")
+        }
+
+        external_call(global.gm2_pop_options)
+    }
 }
