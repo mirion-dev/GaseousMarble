@@ -110,7 +110,7 @@ namespace gm {
         }
 
         template <class T>
-        usize operator()(wil::com_ptr<T> value) const noexcept {
+        usize operator()(const wil::com_ptr<T>& value) const noexcept {
             return std::hash<T*>{}(value.get());
         }
     };
