@@ -1,4 +1,3 @@
-*.exe
 cache
 gm_fonts
 !example.gm82/gm_fonts
