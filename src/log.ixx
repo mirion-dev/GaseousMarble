@@ -42,7 +42,7 @@ namespace gm {
         std::unordered_map<Location, Record, Hash> _records;
 
     public:
-        explicit RateLimitSink(std::shared_ptr<sink> sink)
+        explicit RateLimitSink(const std::shared_ptr<sink>& sink)
             : _sink{ sink } {}
 
         void log(const spdlog::details::log_msg& message) override {

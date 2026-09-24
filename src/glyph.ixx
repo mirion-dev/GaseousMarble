@@ -25,7 +25,7 @@ namespace gm {
     public:
         TextureLock() noexcept = default;
 
-        TextureLock(wil::com_ptr<IDirect3DTexture8> texture, usize x, usize y, usize width, usize height) {
+        TextureLock(const wil::com_ptr<IDirect3DTexture8>& texture, usize x, usize y, usize width, usize height) {
             assert(texture && width > 0 && height > 0);
 
             D3DLOCKED_RECT lock;

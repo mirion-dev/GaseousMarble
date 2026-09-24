@@ -25,7 +25,7 @@ BreakBeforeCloseBracketSwitch: true
 BreakBeforeTemplateCloser: true
 BreakBinaryOperations:
   PerOperator:
-    - Operators: ['&&', '||']
+    - Operators: ['&&', '||', '>>', '<<']
       Style: OnePerLine
 BreakTemplateDeclarations: Yes
 PackArguments:
