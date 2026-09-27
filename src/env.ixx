@@ -42,7 +42,7 @@ namespace gm {
 
 namespace gm::env {
 
-    static constexpr auto CONFIG_PATH{ "gm2.toml" };
+    constexpr auto CONFIG_PATH{ "gm2.toml" };
 
     export struct Config {
         AtlasOption atlas;
@@ -111,7 +111,7 @@ namespace gm::env {
         u32 render_height;
     };
 
-    static const D3dResource& d3d_resource() noexcept {
+    const D3dResource& d3d_resource() noexcept {
         return *reinterpret_cast<D3dResource*>(0x006886a4);
     }
 
@@ -141,7 +141,7 @@ namespace gm::env {
         wil::com_ptr<DwFactory> factory;
     };
 
-    static const DwResource& dw_resource() {
+    const DwResource& dw_resource() {
         static auto value{ [] {
             DwResource result;
             GM_THROW_IF_FAILED(

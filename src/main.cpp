@@ -15,15 +15,15 @@ import gm;
 
 using namespace gm;
 
-static String string_value;
+String string_value;
 
-static std::unordered_map<std::string, Font> font_map;
-static std::unordered_map<usize, std::string_view> id_map;
-static Draw draw{ env::config().layout_cache_size };
-static std::vector<DrawOption> option_stack;
+std::unordered_map<std::string, Font> font_map;
+std::unordered_map<usize, std::string_view> id_map;
+Draw draw{ env::config().layout_cache_size };
+std::vector<DrawOption> option_stack;
 
 template <std::floating_point R>
-static R saturating_cast(Real value) noexcept {
+R saturating_cast(Real value) noexcept {
     return gm::saturating_cast<R>(value, -LayoutOption::INFINITY_, LayoutOption::INFINITY_);
 }
 
@@ -31,7 +31,7 @@ API Real gm2_internal_to_real(StringRef string) noexcept {
     return reinterpret_cast<usize>(string);
 }
 
-static StringRef internal_from_real(Real real) noexcept {
+StringRef internal_from_real(Real real) noexcept {
     return reinterpret_cast<const char*>(static_cast<usize>(real));
 }
 

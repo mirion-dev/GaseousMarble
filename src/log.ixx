@@ -14,10 +14,10 @@ using namespace std::literals;
 
 namespace gm {
 
-    static constexpr auto LOG_PATH{ "gm2.log" };
-    static constexpr auto LOGGER_NAME{ "gm2" };
-    static constexpr auto RATE_LIMIT_INTERVAL{ 1s };
-    static constexpr usize RATE_LIMIT_COUNT{ 3 };
+    constexpr auto LOG_PATH{ "gm2.log" };
+    constexpr auto LOGGER_NAME{ "gm2" };
+    constexpr auto RATE_LIMIT_INTERVAL{ 1s };
+    constexpr usize RATE_LIMIT_COUNT{ 3 };
 
     class RateLimitSink : public spdlog::sinks::sink {
         struct Location {
