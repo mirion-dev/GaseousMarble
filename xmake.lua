@@ -5,6 +5,7 @@ set_arch("x86")
 set_plat("windows")
 set_warnings("all", "error")
 
+add_requires("vcpkg::doctest", {debug = is_mode("debug"), configs = {shared = true}})
 add_requires("vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {debug = is_mode("debug"), configs = {shared = false, runtimes = "MD"}})
 add_linkdirs("third_party/dx81/lib")
 on_config(function (target)
@@ -24,12 +25,23 @@ if is_mode("release") then
     add_cxxflags("/Oi", "/Gy", {tools = "cl"})
 end
 
+target("gm2_core")
+    set_kind("static")
+    add_files("src/*.ixx", {public = true})
+    add_packages("vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {public = true})
+
 target("gm2")
     set_kind("shared")
-    add_files("src/*.cpp", "src/*.ixx")
-    add_packages("vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil")
+    add_files("src/*.cpp")
+    add_deps("gm2_core")
 
     set_targetdir(is_mode("debug") and "build/debug" or "build/release")
     on_run(function (target)
         os.execv("projects/test.gm82/test.exe", {path.absolute(target:targetfile())}, {curdir = "projects/test.gm82"})
     end)
+
+target("gm2_test")
+    set_kind("binary")
+    add_files("tests/*.cpp")
+    add_deps("gm2_core")
+    add_packages("vcpkg::doctest")
