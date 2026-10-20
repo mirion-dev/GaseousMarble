@@ -10,8 +10,8 @@ global.gm2_internal_new_font        = external_define(dll_path, "gm2_internal_ne
 global.gm2_draw_text                = external_define(dll_path, "gm2_draw_text", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm2_text_width               = external_define(dll_path, "gm2_text_width", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_text_height              = external_define(dll_path, "gm2_text_height", dll_cdecl, ty_real, 1, ty_string)
-global.gm2_push_options             = external_define(dll_path, "gm2_push_options", dll_cdecl, ty_real, 0)
-global.gm2_pop_options              = external_define(dll_path, "gm2_pop_options", dll_cdecl, ty_real, 0)
+global.gm2_save_options             = external_define(dll_path, "gm2_save_options", dll_cdecl, ty_real, 1, ty_string)
+global.gm2_load_options             = external_define(dll_path, "gm2_load_options", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_set_alignment            = external_define(dll_path, "gm2_set_alignment", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_text_alignment       = external_define(dll_path, "gm2_set_text_alignment", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_par_alignment        = external_define(dll_path, "gm2_set_par_alignment", dll_cdecl, ty_real, 1, ty_real)
@@ -106,6 +106,7 @@ external_call(
     external_call(global.gm2_internal_to_real, "")
 )
 external_call(global.gm2_set_font, "default")
+external_call(global.gm2_save_options, "")
 
 page = 0
 #define KeyPress_32
@@ -126,7 +127,7 @@ var table_padding{ table_padding = room_width / 2 * .05 }
 var cell_padding{ cell_padding = room_width / 2 * .05 }
 if (page == 0) {
     {
-        external_call(global.gm2_push_options)
+        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_alignment()")
 
@@ -207,12 +208,10 @@ if (page == 0) {
                 external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], "Text")
             }
         }
-
-        external_call(global.gm2_pop_options)
     }
 
     {
-        external_call(global.gm2_push_options)
+        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_direction()")
 
@@ -266,12 +265,10 @@ if (page == 0) {
                 external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], text[col])
             }
         }
-
-        external_call(global.gm2_pop_options)
     }
 
     {
-        external_call(global.gm2_push_options)
+        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_text_alignment()")
 
@@ -307,12 +304,10 @@ if (page == 0) {
             external_call(global.gm2_set_text_alignment, col_param[col])
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
-
-        external_call(global.gm2_pop_options)
     }
 } else if (page == 1) {
     {
-        external_call(global.gm2_push_options)
+        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm_set_max_width()")
 
@@ -344,7 +339,5 @@ if (page == 0) {
             external_call(global.gm2_set_max_width, row_param[row])
             external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
         }
-
-        external_call(global.gm2_pop_options)
     }
 }

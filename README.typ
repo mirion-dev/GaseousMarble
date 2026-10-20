@@ -61,7 +61,7 @@
 
 = `gm2_new_font(key, name, properties, size, locale)`
 
-Add a font from system fonts or font files.
+Add a font from system fonts or font files. `key` should be non-empty.
 
 If `locale` is empty, the user's default locale applies.
 
@@ -123,9 +123,9 @@ Draw a UTF-8 text or get its visual size.
 
 *New*: Professional typography based on DirectWrite.
 
-= + `gm2_push_options()`\ + `gm2_pop_options()`
+= + `gm2_save_options(key)`\ + `gm2_load_options(key)`
 
-Save or restore the current draw options.
+Save or load the current draw options.
 
 = `gm2_set_font(key)`\ `gm2_get_font()`\ + `gm2_get_font_name()`\ + `gm2_get_font_weight()`\ + `gm2_get_font_style()`\ + `gm2_get_font_stretch()`\ + `gm2_get_font_size()`\ + `gm2_get_font_locale()`
 

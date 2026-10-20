@@ -17,10 +17,10 @@ using namespace gm;
 
 String string_value;
 
+std::unordered_map<std::string, DrawOption> option_map;
 std::unordered_map<std::string, Font> font_map;
 std::unordered_map<usize, std::string_view> id_map;
 Draw draw{ env::config().layout_cache_size };
-std::vector<DrawOption> option_stack;
 
 template <std::floating_point R>
 R saturating_cast(Real value) noexcept {
@@ -42,7 +42,7 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
         throw std::invalid_argument{ "Font key must not be empty." };
     }
 
-    if (font_map.contains(key)) {
+    if (font_map.contains(key)) { // Silent failure because duplicate keys may also occur after the game restart.
         return S_FALSE;
     }
 
@@ -84,18 +84,18 @@ GM_CATCH_RETURN()
 API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_height(to_wstring(raw_text)); }
 GM_CATCH_RETURN()
 
-API Real gm2_push_options() noexcept {
-    option_stack.emplace_back(draw.option());
+API Real gm2_save_options(StringRef raw_key) noexcept {
+    option_map.insert_or_assign(raw_key, draw.option());
     return S_OK;
 }
 
-API Real gm2_pop_options() noexcept try {
-    if (option_stack.empty()) {
-        throw std::runtime_error{ "No saved draw options." };
+API Real gm2_load_options(StringRef raw_key) noexcept try {
+    auto iter{ option_map.find(raw_key) };
+    if (iter == option_map.end()) {
+        throw std::runtime_error{ "Options not found." };
     }
 
-    draw.option() = option_stack.back();
-    option_stack.pop_back();
+    draw.option() = iter->second;
     return S_OK;
 }
 GM_CATCH_RETURN()
