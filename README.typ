@@ -13,12 +13,9 @@
 
 == Development
 
-+ Install #link("https://visualstudio.microsoft.com/")[Visual Studio 2026] with MSVC Build Tools for x64/x86 Preview.
-+ Install #link("https://vcpkg.io/en/")[vcpkg].
++ `git clone --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
 + Install #link("https://archive.org/details/dx81sdk_full")[DirectX 8.1 SDK] to `third_party/dx81`.
-+ `vcpkg install --triplet x86-windows-static-md glaze spdlog wil`.
-+ `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
-+ Build clang-format 24 from #link("https://github.com/llvm/llvm-project/")[LLVM] if formatting is needed.
++ Build #link("https://github.com/llvm/llvm-project/")[clang-format 24] if formatting is needed.
 
 == Credits
 

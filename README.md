@@ -8,9 +8,9 @@
 
 ### Development
 
-1. `git clone -b v2 --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
-1. Install [DirectX 8.1 SDK](https://archive.org/details/dx81sdk_full) to `third_party/dx81`.
-1. Build [clang-format 24](https://github.com/llvm/llvm-project/) if formatting is needed.
+1. `git clone --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
+2. Install [DirectX 8.1 SDK](https://archive.org/details/dx81sdk_full) to `third_party/dx81`.
+3. Build [clang-format 24](https://github.com/llvm/llvm-project/) if formatting is needed.
 
 ### Credits
 
@@ -36,7 +36,7 @@
 
 <h2><code>gm2_new_font(key, name, properties, size, locale)</code></h2>
 
-Add a font from system fonts or font files.
+Add a font from system fonts or font files. `key` should be non-empty.
 
 If `locale` is empty, the user’s default locale applies.
 
@@ -101,10 +101,10 @@ Draw a UTF-8 text or get its visual size.
 
 **New**: Professional typography based on DirectWrite.
 
-<h2>+ <code>gm2_push_options()</code><br />
-+ <code>gm2_pop_options()</code></h2>
+<h2>+ <code>gm2_save_options(key)</code><br />
++ <code>gm2_load_options(key)</code></h2>
 
-Save or restore the current draw options.
+Save or load the current draw options.
 
 <h2><code>gm2_set_font(key)</code><br />
 <code>gm2_get_font()</code><br />
@@ -182,7 +182,7 @@ Set or get the text alignment and the paragraph alignment.
 
 Set or get the maximum size of the text.
 
-If the maximum size is 0, the alignment point is the drawing point; otherwise, it is the text box.
+When the maximum size is 0, the text model is point-based and aligns to the drawing point; otherwise, it is box-based and aligns to the box.
 
 | **Constant** | **Value** |
 | --- | --- |
@@ -261,3 +261,13 @@ Set or get the letter spacing of the text.
 Set or get the word spacing of the text.
 
 **Removed**: Not useful.
+
+<h2><code>gm2_set_origin(x, y)</code><br />
+<code>gm2_get_origin_x()</code><br />
+<code>gm2_get_origin_y()</code></h2>
+
+Set or get the normalized origin of the text. Only applies to the box model.
+
+| **v1** |
+| --- |
+| `gm_set_offset()` |
