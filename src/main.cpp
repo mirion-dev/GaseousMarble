@@ -233,6 +233,12 @@ API Real gm2_set_uniform_line_spacing(Real raw_line_height, Real raw_baseline) n
     return S_OK;
 }
 
+API Real gm2_set_origin(Real raw_origin_x, Real raw_origin_y) noexcept {
+    draw.option().origin_x = saturating_cast<f32>(raw_origin_x);
+    draw.option().origin_y = saturating_cast<f32>(raw_origin_y);
+    return S_OK;
+}
+
 API Real gm2_get_text_alignment() noexcept {
     return draw.option().alignment & DrawOption::TEXT_ALIGNMENT_MASK;
 }
@@ -321,4 +327,12 @@ API Real gm2_get_line_height() noexcept {
 
 API Real gm2_get_baseline() noexcept {
     return draw.option().baseline;
+}
+
+API Real gm2_get_origin_x() noexcept {
+    return draw.option().origin_x;
+}
+
+API Real gm2_get_origin_y() noexcept {
+    return draw.option().origin_y;
 }

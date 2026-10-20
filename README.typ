@@ -184,7 +184,7 @@ Set or get the text alignment and the paragraph alignment.
 
 Set or get the maximum size of the text.
 
-If the maximum size is 0, the alignment point is the drawing point; otherwise, it is the text box.
+When the maximum size is 0, the text model is point-based and aligns to the drawing point; otherwise, it is box-based and aligns to the box.
 
 #table(
     columns: 2,
@@ -251,3 +251,9 @@ Set or get the letter spacing of the text.
 Set or get the word spacing of the text.
 
 *Removed*: Not useful.
+
+= `gm2_set_origin(x, y)`\ `gm2_get_origin_x()`\ `gm2_get_origin_y()`
+
+Set or get the normalized origin of the text. Only applies to the box model.
+
+- `gm_set_offset()`

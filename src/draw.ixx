@@ -21,10 +21,11 @@ import gm.layout;
 namespace gm {
 
     export struct DrawOption : LayoutOption {
+        f32 origin_x{};
+        f32 origin_y{};
         // TODO: generate_font(): fill, stroke_width, stroke_fill, shadow_offset, shadow_fill
         // TODO: gm_set_color2(color_top, color_bottom)
         // TODO: gm_set_alpha(alpha)
-        // TODO: gm_set_offset(x, y)
         // TODO: gm_set_scale(x, y)
         // TODO: gm_set_rotation(rotation)
     };
@@ -74,6 +75,11 @@ namespace gm {
                 [](const GlyphInstance& glyph) noexcept -> const GlyphDesc& { return glyph; },
                 [](const GlyphInstance& glyph) noexcept -> const GlyphSpec& { return glyph; }
             ) };
+
+            if (_option.max_width != 0 && _option.max_height != 0) {
+                x -= _option.max_width * _option.origin_x;
+                y -= _option.max_height * _option.origin_y;
+            }
 
             u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;

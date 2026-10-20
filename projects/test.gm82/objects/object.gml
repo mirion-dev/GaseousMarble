@@ -30,6 +30,7 @@ global.gm2_set_line_spacing         = external_define(dll_path, "gm2_set_line_sp
 global.gm2_set_uniform_line_spacing = external_define(dll_path, "gm2_set_uniform_line_spacing", dll_cdecl, ty_real, 2, ty_real, ty_real)
 global.gm2_set_line_height          = external_define(dll_path, "gm2_set_line_height", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_baseline             = external_define(dll_path, "gm2_set_baseline", dll_cdecl, ty_real, 1, ty_real)
+global.gm2_set_origin               = external_define(dll_path, "gm2_set_origin", dll_cdecl, ty_real, 2, ty_real, ty_real)
 global.gm2_get_text_alignment       = external_define(dll_path, "gm2_get_text_alignment", dll_cdecl, ty_real, 0)
 global.gm2_get_par_alignment        = external_define(dll_path, "gm2_get_par_alignment", dll_cdecl, ty_real, 0)
 global.gm2_get_word_wrapping        = external_define(dll_path, "gm2_get_word_wrapping", dll_cdecl, ty_real, 0)
@@ -50,6 +51,8 @@ global.gm2_get_letter_spacing       = external_define(dll_path, "gm2_get_letter_
 global.gm2_get_line_spacing_type    = external_define(dll_path, "gm2_get_line_spacing_type", dll_cdecl, ty_real, 0)
 global.gm2_get_line_height          = external_define(dll_path, "gm2_get_line_height", dll_cdecl, ty_real, 0)
 global.gm2_get_baseline             = external_define(dll_path, "gm2_get_baseline", dll_cdecl, ty_real, 0)
+global.gm2_get_origin_x             = external_define(dll_path, "gm2_get_origin_x", dll_cdecl, ty_real, 0)
+global.gm2_get_origin_y             = external_define(dll_path, "gm2_get_origin_y", dll_cdecl, ty_real, 0)
 global.gm2_font_weight_thin = 100
 global.gm2_font_weight_extra_light = 200
 global.gm2_font_weight_light = 300
@@ -195,12 +198,13 @@ if (page == 0) {
         }
 
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
         var row{}
         for (row = 1; row <= 3; row += 1) {
             var col{}
             for (col = 1; col <= 3; col += 1) {
                 external_call(global.gm2_set_alignment, col_param[col] | row_param[row])
-                external_call(global.gm2_draw_text, grid_mesh_col[col] - grid_mesh_cell_width / 2, grid_mesh_row[row] - grid_mesh_cell_height / 2, "Text")
+                external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], "Text")
             }
         }
 
@@ -252,13 +256,14 @@ if (page == 0) {
 
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
         external_call(global.gm2_set_line_height, .9)
         var row{}
         for (row = 1; row <= 2; row += 1) {
             var col{}
             for (col = 1; col <= 2; col += 1) {
                 external_call(global.gm2_set_direction, col_param[col] | row_param[row])
-                external_call(global.gm2_draw_text, grid_mesh_col[col] - grid_mesh_cell_width / 2, grid_mesh_row[row] - grid_mesh_cell_height / 2, text[col])
+                external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], text[col])
             }
         }
 
@@ -296,10 +301,11 @@ if (page == 0) {
         }
 
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
         var col{}
         for (col = 1; col <= 2; col += 1) {
             external_call(global.gm2_set_text_alignment, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col] - grid_mesh_cell_width / 2, grid_mesh_row[1] - grid_mesh_cell_height / 2, "The quick brown fox jumps over the lazy dog.")
+            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
 
         external_call(global.gm2_pop_options)
