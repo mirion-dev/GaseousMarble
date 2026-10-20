@@ -64,6 +64,9 @@ TEST_SUITE("gm2") {
             CHECK(static_cast_check<f64>(f32{ -1 }));
             CHECK(static_cast_check<f64>(f32_max));
             CHECK(static_cast_check<f64>(f32_min));
+            CHECK(saturating_cast<f64>(std::numeric_limits<f32>::quiet_NaN()) == 0);
+            CHECK(saturating_cast<f64>(std::numeric_limits<f32>::infinity()) == f64_max);
+            CHECK(saturating_cast<f64>(-std::numeric_limits<f32>::infinity()) == f64_min);
 
             CHECK(static_cast_check<f32>(f64{}));
             CHECK(static_cast_check<f32>(f64{ 1 }));
@@ -74,6 +77,9 @@ TEST_SUITE("gm2") {
             CHECK(saturating_cast<f32>(std::nextafter(f64{ f32_min }, f64_min)) == f32_min);
             CHECK(saturating_cast<f32>(f64_max) == f32_max);
             CHECK(saturating_cast<f32>(f64_min) == f32_min);
+            CHECK(saturating_cast<f32>(std::numeric_limits<f64>::quiet_NaN()) == 0);
+            CHECK(saturating_cast<f32>(std::numeric_limits<f64>::infinity()) == f32_max);
+            CHECK(saturating_cast<f32>(-std::numeric_limits<f64>::infinity()) == f32_min);
 
             CHECK(static_cast_check<f32>(i32{}));
             CHECK(static_cast_check<f32>(i32{ 1 }));
