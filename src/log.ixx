@@ -36,6 +36,7 @@ namespace gm {
         struct Record {
             std::chrono::steady_clock::time_point start;
             usize count;
+            usize dropped;
         };
 
         std::shared_ptr<sink> _sink;
@@ -48,24 +49,26 @@ namespace gm {
         void log(const spdlog::details::log_msg& message) override {
             auto now{ std::chrono::steady_clock::now() };
             std::string filename{ message.source.filename == nullptr ? "" : gm::filename(message.source.filename) };
-            Record& record{ _records.try_emplace({ filename, message.source.line }, now, 0).first->second };
+            Record& record{ _records.try_emplace({ filename, message.source.line }, now).first->second };
             if (now - record.start >= RATE_LIMIT_INTERVAL) {
-                record = { now, 0 };
+                if (record.dropped != 0) {
+                    std::string payload{ std::format("Dropped {} messages since the last log.", record.dropped) };
+                    auto dropped_message{ message };
+                    dropped_message.level = spdlog::level::warn;
+                    dropped_message.payload = payload;
+                    _sink->log(dropped_message);
+                }
+
+                record = { now };
             }
 
             if (record.count >= RATE_LIMIT_COUNT) {
+                ++record.dropped;
                 return;
             }
 
-            if (++record.count == RATE_LIMIT_COUNT) {
-                std::string payload{ message.payload.data() };
-                payload += " (Log rate limit reached; entering cooldown.)";
-                auto new_message{ message };
-                new_message.payload = payload;
-                _sink->log(new_message);
-            } else {
-                _sink->log(message);
-            }
+            ++record.count;
+            _sink->log(message);
         }
 
         void flush() override {
