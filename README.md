@@ -15,6 +15,7 @@
 ### Credits
 
 - [GMAPI](https://github.com/snakedeveloper/gmapi) (references their reverse engineering results only)
+- [Eigen](https://gitlab.com/libeigen/eigen)
 - [Glaze](https://github.com/stephenberry/glaze)
 - [spdlog](https://github.com/gabime/spdlog)
 - [rectpack2D](https://github.com/TeamHypersomnia/rectpack2D)
@@ -29,8 +30,8 @@
 | `atlas.texture_width` | `1024` | Texture width of glyph atlases |
 | `atlas.texture_height` | `1024` | Texture height of glyph atlases |
 | `atlas.max_texture_num` | `16` | Maximum number of textures for each glyph atlas |
-| `raster.min_antialiasing_h_size` | `0` | Font horizontal antialiasing threshold |
-| `raster.min_antialiasing_v_size` | `24` | Font vertical antialiasing threshold |
+| `raster.min_antialiasing_size_h` | `0` | Font horizontal antialiasing threshold |
+| `raster.min_antialiasing_size_v` | `24` | Font vertical antialiasing threshold |
 | `max_font_num` | `64` | Maximum number of fonts |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 
