@@ -435,8 +435,7 @@ if (page == 0) {
             }
 
             external_call(global.gm2_set_trimming, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], yy, "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.
-However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters.")
+            external_call(global.gm2_draw_text, grid_mesh_col[col], yy, "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife." + chr(10) + "However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters.")
         }
     }
 } else if (page == 2) {
@@ -458,14 +457,14 @@ However little known the feelings or views of such a man may be on his first ent
         )
 
         var col_header{}
-        col_header[1] = "1x,1x"
-        col_header[2] = "0.8x,1x"
-        col_header[3] = "1.2x,1x"
-        col_header[4] = "1x,1.5x"
-        col_header[5] = "20,20"
-        col_header[6] = "15,20"
-        col_header[7] = "30,20"
-        col_header[8] = "20,30"
+        col_header[1] = "1x, 1x"
+        col_header[2] = "0.8x, 1x"
+        col_header[3] = "1.2x, 1x"
+        col_header[4] = "1x, 1.5x"
+        col_header[5] = "20, 20"
+        col_header[6] = "15, 20"
+        col_header[7] = "30, 20"
+        col_header[8] = "20, 30"
 
         var col_param1{}
         col_param1[1] = 1
@@ -503,6 +502,80 @@ However little known the feelings or views of such a man may be on his first ent
                 external_call(global.gm2_set_uniform_line_spacing, col_param1[col], col_param2[col])
             }
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
+        }
+    }
+
+    {
+        external_call(global.gm2_load_options, "")
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_tab_spacing()")
+
+        grid_mesh(
+            table_padding,
+            room_height / 2 + title_height,
+            3,
+            1,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height - table_padding,
+            50,
+            0,
+            $e6b689
+        )
+
+        var row_param{}
+        row_param[1] = 40
+        row_param[2] = 80
+        row_param[3] = 120
+
+        var i{}
+        for (i = 1; i <= 3; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
+        }
+
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
+        var row{}
+        for (row = 1; row <= 3; row += 1) {
+            external_call(global.gm2_set_tab_spacing, row_param[row])
+            external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], chr(9) + "The quick brown fox jumps over the lazy dog.")
+        }
+    }
+
+    {
+        external_call(global.gm2_load_options, "")
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_letter_spacing()")
+
+        grid_mesh(
+            room_width / 2 + table_padding,
+            room_height / 2 + title_height,
+            3,
+            1,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height - table_padding,
+            50,
+            0,
+            $e6b689
+        )
+
+        var row_param{}
+        row_param[1] = 0
+        row_param[2] = 2
+        row_param[3] = 5
+
+        var i{}
+        for (i = 1; i <= 3; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
+        }
+
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
+        var row{}
+        for (row = 1; row <= 3; row += 1) {
+            external_call(global.gm2_set_letter_spacing, row_param[row])
+            external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "The quick brown fox jumps over the lazy dog.")
         }
     }
 }
