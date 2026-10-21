@@ -91,7 +91,7 @@ namespace gm {
                     LOGGER_NAME,
                     std::make_shared<RateLimitSink>(std::make_shared<spdlog::sinks::basic_file_sink_st>(LOG_PATH, true))
                 };
-                result.set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#:%!] %v");
+                result.set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v");
                 return result;
             } catch (const std::exception&) {
                 return { LOGGER_NAME, std::make_shared<spdlog::sinks::null_sink_st>() };
