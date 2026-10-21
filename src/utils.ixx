@@ -1,5 +1,6 @@
 module;
 
+#include <eigen3/Eigen/Core>
 #include <wil/com.h>
 
 export module gm.utils;
@@ -103,18 +104,6 @@ namespace gm {
         return std::string{ pos == -1 ? path : path.substr(pos + 1) };
     }
 
-    export struct Hash {
-        template <class T>
-        usize operator()(const T& value) const noexcept {
-            return std::hash<T>{}(value);
-        }
-
-        template <class T>
-        usize operator()(const wil::com_ptr<T>& value) const noexcept {
-            return std::hash<T*>{}(value.get());
-        }
-    };
-
     export template <class H, class... Args>
     usize hash_combine(H&& hash, Args&&... values) noexcept {
         usize result{};
@@ -123,5 +112,22 @@ namespace gm {
             ...
         );
     }
+
+    export struct Hash {
+        template <class T>
+        usize operator()(const T& value) const noexcept {
+            return std::hash<T>{}(value);
+        }
+
+        template <class T>
+        usize operator()(const Eigen::Vector2<T>& value) const noexcept {
+            return gm::hash_combine(Hash{}, value.x(), value.y());
+        }
+
+        template <class T>
+        usize operator()(const wil::com_ptr<T>& value) const noexcept {
+            return Hash{}(value.get());
+        }
+    };
 
 }
