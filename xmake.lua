@@ -6,7 +6,7 @@ set_plat("windows")
 set_warnings("all", "error")
 
 add_requires("vcpkg::doctest", {debug = is_mode("debug"), configs = {shared = true}})
-add_requires("vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {debug = is_mode("debug"), configs = {shared = false, runtimes = "MD"}})
+add_requires("vcpkg::eigen3", "vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {debug = is_mode("debug"), configs = {shared = false, runtimes = "MD"}})
 add_linkdirs("third_party/dx81/lib")
 on_config(function (target)
     target:add("sysincludedirs", path.splitenv(target:toolchain("msvc"):runenvs().INCLUDE))
@@ -28,7 +28,7 @@ end
 target("gm2_core")
     set_kind("static")
     add_files("src/*.ixx", {public = true})
-    add_packages("vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {public = true})
+    add_packages("vcpkg::eigen3", "vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {public = true})
 
 target("gm2")
     set_kind("shared")

@@ -20,6 +20,7 @@
 == Credits
 
 - #link("https://github.com/snakedeveloper/gmapi")[GMAPI] (references their reverse engineering results only)
+- #link("https://gitlab.com/libeigen/eigen")[Eigen]
 - #link("https://github.com/stephenberry/glaze")[Glaze]
 - #link("https://github.com/gabime/spdlog")[spdlog]
 - #link("https://github.com/TeamHypersomnia/rectpack2D")[rectpack2D]
