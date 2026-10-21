@@ -269,8 +269,6 @@ if (page == 0) {
 
     {
         external_call(global.gm2_load_options, "")
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
-        external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_text_alignment()")
 
         grid_mesh(
             room_width / 2 + table_padding,
@@ -292,6 +290,7 @@ if (page == 0) {
         col_param[1] = global.gm2_text_alignment_leading
         col_param[2] = global.gm2_text_alignment_justified
 
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         var i{}
         for (i = 1; i <= 2; i += 1) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
