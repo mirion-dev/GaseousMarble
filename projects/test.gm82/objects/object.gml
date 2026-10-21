@@ -340,4 +340,55 @@ if (page == 0) {
             external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
         }
     }
+
+    {
+        external_call(global.gm2_load_options, "")
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_word_wrapping()")
+
+        grid_mesh(
+            table_padding,
+            room_height / 2 + title_height,
+            1,
+            4,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height - table_padding,
+            0,
+            30,
+            $e6b689
+        )
+
+        var col_header{}
+        col_header[1] = "none"
+        col_header[2] = "char"
+        col_header[3] = "word"
+        col_header[4] = "whole word"
+
+        var col_param{}
+        col_param[1] = global.gm2_word_wrapping_none
+        col_param[2] = global.gm2_word_wrapping_char
+        col_param[3] = global.gm2_word_wrapping_word
+        col_param[4] = global.gm2_word_wrapping_whole_word
+
+        var i{}
+        for (i = 1; i <= 4; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+        }
+
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
+        var col{}
+        for (col = 1; col <= 4; col += 1) {
+            var text{ text = "I accidentally deleted everything." }
+            if (col != 1) {
+                text = "
+" + text
+            }
+
+            external_call(global.gm2_set_word_wrapping, col_param[col])
+            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
+        }
+    }
+
 }
