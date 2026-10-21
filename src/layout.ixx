@@ -163,6 +163,10 @@ namespace gm {
             return static_cast<DWRITE_FLOW_DIRECTION>((direction & PAR_DIRECTION_MASK) >> PAR_DIRECTION_OFFSET);
         }
 
+        bool is_box_model() const noexcept {
+            return (max_size.array() > 0).all();
+        }
+
         bool is_valid() const noexcept {
             return alignment <= ALIGNMENT_MASK
                    && word_wrapping != DWRITE_WORD_WRAPPING_WRAP
@@ -239,7 +243,7 @@ namespace gm {
             GM_THROW_IF_FAILED(layout->SetMaxWidth(max_size.x() + option.letter_spacing));
             GM_THROW_IF_FAILED(layout->SetMaxHeight(max_size.y()));
 
-            if ((option.max_size.array() == 0).any()) {
+            if (!option.is_box_model()) {
                 if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
                     pos.x() -= max_size.x() / 2;
                 } else if (

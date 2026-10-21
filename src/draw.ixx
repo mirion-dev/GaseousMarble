@@ -74,7 +74,7 @@ namespace gm {
                 [](const GlyphInstance& glyph) noexcept -> const GlyphSpec& { return glyph; }
             ) };
 
-            if ((_option.max_size.array() > 0).all()) {
+            if (_option.is_box_model()) {
                 pos -= _option.max_size.cwiseProduct(_option.origin);
             }
 
