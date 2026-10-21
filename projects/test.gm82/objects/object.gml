@@ -441,14 +441,14 @@ if (page == 0) {
     {
         external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
-        external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_line_spacing()")
+        external_call(global.gm2_draw_text, room_width / 4, title_height / 2, "gm2_set_line_spacing()")
 
         grid_mesh(
             table_padding,
             title_height,
             1,
-            8,
-            room_width - table_padding * 2,
+            4,
+            room_width / 2 - table_padding * 2,
             room_height / 2 - title_height,
             0,
             30,
@@ -460,33 +460,21 @@ if (page == 0) {
         col_header[2] = "0.8x, 1x"
         col_header[3] = "1.2x, 1x"
         col_header[4] = "1x, 1.5x"
-        col_header[5] = "20, 20"
-        col_header[6] = "15, 20"
-        col_header[7] = "30, 20"
-        col_header[8] = "20, 30"
 
         var col_param1{}
         col_param1[1] = 1
         col_param1[2] = .8
         col_param1[3] = 1.2
         col_param1[4] = 1
-        col_param1[5] = 20
-        col_param1[6] = 15
-        col_param1[7] = 30
-        col_param1[8] = 20
 
         var col_param2{}
         col_param2[1] = 1
         col_param2[2] = 1
         col_param2[3] = 1
         col_param2[4] = 1.5
-        col_param2[5] = 20
-        col_param2[6] = 20
-        col_param2[7] = 20
-        col_param2[8] = 30
 
         var i{}
-        for (i = 1; i <= 8; i += 1) {
+        for (i = 1; i <= 4; i += 1) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
         }
 
@@ -494,12 +482,58 @@ if (page == 0) {
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
-        for (col = 1; col <= 8; col += 1) {
-            if (col <= 4) {
-                external_call(global.gm2_set_line_spacing, col_param1[col], col_param2[col])
-            } else {
-                external_call(global.gm2_set_uniform_line_spacing, col_param1[col], col_param2[col])
-            }
+        for (col = 1; col <= 4; col += 1) {
+            external_call(global.gm2_set_line_spacing, col_param1[col], col_param2[col])
+            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
+        }
+    }
+
+    {
+        external_call(global.gm2_load_options, "")
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width * 3 / 4, title_height / 2, "gm2_set_uniform_line_spacing()")
+
+        grid_mesh(
+            room_width / 2 + table_padding,
+            title_height,
+            1,
+            4,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height,
+            0,
+            30,
+            $e6b689
+        )
+
+        var col_header{}
+        col_header[1] = "20, 20"
+        col_header[2] = "15, 20"
+        col_header[3] = "30, 20"
+        col_header[4] = "20, 30"
+
+        var col_param1{}
+        col_param1[1] = 20
+        col_param1[2] = 15
+        col_param1[3] = 30
+        col_param1[4] = 20
+
+        var col_param2{}
+        col_param2[1] = 20
+        col_param2[2] = 20
+        col_param2[3] = 20
+        col_param2[4] = 30
+
+        var i{}
+        for (i = 1; i <= 4; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+        }
+
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
+        var col{}
+        for (col = 1; col <= 4; col += 1) {
+            external_call(global.gm2_set_uniform_line_spacing, col_param1[col], col_param2[col])
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
     }
