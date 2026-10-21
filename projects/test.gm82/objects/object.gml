@@ -378,15 +378,16 @@ if (page == 0) {
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
+        external_call(global.gm2_set_line_height, .9)
         var col{}
         for (col = 1; col <= 4; col += 1) {
-            var yy{ yy = grid_mesh_row[1] }
+            var text{ text = "It is a truth universally acknowledged." }
             if (col != 1) {
-                yy += 30
+                text = string_repeat(chr(10), 2) + text
             }
 
             external_call(global.gm2_set_word_wrapping, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], yy, "It is a truth universally acknowledged.")
+            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
         }
     }
 
@@ -428,13 +429,13 @@ if (page == 0) {
         external_call(global.gm2_set_word_wrapping, global.gm2_word_wrapping_none)
         var col{}
         for (col = 1; col <= 3; col += 1) {
-            var yy{ yy = grid_mesh_row[1] }
+            var text{ text = "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife." + chr(10) + "However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters." }
             if (col != 1) {
-                yy += 60
+                text = string_repeat(chr(10), 3) + text
             }
 
             external_call(global.gm2_set_trimming, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], yy, "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife." + chr(10) + "However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters.")
+            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
         }
     }
 } else if (page == 2) {
