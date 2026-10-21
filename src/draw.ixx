@@ -81,6 +81,10 @@ namespace gm {
                 y -= _option.max_height * _option.origin_y;
             }
 
+            auto device{ env::d3d_device() };
+            D3DVIEWPORT8 view;
+            GM_THROW_IF_FAILED(device->GetViewport(&view));
+
             u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
             for (auto [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
@@ -92,6 +96,10 @@ namespace gm {
                 f32 y1{ y + glyph.y + meta->offset_y - .5f };
                 f32 x2{ x1 + meta->width };
                 f32 y2{ y1 + meta->height };
+                if (x2 <= view.X || x1 >= view.X + view.Width || y2 <= view.Y || y1 >= view.Y + view.Height) {
+                    continue;
+                }
+
                 f32 u1{ meta->x / texture_width };
                 f32 v1{ meta->y / texture_height };
                 f32 u2{ (meta->x + meta->width) / texture_width };
@@ -103,7 +111,6 @@ namespace gm {
                 batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
             }
 
-            auto device{ env::d3d_device() };
             DWORD state_block;
             GM_THROW_IF_FAILED(device->CreateStateBlock(D3DSBT_ALL, &state_block));
             auto _{ wil::scope_exit([&] noexcept {
