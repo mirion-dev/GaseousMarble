@@ -297,6 +297,7 @@ if (page == 0) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
         }
 
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
@@ -380,15 +381,62 @@ if (page == 0) {
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
         for (col = 1; col <= 4; col += 1) {
-            var text{ text = "I accidentally deleted everything." }
+            var yy{ yy = grid_mesh_row[1] }
             if (col != 1) {
-                text = "
-" + text
+                yy += 30
             }
 
             external_call(global.gm2_set_word_wrapping, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
+            external_call(global.gm2_draw_text, grid_mesh_col[col], yy, "It is a truth universally acknowledged.")
         }
     }
 
+    {
+        external_call(global.gm2_load_options, "")
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_trimming()")
+
+        grid_mesh(
+            room_width / 2 + table_padding,
+            room_height / 2 + title_height,
+            1,
+            3,
+            room_width / 2 - table_padding * 2,
+            room_height / 2 - title_height - table_padding,
+            0,
+            30,
+            $e6b689
+        )
+
+        var col_header{}
+        col_header[1] = "none"
+        col_header[2] = "char"
+        col_header[3] = "word"
+
+        var col_param{}
+        col_param[1] = global.gm2_trimming_none
+        col_param[2] = global.gm2_trimming_char
+        col_param[3] = global.gm2_trimming_word
+
+        var i{}
+        for (i = 1; i <= 3; i += 1) {
+            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+        }
+
+        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_origin, .5, .5)
+        external_call(global.gm2_set_word_wrapping, global.gm2_word_wrapping_none)
+        var col{}
+        for (col = 1; col <= 3; col += 1) {
+            var yy{ yy = grid_mesh_row[1] }
+            if (col != 1) {
+                yy += 60
+            }
+
+            external_call(global.gm2_set_trimming, col_param[col])
+            external_call(global.gm2_draw_text, grid_mesh_col[col], yy, "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.
+However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters.")
+        }
+    }
 }
