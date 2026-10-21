@@ -87,7 +87,7 @@ global.gm2_par_alignment_near = 0 << 2
 global.gm2_par_alignment_center = 2 << 2
 global.gm2_par_alignment_far = 1 << 2
 global.gm2_infinity = 100000
-global.gm2_word_wrapping_none = 0
+global.gm2_word_wrapping_none = 1
 global.gm2_word_wrapping_char = 4
 global.gm2_word_wrapping_word = 2
 global.gm2_word_wrapping_whole_word = 3
@@ -309,7 +309,7 @@ if (page == 0) {
     {
         external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
-        external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm_set_max_width()")
+        external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_max_width()")
 
         grid_mesh(
             table_padding,
