@@ -3,6 +3,7 @@ module;
 #include "log.h"
 
 #include <dwrite_3.h>
+#include <eigen3/Eigen/Core>
 #include <spdlog/spdlog.h>
 #include <wil/com.h>
 #include <wil/cppwinrt.h>
@@ -20,8 +21,7 @@ import gm.font;
 namespace gm {
 
     export struct GlyphInstance : GlyphSpec {
-        f32 x;
-        f32 y;
+        Eigen::Vector2f pos;
     };
 
     // UNSUPPORTED: `DWRITE_GLYPH_RUN::isSideways`; used for vertical writing mode
@@ -54,7 +54,7 @@ namespace gm {
             assert(client_drawing_context != nullptr);
 
             auto& glyphs{ *static_cast<std::vector<GlyphInstance>*>(client_drawing_context) };
-            f32 x{ baseline_origin_x }, y{ baseline_origin_y };
+            Eigen::Vector2f pos{ baseline_origin_x, baseline_origin_y };
 
             wil::com_ptr_nothrow face_base{ glyph_run->fontFace };
             wil::com_ptr<env::DwFontFace> face;
@@ -70,11 +70,11 @@ namespace gm {
                                                                               : glyph_run->glyphOffsets[i] };
 
                 if (is_ltr) {
-                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, x + offset_x, y - offset_y);
-                    x += advance;
+                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, pos + Eigen::Vector2f{ offset_x, -offset_y });
+                    pos.x() += advance;
                 } else {
-                    x -= advance;
-                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, x - offset_x, y - offset_y);
+                    pos.x() -= advance;
+                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, pos + Eigen::Vector2f{ -offset_x, -offset_y });
                 }
             }
 
@@ -122,8 +122,7 @@ namespace gm {
         DWRITE_TRIMMING_GRANULARITY trimming{};
 
         // [IDWriteTextLayout]
-        f32 max_width{};
-        f32 max_height{};
+        Eigen::Vector2f max_size{ 0, 0 };
         std::pair<Font*, usize> font{};
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
@@ -173,8 +172,7 @@ namespace gm {
                    && par_direction() != DWRITE_FLOW_DIRECTION_LEFT_TO_RIGHT
                    && par_direction() != DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT
                    && tab_spacing >= 0
-                   && max_width >= 0
-                   && max_height >= 0
+                   && (max_size.array() >= 0).all()
                    && font.first != nullptr
                    && font.second > 0
                    && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT
@@ -186,8 +184,7 @@ namespace gm {
 
     export struct Layout {
         std::vector<GlyphInstance> glyphs;
-        f32 width;
-        f32 height;
+        Eigen::Vector2f size;
 
         static Layout from(std::wstring_view text, const LayoutOption& option) {
             assert(option.is_valid());
@@ -221,7 +218,7 @@ namespace gm {
             );
             wil::com_ptr layout{ layout_base.query<env::DwTextLayout>() };
 
-            f32 x{}, y{};
+            Eigen::Vector2f pos{ 0, 0 };
             DWRITE_TEXT_RANGE range{ 0, text.size() };
 
             // [IDWriteTextFormat]
@@ -236,33 +233,29 @@ namespace gm {
             GM_THROW_IF_FAILED(layout->SetTrimming(&trimming, nullptr));
 
             // [IDWriteTextLayout]
-            f32 max_width{ option.max_width }, max_height{ option.max_height };
-            if (max_width == 0) {
-                max_width = LayoutOption::INFINITY_;
-            }
-            if (max_height == 0) {
-                max_height = LayoutOption::INFINITY_;
-            }
-            GM_THROW_IF_FAILED(layout->SetMaxWidth(max_width + option.letter_spacing));
-            GM_THROW_IF_FAILED(layout->SetMaxHeight(max_height));
+            Eigen::Vector2f max_size{
+                (option.max_size.array() == 0).select(LayoutOption::INFINITY_, option.max_size.array())
+            };
+            GM_THROW_IF_FAILED(layout->SetMaxWidth(max_size.x() + option.letter_spacing));
+            GM_THROW_IF_FAILED(layout->SetMaxHeight(max_size.y()));
 
-            if (option.max_width == 0 || option.max_height == 0) {
+            if ((option.max_size.array() == 0).any()) {
                 if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
-                    x -= max_width / 2;
+                    pos.x() -= max_size.x() / 2;
                 } else if (
                     (option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
                     == (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
                 ) {
-                    x -= max_width;
+                    pos.x() -= max_size.x();
                 }
 
                 if (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_CENTER) {
-                    y -= max_height / 2;
+                    pos.y() -= max_size.y() / 2;
                 } else if (
                     (option.par_direction() == DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM)
                     == (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_FAR)
                 ) {
-                    y -= max_height;
+                    pos.y() -= max_size.y();
                 }
             }
 
@@ -271,12 +264,12 @@ namespace gm {
                 GM_THROW_IF_FAILED(layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             } else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
                 GM_THROW_IF_FAILED(layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
-                x -= option.letter_spacing;
+                pos.x() -= option.letter_spacing;
             } else {
                 GM_THROW_IF_FAILED(
                     layout->SetCharacterSpacing(option.letter_spacing / 2, option.letter_spacing / 2, 0, range)
                 );
-                x -= option.letter_spacing / 2;
+                pos.x() -= option.letter_spacing / 2;
             }
 
             // [IDWriteTextLayout3]
@@ -288,13 +281,12 @@ namespace gm {
             Layout result;
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            GM_THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), x, y));
+            GM_THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), pos.x(), pos.y()));
 
             DWRITE_TEXT_METRICS metrics;
             GM_THROW_IF_FAILED(layout->GetMetrics(&metrics));
 
-            result.width = std::max(metrics.width - option.letter_spacing, 0.f);
-            result.height = metrics.height;
+            result.size = { std::max(metrics.width - option.letter_spacing, 0.f), metrics.height };
             return result;
         }
     };
@@ -335,8 +327,7 @@ namespace gm {
                     value.direction,
                     value.tab_spacing,
                     value.trimming,
-                    value.max_width,
-                    value.max_height,
+                    value.max_size,
                     value.font.second,
                     value.letter_spacing,
                     value.line_spacing_type,

@@ -4,6 +4,7 @@ module;
 
 #include <d3d8.h>
 #include <dwrite_3.h>
+#include <eigen3/Eigen/Core>
 #include <rectpack2D/finders_interface.h>
 #include <spdlog/spdlog.h>
 #include <wil/com.h>
@@ -25,19 +26,18 @@ namespace gm {
     public:
         TextureLock() noexcept = default;
 
-        TextureLock(const wil::com_ptr<IDirect3DTexture8>& texture, usize x, usize y, usize width, usize height) {
-            assert(texture && width > 0 && height > 0);
+        TextureLock(const wil::com_ptr<IDirect3DTexture8>& texture) {
+            assert(texture);
+
+            D3DSURFACE_DESC desc;
+            GM_THROW_IF_FAILED(texture->GetLevelDesc(0, &desc));
 
             D3DLOCKED_RECT lock;
-            RECT rect{ static_cast<isize>(x),
-                       static_cast<isize>(y),
-                       static_cast<isize>(x + width),
-                       static_cast<isize>(y + height) };
-            GM_THROW_IF_FAILED(texture->LockRect(0, &lock, &rect, D3DLOCK_NO_DIRTY_UPDATE));
+            GM_THROW_IF_FAILED(texture->LockRect(0, &lock, nullptr, D3DLOCK_NO_DIRTY_UPDATE));
 
             _texture = texture;
             _data = { static_cast<u32*>(lock.pBits),
-                      { std::extents{ height, width }, std::array{ lock.Pitch / sizeof(u32), 1uz } } };
+                      { std::extents{ desc.Height, desc.Width }, std::array{ lock.Pitch / sizeof(u32), 1uz } } };
         }
 
         TextureLock(TextureLock&& other) noexcept {
@@ -64,19 +64,20 @@ namespace gm {
             std::ranges::swap(left._data, right._data);
         }
 
-        void update(usize x, usize y, const std::mdspan<u8, std::dextents<usize, 2>>& data) const {
+        void update(Eigen::Vector2<usize> pos, const std::mdspan<u8, std::dextents<usize, 2>>& data) const {
             assert(*this);
 
-            usize height{ data.extents().extent(0) }, width{ data.extents().extent(1) };
-            RECT rect{ static_cast<isize>(x),
-                       static_cast<isize>(y),
-                       static_cast<isize>(x + width),
-                       static_cast<isize>(y + height) };
+            Eigen::Vector2<usize> size{ data.extents().extent(1), data.extents().extent(0) };
+            Eigen::Vector2<usize> end{ pos + size };
+            RECT rect{ static_cast<isize>(pos.x()),
+                       static_cast<isize>(pos.y()),
+                       static_cast<isize>(end.x()),
+                       static_cast<isize>(end.y()) };
             GM_THROW_IF_FAILED(_texture->AddDirtyRect(&rect));
 
-            for (usize j{}; j < height; ++j) {
-                for (usize i{}; i < width; ++i) {
-                    _data[y + j, x + i] = D3DCOLOR_RGBA(0xff, 0xff, 0xff, (data[j, i]));
+            for (usize j{}; j < size.y(); ++j) {
+                for (usize i{}; i < size.x(); ++i) {
+                    _data[pos.y() + j, pos.x() + i] = D3DCOLOR_RGBA(0xff, 0xff, 0xff, (data[j, i]));
                 }
             }
         }
@@ -91,12 +92,9 @@ namespace gm {
 
     export struct GlyphMeta {
         wil::com_ptr<IDirect3DTexture8> texture;
-        usize x;
-        usize y;
-        usize width;
-        usize height;
-        isize offset_x;
-        isize offset_y;
+        Eigen::Vector2<usize> pos{ 0, 0 };
+        Eigen::Vector2<usize> size{ 0, 0 };
+        Eigen::Vector2<isize> offset{ 0, 0 };
     };
 
     export struct GlyphSpec : GlyphDesc {
@@ -121,8 +119,8 @@ namespace gm {
     public:
         GlyphAtlas() noexcept = default;
 
-        GlyphAtlas(const AtlasOption& option, const RasterOption& raster_option) noexcept
-            : _option{ option }, _raster_option{ raster_option } {
+        GlyphAtlas(AtlasOption option, RasterOption raster_option) noexcept
+            : _option{ std::move(option) }, _raster_option{ std::move(raster_option) } {
 
             assert(_option.is_valid() && _raster_option.is_valid());
         }
@@ -160,9 +158,9 @@ namespace gm {
 
                 GlyphSpec spec{ std::forward<SpecFn>(spec_func)(item) };
                 DWRITE_GLYPH_RUN run{ spec.face.get(), spec.size, 1, &spec.gid };
-                DWRITE_RENDERING_MODE1 antialiasing{ spec.size < _raster_option.min_antialiasing_h_size
+                DWRITE_RENDERING_MODE1 antialiasing{ spec.size < _raster_option.min_antialiasing_size.x()
                                                          ? DWRITE_RENDERING_MODE1_ALIASED
-                                                     : spec.size < _raster_option.min_antialiasing_v_size
+                                                     : spec.size < _raster_option.min_antialiasing_size.y()
                                                          ? DWRITE_RENDERING_MODE1_NATURAL
                                                          : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC };
                 wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
@@ -183,20 +181,18 @@ namespace gm {
                 RECT bbox;
                 GM_THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
 
-                auto width{ static_cast<usize>(bbox.right - bbox.left) };
-                auto height{ static_cast<usize>(bbox.bottom - bbox.top) };
-                if (width == 0 || height == 0) {
-                    result.push_back(
-                        &_data.try_emplace(static_cast<GlyphDesc>(spec), nullptr, 0, 0, 0, 0, 0, 0).first->second
-                    );
+                Eigen::Vector2<isize> offset{ bbox.left, bbox.top };
+                Eigen::Vector2<usize> size{ (Eigen::Vector2<isize>{ bbox.right, bbox.bottom } - offset).cast<usize>() };
+                if ((size.array() == 0).any()) {
+                    result.push_back(&_data.try_emplace(static_cast<GlyphDesc>(spec)).first->second);
                     continue;
                 }
 
-                if (width > _option.texture_width || height > _option.texture_height) {
+                if ((size.array() > _option.texture_size.array()).any()) {
                     throw std::runtime_error{ "Glyph too large." };
                 }
 
-                std::vector<u8> alpha(width * height);
+                std::vector<u8> alpha(size.prod());
                 GM_THROW_IF_FAILED(
                     rasterizer->CreateAlphaTexture(DWRITE_TEXTURE_ALIASED_1x1, &bbox, alpha.data(), alpha.size())
                 );
@@ -204,7 +200,7 @@ namespace gm {
                 usize texture_num{ _texture_num };
                 wil::com_ptr texture{ _current_texture };
                 rectpack2D::empty_spaces bin{ _current_bin };
-                auto insert_result{ bin.insert({ static_cast<isize>(width), static_cast<isize>(height) }) };
+                auto insert_result{ bin.insert({ static_cast<isize>(size.x()), static_cast<isize>(size.y()) }) };
                 if (!insert_result) {
                     if (texture_num++ >= _option.max_texture_num) {
                         throw std::runtime_error{ "Too many textures." };
@@ -212,8 +208,8 @@ namespace gm {
 
                     GM_THROW_IF_FAILED(
                         env::d3d_device()->CreateTexture(
-                            _option.texture_width,
-                            _option.texture_height,
+                            _option.texture_size.x(),
+                            _option.texture_size.y(),
                             1,
                             0,
                             D3DFMT_A8R8G8B8,
@@ -222,27 +218,25 @@ namespace gm {
                         )
                     );
 
-                    lock = { texture, 0, 0, _option.texture_width, _option.texture_height };
+                    lock = texture;
                     bin.reset(
-                        { static_cast<isize>(_option.texture_width), static_cast<isize>(_option.texture_height) }
+                        { static_cast<isize>(_option.texture_size.x()), static_cast<isize>(_option.texture_size.y()) }
                     );
-                    insert_result = bin.insert({ static_cast<isize>(width), static_cast<isize>(height) });
+                    insert_result = bin.insert({ static_cast<isize>(size.x()), static_cast<isize>(size.y()) });
                 }
 
-                auto x{ static_cast<usize>(insert_result->x) }, y{ static_cast<usize>(insert_result->y) };
-                auto w{ static_cast<usize>(insert_result->w) }, h{ static_cast<usize>(insert_result->h) };
+                Eigen::Vector2<usize> pos{ static_cast<usize>(insert_result->x), static_cast<usize>(insert_result->y) };
                 if (!lock) {
-                    lock = { _current_texture, 0, 0, _option.texture_width, _option.texture_height };
+                    lock = _current_texture;
                 }
-                lock.update(x, y, std::mdspan{ alpha.data(), h, w });
+                lock.update(pos, std::mdspan{ alpha.data(), size.y(), size.x() });
 
                 _texture_num = texture_num;
                 _current_texture = texture;
                 _current_bin = std::move(bin);
 
                 result.push_back(
-                    &_data.try_emplace(static_cast<GlyphDesc>(spec), _current_texture, x, y, w, h, bbox.left, bbox.top)
-                         .first->second
+                    &_data.try_emplace(static_cast<GlyphDesc>(spec), _current_texture, pos, size, offset).first->second
                 );
             }
 

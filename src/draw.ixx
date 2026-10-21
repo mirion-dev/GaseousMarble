@@ -4,6 +4,7 @@ module;
 
 #include <cassert>
 #include <d3d8.h>
+#include <eigen3/Eigen/Core>
 #include <spdlog/spdlog.h>
 #include <wil/com.h>
 
@@ -21,13 +22,11 @@ import gm.layout;
 namespace gm {
 
     export struct DrawOption : LayoutOption {
-        f32 origin_x{};
-        f32 origin_y{};
+        Eigen::Vector2f origin{ 0, 0 };
+        // Eigen::Affine2f transform{ Eigen::Affine2f::Identity() };
         // TODO: generate_font(): fill, stroke_width, stroke_fill, shadow_offset, shadow_fill
         // TODO: gm_set_color2(color_top, color_bottom)
         // TODO: gm_set_alpha(alpha)
-        // TODO: gm_set_scale(x, y)
-        // TODO: gm_set_rotation(rotation)
     };
 
     export class Draw {
@@ -59,7 +58,7 @@ namespace gm {
             return std::forward_like<decltype(self)>(self._option);
         }
 
-        void text(f32 x, f32 y, std::wstring_view text) {
+        void text(Eigen::Vector2f pos, std::wstring_view text) {
             assert(*this);
 
             if (!_option.is_valid()) {
@@ -67,8 +66,7 @@ namespace gm {
             }
 
             GlyphAtlas& atlas{ _option.font.first->atlas() };
-            f32 texture_width{ static_cast<f32>(atlas.option().texture_width) };
-            f32 texture_height{ static_cast<f32>(atlas.option().texture_height) };
+            Eigen::Vector2f texture_size{ atlas.option().texture_size.cast<f32>() };
             auto glyphs{ _layout.get({ text, _option }).glyphs };
             auto glyph_meta{ atlas.get(
                 glyphs,
@@ -76,9 +74,8 @@ namespace gm {
                 [](const GlyphInstance& glyph) noexcept -> const GlyphSpec& { return glyph; }
             ) };
 
-            if (_option.max_width != 0 && _option.max_height != 0) {
-                x -= _option.max_width * _option.origin_x;
-                y -= _option.max_height * _option.origin_y;
+            if ((_option.max_size.array() > 0).all()) {
+                pos -= _option.max_size.cwiseProduct(_option.origin);
             }
 
             auto device{ env::d3d_device() };
@@ -92,22 +89,21 @@ namespace gm {
                     continue;
                 }
 
-                f32 x1{ x + glyph.x + meta->offset_x - .5f };
-                f32 y1{ y + glyph.y + meta->offset_y - .5f };
-                f32 x2{ x1 + meta->width };
-                f32 y2{ y1 + meta->height };
-                if (x2 <= view.X || x1 >= view.X + view.Width || y2 <= view.Y || y1 >= view.Y + view.Height) {
+                Eigen::Vector2f start{ pos + glyph.pos + meta->offset.cast<f32>() - Eigen::Vector2f::Constant(.5f) };
+                Eigen::Vector2f end{ start + meta->size.cast<f32>() };
+                if (end.x() <= view.X
+                    || start.x() >= view.X + view.Width
+                    || end.y() <= view.Y
+                    || start.y() >= view.Y + view.Height) {
                     continue;
                 }
 
-                f32 u1{ meta->x / texture_width };
-                f32 v1{ meta->y / texture_height };
-                f32 u2{ (meta->x + meta->width) / texture_width };
-                f32 v2{ (meta->y + meta->height) / texture_height };
-                Vertex a{ x1, y1, 0, 1, color, u1, v1 };
-                Vertex b{ x2, y1, 0, 1, color, u2, v1 };
-                Vertex c{ x1, y2, 0, 1, color, u1, v2 };
-                Vertex d{ x2, y2, 0, 1, color, u2, v2 };
+                Eigen::Vector2f uv_start{ meta->pos.cast<f32>().cwiseQuotient(texture_size) };
+                Eigen::Vector2f uv_end{ (meta->pos + meta->size).cast<f32>().cwiseQuotient(texture_size) };
+                Vertex a{ start.x(), start.y(), 0, 1, color, uv_start.x(), uv_start.y() };
+                Vertex b{ end.x(), start.y(), 0, 1, color, uv_end.x(), uv_start.y() };
+                Vertex c{ start.x(), end.y(), 0, 1, color, uv_start.x(), uv_end.y() };
+                Vertex d{ end.x(), end.y(), 0, 1, color, uv_end.x(), uv_end.y() };
                 batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
             }
 
@@ -170,24 +166,14 @@ namespace gm {
             }
         }
 
-        f32 text_width(std::wstring_view text) {
+        Eigen::Vector2f text_size(std::wstring_view text) {
             assert(*this);
 
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            return _layout.get({ text, _option }).width;
-        }
-
-        f32 text_height(std::wstring_view text) {
-            assert(*this);
-
-            if (!_option.is_valid()) {
-                throw std::invalid_argument{ "Invalid draw options." };
-            }
-
-            return _layout.get({ text, _option }).height;
+            return _layout.get({ text, _option }).size;
         }
     };
 

@@ -7,6 +7,7 @@
 #include "log.h"
 
 #include <dwrite_3.h>
+#include <eigen3/Eigen/Core>
 #include <spdlog/spdlog.h>
 #include <wil/result.h>
 
@@ -73,15 +74,15 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
 GM_CATCH_RETURN()
 
 API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try {
-    draw.text(saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y), to_wstring(raw_text));
+    draw.text({ saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y) }, to_wstring(raw_text));
     return S_OK;
 }
 GM_CATCH_RETURN()
 
-API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_width(to_wstring(raw_text)); }
+API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_size(to_wstring(raw_text)).x(); }
 GM_CATCH_RETURN()
 
-API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_height(to_wstring(raw_text)); }
+API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_size(to_wstring(raw_text)).y(); }
 GM_CATCH_RETURN()
 
 API Real gm2_save_options(StringRef raw_key) noexcept {
@@ -173,7 +174,7 @@ API Real gm2_set_max_width(Real raw_max_width) noexcept {
         max_width = LayoutOption::INFINITY_;
     }
 
-    draw.option().max_width = max_width;
+    draw.option().max_size.x() = max_width;
     return S_OK;
 }
 
@@ -183,7 +184,7 @@ API Real gm2_set_max_height(Real raw_max_height) noexcept {
         max_height = LayoutOption::INFINITY_;
     }
 
-    draw.option().max_height = max_height;
+    draw.option().max_size.y() = max_height;
     return S_OK;
 }
 
@@ -234,8 +235,7 @@ API Real gm2_set_uniform_line_spacing(Real raw_line_height, Real raw_baseline) n
 }
 
 API Real gm2_set_origin(Real raw_origin_x, Real raw_origin_y) noexcept {
-    draw.option().origin_x = saturating_cast<f32>(raw_origin_x);
-    draw.option().origin_y = saturating_cast<f32>(raw_origin_y);
+    draw.option().origin = { saturating_cast<f32>(raw_origin_x), saturating_cast<f32>(raw_origin_y) };
     return S_OK;
 }
 
@@ -268,11 +268,11 @@ API Real gm2_get_trimming() noexcept {
 }
 
 API Real gm2_get_max_width() noexcept {
-    return draw.option().max_width;
+    return draw.option().max_size.x();
 }
 
 API Real gm2_get_max_height() noexcept {
-    return draw.option().max_height;
+    return draw.option().max_size.y();
 }
 
 API StringRef gm2_get_font() noexcept {
@@ -330,9 +330,9 @@ API Real gm2_get_baseline() noexcept {
 }
 
 API Real gm2_get_origin_x() noexcept {
-    return draw.option().origin_x;
+    return draw.option().origin.x();
 }
 
 API Real gm2_get_origin_y() noexcept {
-    return draw.option().origin_y;
+    return draw.option().origin.y();
 }

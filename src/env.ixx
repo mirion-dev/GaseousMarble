@@ -4,6 +4,7 @@ module;
 
 #include <d3d8.h>
 #include <dwrite_3.h>
+#include <eigen3/Eigen/Core>
 #include <glaze/toml.hpp>
 #include <spdlog/spdlog.h>
 #include <wil/com.h>
@@ -20,25 +21,49 @@ import gm.utils;
 namespace gm {
 
     export struct AtlasOption {
-        usize texture_width{ 1024 };
-        usize texture_height{ 1024 };
-        usize max_texture_num{ 16 };
+        Eigen::Vector2<u32> texture_size{ 1024, 1024 };
+        u32 max_texture_num{ 16 };
 
         bool is_valid() const noexcept {
-            return texture_width > 0 && texture_height > 0 && max_texture_num > 0;
+            return (texture_size.array() > 0).all() && max_texture_num > 0;
         }
     };
 
     export struct RasterOption {
-        f32 min_antialiasing_h_size{};
-        f32 min_antialiasing_v_size{ 24 };
+        Eigen::Vector2<f32> min_antialiasing_size{ 0, 24 };
 
         bool is_valid() const noexcept {
-            return min_antialiasing_h_size >= 0 && min_antialiasing_v_size >= 0;
+            return (min_antialiasing_size.array() >= 0).all();
         }
     };
 
 }
+
+template <>
+struct glz::meta<gm::AtlasOption> {
+    using T = gm::AtlasOption;
+
+    static constexpr auto value{ object(
+        "texture_width",
+        [](T& self) noexcept -> auto& { return self.texture_size.x(); },
+        "texture_height",
+        [](T& self) noexcept -> auto& { return self.texture_size.y(); },
+        "max_texture_num",
+        &T::max_texture_num
+    ) };
+};
+
+template <>
+struct glz::meta<gm::RasterOption> {
+    using T = gm::RasterOption;
+
+    static constexpr auto value{ object(
+        "min_antialiasing_size_h",
+        [](T& self) noexcept -> auto& { return self.min_antialiasing_size.x(); },
+        "min_antialiasing_size_v",
+        [](T& self) noexcept -> auto& { return self.min_antialiasing_size.y(); }
+    ) };
+};
 
 namespace gm::env {
 
