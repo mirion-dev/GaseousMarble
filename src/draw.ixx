@@ -4,7 +4,7 @@ module;
 
 #include <cassert>
 #include <d3d8.h>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 #include <spdlog/spdlog.h>
 #include <wil/com.h>
 
@@ -23,7 +23,7 @@ namespace gm {
 
     export struct DrawOption : LayoutOption {
         Eigen::Vector2f origin{ 0, 0 };
-        // Eigen::Affine2f transform{ Eigen::Affine2f::Identity() };
+        Eigen::Affine2f transform{ Eigen::Affine2f::Identity() };
         // TODO: generate_font(): fill, stroke_width, stroke_fill, shadow_offset, shadow_fill
         // TODO: gm_set_color2(color_top, color_bottom)
         // TODO: gm_set_alpha(alpha)

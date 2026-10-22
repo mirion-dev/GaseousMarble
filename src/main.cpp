@@ -7,7 +7,7 @@
 #include "log.h"
 
 #include <dwrite_3.h>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 #include <spdlog/spdlog.h>
 #include <wil/result.h>
 
@@ -32,13 +32,13 @@ API Real gm2_internal_to_real(StringRef string) noexcept {
     return reinterpret_cast<usize>(string);
 }
 
-StringRef internal_from_real(Real real) noexcept {
+StringRef from_real(Real real) noexcept {
     return reinterpret_cast<const char*>(static_cast<usize>(real));
 }
 
 API Real
 gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw_size, Real raw_locale) noexcept try {
-    std::string key{ internal_from_real(raw_key) };
+    std::string key{ from_real(raw_key) };
     if (key.empty()) {
         throw std::invalid_argument{ "Font key must not be empty." };
     }
@@ -51,10 +51,10 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
         throw std::runtime_error{ "Too many fonts." };
     }
 
-    std::wstring name{ to_wstring(internal_from_real(raw_name)) };
+    std::wstring name{ to_wstring(from_real(raw_name)) };
     u16 properties{ saturating_cast<u16>(raw_properties, FontDesc{}.properties) };
     f32 size{ saturating_cast<f32>(raw_size) };
-    std::wstring locale{ to_wstring(internal_from_real(raw_locale)) };
+    std::wstring locale{ to_wstring(from_real(raw_locale)) };
     if (locale.empty()) {
         locale = env::default_locale();
     }
@@ -239,6 +239,73 @@ API Real gm2_set_origin(Real raw_origin_x, Real raw_origin_y) noexcept {
     return S_OK;
 }
 
+Eigen::Affine2f to_affine(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
+    Eigen::Affine2f result{ Eigen::Affine2f::Identity() };
+    result(0, 0) = saturating_cast<f32>(raw_a00);
+    result(0, 1) = saturating_cast<f32>(raw_a01);
+    result(1, 0) = saturating_cast<f32>(raw_a10);
+    result(1, 1) = saturating_cast<f32>(raw_a11);
+    result.translation().x() = saturating_cast<f32>(raw_dx);
+    result.translation().y() = saturating_cast<f32>(raw_dy);
+    return result;
+}
+
+API Real gm2_set_transform(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
+    draw.option().transform = to_affine(raw_a00, raw_a01, raw_a10, raw_a11, raw_dx, raw_dy);
+    return S_OK;
+}
+
+API Real gm2_add_transform(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
+    draw.option().transform = to_affine(raw_a00, raw_a01, raw_a10, raw_a11, raw_dx, raw_dy) * draw.option().transform;
+    return S_OK;
+}
+
+API Real gm2_add_translation(Real raw_x, Real raw_y) noexcept {
+    draw.option().transform.pretranslate(Eigen::Vector2f{ saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y) });
+    return S_OK;
+}
+
+API Real gm2_add_translation_x(Real raw_x) noexcept {
+    return gm2_add_translation(raw_x, 0);
+}
+
+API Real gm2_add_translation_y(Real raw_y) noexcept {
+    return gm2_add_translation(0, raw_y);
+}
+
+API Real gm2_add_scale(Real raw_x, Real raw_y) noexcept {
+    draw.option().transform.prescale(Eigen::Vector2f{ saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y) });
+    return S_OK;
+}
+
+API Real gm2_add_scale_x(Real raw_x) noexcept {
+    return gm2_add_scale(raw_x, 1);
+}
+
+API Real gm2_add_scale_y(Real raw_y) noexcept {
+    return gm2_add_scale(1, raw_y);
+}
+
+API Real gm2_add_rotation(Real raw_theta) noexcept {
+    draw.option().transform.prerotate(Eigen::Rotation2Df{ -to_radian(saturating_cast<f32>(raw_theta)) });
+    return S_OK;
+}
+
+API Real gm2_add_skew(Real raw_x, Real raw_y) noexcept {
+    draw.option().transform.preshear(
+        std::tan(to_radian(saturating_cast<f32>(raw_y))), std::tan(to_radian(saturating_cast<f32>(raw_x)))
+    );
+    return S_OK;
+}
+
+API Real gm2_add_skew_x(Real raw_x) noexcept {
+    return gm2_add_skew(raw_x, 0);
+}
+
+API Real gm2_add_skew_y(Real raw_y) noexcept {
+    return gm2_add_skew(0, raw_y);
+}
+
 API Real gm2_get_text_alignment() noexcept {
     return draw.option().alignment & DrawOption::TEXT_ALIGNMENT_MASK;
 }
@@ -335,4 +402,28 @@ API Real gm2_get_origin_x() noexcept {
 
 API Real gm2_get_origin_y() noexcept {
     return draw.option().origin.y();
+}
+
+API Real gm2_get_transform_a00() noexcept {
+    return draw.option().transform(0, 0);
+}
+
+API Real gm2_get_transform_a01() noexcept {
+    return draw.option().transform(0, 1);
+}
+
+API Real gm2_get_transform_a10() noexcept {
+    return draw.option().transform(1, 0);
+}
+
+API Real gm2_get_transform_a11() noexcept {
+    return draw.option().transform(1, 1);
+}
+
+API Real gm2_get_transform_dx() noexcept {
+    return draw.option().transform.translation().x();
+}
+
+API Real gm2_get_transform_dy() noexcept {
+    return draw.option().transform.translation().y();
 }
