@@ -65,9 +65,8 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            GlyphAtlas& atlas{ _option.font.first->atlas() };
-            Eigen::Vector2f texture_size{ atlas.option().texture_size.cast<f32>() };
             auto glyphs{ _layout.get({ text, _option }).glyphs };
+            GlyphAtlas& atlas{ _option.font.first->atlas() };
             auto glyph_meta{ atlas.get(
                 glyphs,
                 [](const GlyphInstance& glyph) noexcept -> const GlyphDesc& { return glyph; },
@@ -79,9 +78,14 @@ namespace gm {
             }
 
             auto device{ env::d3d_device() };
-            D3DVIEWPORT8 view;
-            GM_THROW_IF_FAILED(device->GetViewport(&view));
+            D3DVIEWPORT8 d3d_view;
+            GM_THROW_IF_FAILED(device->GetViewport(&d3d_view));
 
+            Eigen::Vector2f view_start{ static_cast<f32>(d3d_view.X), static_cast<f32>(d3d_view.Y) };
+            Eigen::Vector2f view_size{ static_cast<f32>(d3d_view.Width), static_cast<f32>(d3d_view.Height) };
+            Eigen::AlignedBox2f view{ view_start, view_start + view_size };
+
+            Eigen::Vector2f texture_size{ atlas.option().texture_size.cast<f32>() };
             u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
             for (auto [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
@@ -90,20 +94,20 @@ namespace gm {
                 }
 
                 Eigen::Vector2f start{ pos + glyph.pos + meta->offset.cast<f32>() - Eigen::Vector2f::Constant(.5f) };
-                Eigen::Vector2f end{ start + meta->size.cast<f32>() };
-                if (end.x() <= view.X
-                    || start.x() >= view.X + view.Width
-                    || end.y() <= view.Y
-                    || start.y() >= view.Y + view.Height) {
+                Eigen::Vector2f size{ meta->size.cast<f32>() };
+                Eigen::AlignedBox2f aabb{ start, start + size };
+                if ((aabb.max().array() < view.min().array()).any()
+                    || (aabb.min().array() > view.max().array()).any()) {
                     continue;
                 }
 
-                Eigen::Vector2f uv_start{ meta->pos.cast<f32>().cwiseQuotient(texture_size) };
-                Eigen::Vector2f uv_end{ (meta->pos + meta->size).cast<f32>().cwiseQuotient(texture_size) };
-                Vertex a{ start.x(), start.y(), 0, 1, color, uv_start.x(), uv_start.y() };
-                Vertex b{ end.x(), start.y(), 0, 1, color, uv_end.x(), uv_start.y() };
-                Vertex c{ start.x(), end.y(), 0, 1, color, uv_start.x(), uv_end.y() };
-                Vertex d{ end.x(), end.y(), 0, 1, color, uv_end.x(), uv_end.y() };
+                Eigen::Vector2f uv_start{ meta->pos.cast<f32>() };
+                Eigen::AlignedBox2f uv{ uv_start.cwiseQuotient(texture_size),
+                                        (uv_start + size).cwiseQuotient(texture_size) };
+                Vertex a{ aabb.min().x(), aabb.min().y(), 0, 1, color, uv.min().x(), uv.min().y() };
+                Vertex b{ aabb.max().x(), aabb.min().y(), 0, 1, color, uv.max().x(), uv.min().y() };
+                Vertex c{ aabb.min().x(), aabb.max().y(), 0, 1, color, uv.min().x(), uv.max().y() };
+                Vertex d{ aabb.max().x(), aabb.max().y(), 0, 1, color, uv.max().x(), uv.max().y() };
                 batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
             }
 
