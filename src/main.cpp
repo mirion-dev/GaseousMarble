@@ -240,13 +240,10 @@ API Real gm2_set_origin(Real raw_origin_x, Real raw_origin_y) noexcept {
 }
 
 Eigen::Affine2f to_affine(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
-    Eigen::Affine2f result{ Eigen::Affine2f::Identity() };
-    result(0, 0) = saturating_cast<f32>(raw_a00);
-    result(0, 1) = saturating_cast<f32>(raw_a01);
-    result(1, 0) = saturating_cast<f32>(raw_a10);
-    result(1, 1) = saturating_cast<f32>(raw_a11);
-    result.translation().x() = saturating_cast<f32>(raw_dx);
-    result.translation().y() = saturating_cast<f32>(raw_dy);
+    Eigen::Affine2f result;
+    result.linear() = Eigen::Matrix2f{ { saturating_cast<f32>(raw_a00), saturating_cast<f32>(raw_a01) },
+                                       { saturating_cast<f32>(raw_a10), saturating_cast<f32>(raw_a11) } };
+    result.translation() = Eigen::Vector2f{ saturating_cast<f32>(raw_dx), saturating_cast<f32>(raw_dy) };
     return result;
 }
 

@@ -178,11 +178,12 @@ namespace gm {
                     )
                 );
 
-                RECT bbox;
-                GM_THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &bbox));
+                RECT aabb;
+                GM_THROW_IF_FAILED(rasterizer->GetAlphaTextureBounds(DWRITE_TEXTURE_ALIASED_1x1, &aabb));
 
-                Eigen::Vector2<isize> offset{ bbox.left, bbox.top };
-                Eigen::Vector2<usize> size{ (Eigen::Vector2<isize>{ bbox.right, bbox.bottom } - offset).cast<usize>() };
+                Eigen::Vector2<isize> start{ aabb.left, aabb.top };
+                Eigen::Vector2<isize> end{ aabb.right, aabb.bottom };
+                Eigen::Vector2<usize> size{ (end - start).cast<usize>() };
                 if ((size.array() == 0).any()) {
                     result.push_back(&_data.try_emplace(static_cast<GlyphDesc>(spec)).first->second);
                     continue;
@@ -194,7 +195,7 @@ namespace gm {
 
                 std::vector<u8> alpha(size.prod());
                 GM_THROW_IF_FAILED(
-                    rasterizer->CreateAlphaTexture(DWRITE_TEXTURE_ALIASED_1x1, &bbox, alpha.data(), alpha.size())
+                    rasterizer->CreateAlphaTexture(DWRITE_TEXTURE_ALIASED_1x1, &aabb, alpha.data(), alpha.size())
                 );
 
                 usize texture_num{ _texture_num };
@@ -236,7 +237,7 @@ namespace gm {
                 _current_bin = std::move(bin);
 
                 result.push_back(
-                    &_data.try_emplace(static_cast<GlyphDesc>(spec), _current_texture, pos, size, offset).first->second
+                    &_data.try_emplace(static_cast<GlyphDesc>(spec), _current_texture, pos, size, start).first->second
                 );
             }
 
