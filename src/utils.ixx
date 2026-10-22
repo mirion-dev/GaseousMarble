@@ -89,6 +89,11 @@ namespace gm {
         return gm::saturating_cast(num, std::numeric_limits<R>::lowest(), std::numeric_limits<R>::max());
     }
 
+    export template <std::floating_point T>
+    T to_radian(T degree) noexcept {
+        return degree * (std::numbers::pi_v<T> / 180);
+    }
+
     export std::string to_string(std::wstring_view str) {
         std::u8string str_u8{ std::filesystem::path{ str }.u8string() };
         return { reinterpret_cast<char*>(str_u8.data()), str_u8.size() };

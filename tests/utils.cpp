@@ -12,6 +12,12 @@ R static_cast_check(T num) noexcept {
     return gm::saturating_cast<R>(num) == static_cast<R>(num);
 }
 
+template <std::floating_point T>
+bool is_equal(T num1, T num2) noexcept {
+    return std::abs(num1 - num2)
+           < std::numeric_limits<T>::epsilon() * 8 * std::max({ std::abs(num1), std::abs(num2), T{ 1 } });
+}
+
 TEST_SUITE("gm2") {
     TEST_CASE("utils") {
         SUBCASE("saturating_cast") {
@@ -99,6 +105,12 @@ TEST_SUITE("gm2") {
             CHECK(saturating_cast<i32>(std::numeric_limits<f32>::quiet_NaN()) == 0);
             CHECK(saturating_cast<i32>(std::numeric_limits<f32>::infinity()) == i32_max);
             CHECK(saturating_cast<i32>(-std::numeric_limits<f32>::infinity()) == i32_min);
+        }
+
+        SUBCASE("to_radian") {
+            CHECK(is_equal(to_radian(0.), 0.));
+            CHECK(is_equal(to_radian(180.), std::numbers::pi));
+            CHECK(is_equal(to_radian(-180.), -std::numbers::pi));
         }
 
         SUBCASE("filename") {
