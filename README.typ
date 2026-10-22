@@ -26,6 +26,12 @@
 - #link("https://github.com/TeamHypersomnia/rectpack2D")[rectpack2D]
 - #link("https://github.com/microsoft/wil/wiki")[WIL]
 
+#title[Reference]
+
+- `+` New
+- `-` Removed
+- `*` Changed
+
 #show heading.where(level: 1): el => {
     if sys.inputs.at("x-target", default: "pdf") == "md" {
         html.h2(el.body)
@@ -41,9 +47,7 @@
     )
 }
 
-#title[Reference]
-
-= `gm2.toml`
+= + `gm2.toml`
 
 #table(
     columns: 3,
@@ -57,9 +61,10 @@
     `layout_cache_size`, `1024`, [Maximum number of cached layouts],
 )
 
-= `gm2_new_font(key, name, properties, size, locale)`
+= \* `gm2_new_font(key, name, properties, size, locale)`
 
-Add a font from system fonts or font files. `key` should be non-empty.
+Add a font from system fonts or font files.
+`key` should be non-empty.
 
 If `locale` is empty, the user's default locale applies.
 
@@ -148,7 +153,7 @@ Set or get the text direction and the paragraph direction.
     `gm2_par_direction_btt`,
 )
 
-= `gm2_set_alignment(alignment)`\ `gm2_set_text_alignment(text_alignment)`\ `gm2_set_par_alignment(par_alignment)`\ `gm2_get_text_alignment()`\ `gm2_get_par_alignment()`
+= \* `gm2_set_alignment(alignment)`\ \* `gm2_set_text_alignment(text_alignment)`\ `gm2_set_par_alignment(par_alignment)`\ \* `gm2_get_text_alignment()`\ `gm2_get_par_alignment()`
 
 Set or get the text alignment and the paragraph alignment.
 
@@ -216,7 +221,7 @@ Set or get the text trimming.
     `gm2_trimming_word`,
 )
 
-= + `gm2_set_line_spacing(line_height, baseline)`\ `gm2_set_uniform_line_spacing(line_height, baseline)`\ `gm2_set_line_height(line_height)`\ `gm2_set_baseline(baseline)`\ + `gm2_get_line_spacing_type()`\ `gm2_get_line_height()`\ `gm2_get_baseline()`
+= + `gm2_set_line_spacing(line_height, baseline)`\ \* `gm2_set_uniform_line_spacing(line_height, baseline)`\ \* `gm2_set_line_height(line_height)`\ \* `gm2_set_baseline(baseline)`\ + `gm2_get_line_spacing_type()`\ \* `gm2_get_line_height()`\ \* `gm2_get_baseline()`
 
 Set or get the line spacing of the text.
 
@@ -250,8 +255,17 @@ Set or get the word spacing of the text.
 
 *Removed*: Not useful.
 
-= `gm2_set_origin(x, y)`\ `gm2_get_origin_x()`\ `gm2_get_origin_y()`
+= + `gm2_set_origin(x, y)`\ + `gm2_get_origin_x()`\ + `gm2_get_origin_y()`
 
 Set or get the normalized origin of the text. Only applies to the box model.
 
+= + `gm2_set_transform(a00, a01, a10, a11, dx, dy)`\ + `gm2_add_transform(a00, a01, a10, a11, dx, dy)`\ \* `gm2_add_translation(x, y)`\ + `gm2_add_translation_x(x)`\ + `gm2_add_translation_y(y)`\ \* `gm2_add_scale(x, y)`\ + `gm2_add_scale_x(x)`\ + `gm2_add_scale_y(y)`\ \* `gm2_add_rotation(theta)`\ + `gm2_add_skew(x, y)`\ + `gm2_add_skew_x(x)`\ + `gm2_add_skew_y(y)`\ + `gm2_get_transform_a00()` \ + `gm2_get_transform_a01()` \ + `gm2_get_transform_a10()` \ + `gm2_get_transform_a11()` \ + `gm2_get_transform_dx()` \ + `gm2_get_transform_dy()`
+
+Set or get the text transformation.
+
 - `gm_set_offset()`
+- `gm_set_scale()`
+- `gm_set_rotation()`
+- `gm_get_offset()`
+- `gm_get_scale()`
+- `gm_get_rotation()`

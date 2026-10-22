@@ -3,7 +3,7 @@
 **Work in progress**. Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
 
 > \[!warning\]
-> 
+>
 > Minimum system requirement: Windows 10, Version 1803.
 
 ### Development
@@ -23,7 +23,11 @@
 
 <h1>Reference</h1>
 
-<h2><code>gm2.toml</code></h2>
+- `+` New
+- `-` Removed
+- `*` Changed
+
+<h2>+ <code>gm2.toml</code></h2>
 
 | **Option** | **Default Value** | **Description** |
 | --- | --- | --- |
@@ -35,7 +39,7 @@
 | `max_font_num` | `64` | Maximum number of fonts |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 
-<h2><code>gm2_new_font(key, name, properties, size, locale)</code></h2>
+<h2>* <code>gm2_new_font(key, name, properties, size, locale)</code></h2>
 
 Add a font from system fonts or font files. `key` should be non-empty.
 
@@ -141,10 +145,10 @@ Set or get the text direction and the paragraph direction.
 | `gm2_par_direction_ttb` |
 | `gm2_par_direction_btt` |
 
-<h2><code>gm2_set_alignment(alignment)</code><br />
-<code>gm2_set_text_alignment(text_alignment)</code><br />
+<h2>* <code>gm2_set_alignment(alignment)</code><br />
+* <code>gm2_set_text_alignment(text_alignment)</code><br />
 <code>gm2_set_par_alignment(par_alignment)</code><br />
-<code>gm2_get_text_alignment()</code><br />
+* <code>gm2_get_text_alignment()</code><br />
 <code>gm2_get_par_alignment()</code></h2>
 
 Set or get the text alignment and the paragraph alignment.
@@ -218,12 +222,12 @@ Set or get the text trimming.
 | `gm2_trimming_word` |
 
 <h2>+ <code>gm2_set_line_spacing(line_height, baseline)</code><br />
-<code>gm2_set_uniform_line_spacing(line_height, baseline)</code><br />
-<code>gm2_set_line_height(line_height)</code><br />
-<code>gm2_set_baseline(baseline)</code><br />
+* <code>gm2_set_uniform_line_spacing(line_height, baseline)</code><br />
+* <code>gm2_set_line_height(line_height)</code><br />
+* <code>gm2_set_baseline(baseline)</code><br />
 + <code>gm2_get_line_spacing_type()</code><br />
-<code>gm2_get_line_height()</code><br />
-<code>gm2_get_baseline()</code></h2>
+* <code>gm2_get_line_height()</code><br />
+* <code>gm2_get_baseline()</code></h2>
 
 Set or get the line spacing of the text.
 
@@ -263,12 +267,38 @@ Set or get the word spacing of the text.
 
 **Removed**: Not useful.
 
-<h2><code>gm2_set_origin(x, y)</code><br />
-<code>gm2_get_origin_x()</code><br />
-<code>gm2_get_origin_y()</code></h2>
+<h2>+ <code>gm2_set_origin(x, y)</code><br />
++ <code>gm2_get_origin_x()</code><br />
++ <code>gm2_get_origin_y()</code></h2>
 
 Set or get the normalized origin of the text. Only applies to the box model.
+
+<h2>+ <code>gm2_set_transform(a00, a01, a10, a11, dx, dy)</code><br />
++ <code>gm2_add_transform(a00, a01, a10, a11, dx, dy)</code><br />
+* <code>gm2_add_translation(x, y)</code><br />
++ <code>gm2_add_translation_x(x)</code><br />
++ <code>gm2_add_translation_y(y)</code><br />
+* <code>gm2_add_scale(x, y)</code><br />
++ <code>gm2_add_scale_x(x)</code><br />
++ <code>gm2_add_scale_y(y)</code><br />
+* <code>gm2_add_rotation(theta)</code><br />
++ <code>gm2_add_skew(x, y)</code><br />
++ <code>gm2_add_skew_x(x)</code><br />
++ <code>gm2_add_skew_y(y)</code><br />
++ <code>gm2_get_transform_a00()</code><br />
++ <code>gm2_get_transform_a01()</code><br />
++ <code>gm2_get_transform_a10()</code><br />
++ <code>gm2_get_transform_a11()</code><br />
++ <code>gm2_get_transform_dx()</code><br />
++ <code>gm2_get_transform_dy()</code></h2>
+
+Set or get the text transformation.
 
 | **v1** |
 | --- |
 | `gm_set_offset()` |
+| `gm_set_scale()` |
+| `gm_set_rotation()` |
+| `gm_get_offset()` |
+| `gm_get_scale()` |
+| `gm_get_rotation()` |
