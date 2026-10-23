@@ -6,23 +6,26 @@ set_plat("windows")
 set_warnings("all", "error")
 
 add_requires("vcpkg::doctest", {debug = is_mode("debug"), configs = {shared = true}})
-add_requires("vcpkg::eigen3", "vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {debug = is_mode("debug"), configs = {shared = false, runtimes = "MD"}})
+add_requires("vcpkg::eigen3", "vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {debug = is_mode("debug"), configs = {runtimes = "MD"}})
 add_linkdirs("third_party/dx81/lib")
 on_config(function (target)
     target:add("sysincludedirs", path.splitenv(target:toolchain("msvc"):runenvs().INCLUDE))
     target:add("sysincludedirs", "third_party/dx81/include", "third_party/rectpack2d/src")
 end)
 
-add_defines("NOMINMAX", "UNICODE", "_UNICODE", "GASEOUSMARBLE_EXPORTS")
+add_defines("GASEOUSMARBLE_EXPORTS", "_UNICODE", "NOMINMAX", "UNICODE")
+add_defines(is_mode("debug") and "_DEBUG" or "NDEBUG")
 add_syslinks("d3d8", "dwrite", "ole32", "oleaut32")
 
-add_cxxflags("/JMC", "/sdl", "/permissive-", "/Zc:preprocessor", {tools = "cl", force = true})
-add_shflags("/SUBSYSTEM:WINDOWS", "/SAFESEH:NO", {tools = "link"})
+add_cxxflags("/diagnostics:caret", "/sdl", "/Zc:__cplusplus,checkGwOdr,enumTypes,inline,preprocessor,templateScope,throwingNew", {tools = "cl"})
+
+if is_mode("debug") then
+    add_cxxflags("/JMC", "/RTC1", {tools = "cl", force = true})
+end
 
 if is_mode("release") then
     set_symbols("debug")
     set_policy("build.optimization.lto", true)
-    add_cxxflags("/Oi", "/Gy", {tools = "cl"})
 end
 
 target("gm2_core")
