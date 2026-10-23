@@ -24,6 +24,7 @@ if is_mode("debug") then
 end
 
 if is_mode("release") then
+    add_cxxflags("/Ob3", {tools = "cl"})
     set_symbols("debug")
     set_policy("build.optimization.lto", true)
 end
