@@ -182,6 +182,7 @@ if (page == 0) {
         row_param[2] = global.gm2_par_alignment_center
         row_param[3] = global.gm2_par_alignment_far
 
+        external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[0], "point")
         var i{}
         for (i = 1; i <= 3; i += 1) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
@@ -211,6 +212,7 @@ if (page == 0) {
         )
 
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[0], "box")
         var i{}
         for (i = 1; i <= 3; i += 1) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
