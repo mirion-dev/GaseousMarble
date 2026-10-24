@@ -90,8 +90,8 @@ namespace gm {
     }
 
     export template <std::floating_point T>
-    T to_radian(T degree) noexcept {
-        return degree * (std::numbers::pi_v<T> / 180);
+    T deg_to_rad(T deg) noexcept {
+        return deg * (std::numbers::pi_v<T> / 180);
     }
 
     export std::string to_string(std::wstring_view str) {

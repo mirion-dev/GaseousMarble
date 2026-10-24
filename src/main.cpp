@@ -284,13 +284,13 @@ API Real gm2_add_scale_y(Real raw_y) noexcept {
 }
 
 API Real gm2_add_rotation(Real raw_theta) noexcept {
-    draw.option().transform.prerotate(Eigen::Rotation2Df{ -to_radian(saturating_cast<f32>(raw_theta)) });
+    draw.option().transform.prerotate(Eigen::Rotation2Df{ -deg_to_rad(saturating_cast<f32>(raw_theta)) });
     return S_OK;
 }
 
 API Real gm2_add_skew(Real raw_x, Real raw_y) noexcept {
     draw.option().transform.preshear(
-        std::tan(to_radian(saturating_cast<f32>(raw_y))), std::tan(to_radian(saturating_cast<f32>(raw_x)))
+        std::tan(deg_to_rad(saturating_cast<f32>(raw_y))), std::tan(deg_to_rad(saturating_cast<f32>(raw_x)))
     );
     return S_OK;
 }

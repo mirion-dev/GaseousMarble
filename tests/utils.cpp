@@ -108,9 +108,9 @@ TEST_SUITE("gm2") {
         }
 
         SUBCASE("to_radian") {
-            CHECK(is_equal(to_radian(0.), 0.));
-            CHECK(is_equal(to_radian(180.), std::numbers::pi));
-            CHECK(is_equal(to_radian(-180.), -std::numbers::pi));
+            CHECK(is_equal(deg_to_rad(0.), 0.));
+            CHECK(is_equal(deg_to_rad(180.), std::numbers::pi));
+            CHECK(is_equal(deg_to_rad(-180.), -std::numbers::pi));
         }
 
         SUBCASE("filename") {
