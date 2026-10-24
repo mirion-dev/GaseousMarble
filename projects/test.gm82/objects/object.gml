@@ -140,12 +140,13 @@ lib_id=1
 action_id=603
 applies_to=self
 */
+external_call(global.gm2_draw_text, 0, 0, "FPS: " + string(fps))
+
 var title_height{ title_height = room_height / 2 * .2 }
 var table_padding{ table_padding = room_width / 2 * .05 }
 var cell_padding{ cell_padding = room_width / 2 * .05 }
 if (page == 0) {
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_alignment()")
 
@@ -226,10 +227,11 @@ if (page == 0) {
                 external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], "Text")
             }
         }
+
+        external_call(global.gm2_load_options, "")
     }
 
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_direction()")
 
@@ -283,11 +285,11 @@ if (page == 0) {
                 external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], text[col])
             }
         }
+
+        external_call(global.gm2_load_options, "")
     }
 
     {
-        external_call(global.gm2_load_options, "")
-
         grid_mesh(
             room_width / 2 + table_padding,
             room_height / 2 + title_height,
@@ -322,10 +324,11 @@ if (page == 0) {
             external_call(global.gm2_set_text_alignment, col_param[col])
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
+
+        external_call(global.gm2_load_options, "")
     }
 } else if (page == 1) {
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_max_width()")
 
@@ -357,10 +360,11 @@ if (page == 0) {
             external_call(global.gm2_set_max_width, row_param[row])
             external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
         }
+
+        external_call(global.gm2_load_options, "")
     }
 
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_word_wrapping()")
 
@@ -407,10 +411,11 @@ if (page == 0) {
             external_call(global.gm2_set_word_wrapping, col_param[col])
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
         }
+
+        external_call(global.gm2_load_options, "")
     }
 
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_trimming()")
 
@@ -455,10 +460,11 @@ if (page == 0) {
             external_call(global.gm2_set_trimming, col_param[col])
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
         }
+
+        external_call(global.gm2_load_options, "")
     }
 } else if (page == 2) {
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, title_height / 2, "gm2_set_line_spacing()")
 
@@ -505,10 +511,11 @@ if (page == 0) {
             external_call(global.gm2_set_line_spacing, col_param1[col], col_param2[col])
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
+
+        external_call(global.gm2_load_options, "")
     }
 
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width * 3 / 4, title_height / 2, "gm2_set_uniform_line_spacing()")
 
@@ -555,10 +562,11 @@ if (page == 0) {
             external_call(global.gm2_set_uniform_line_spacing, col_param1[col], col_param2[col])
             external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
+
+        external_call(global.gm2_load_options, "")
     }
 
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_tab_spacing()")
 
@@ -592,10 +600,11 @@ if (page == 0) {
             external_call(global.gm2_set_tab_spacing, row_param[row])
             external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], chr(9) + "The quick brown fox jumps over the lazy dog.")
         }
+
+        external_call(global.gm2_load_options, "")
     }
 
     {
-        external_call(global.gm2_load_options, "")
         external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_letter_spacing()")
 
@@ -629,5 +638,7 @@ if (page == 0) {
             external_call(global.gm2_set_letter_spacing, row_param[row])
             external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "The quick brown fox jumps over the lazy dog.")
         }
+
+        external_call(global.gm2_load_options, "")
     }
 }
