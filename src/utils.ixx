@@ -118,6 +118,9 @@ namespace gm {
         );
     }
 
+    export template <class T, auto Deleter, T Null = {}>
+    using Handle = wil::unique_any<T, decltype(Deleter), Deleter, wil::details::pointer_access_all, T, T, Null>;
+
     export struct Hash {
         template <class T>
         usize operator()(const T& value) const noexcept {

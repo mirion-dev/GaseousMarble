@@ -30,6 +30,12 @@ namespace gm {
     };
 
     export class Draw {
+        static void _delete_state_block(DWORD state_block) noexcept {
+            GM_WARN_IF_FAILED(env::d3d_device()->DeleteStateBlock(state_block));
+        }
+
+        using StateBlock = Handle<DWORD, _delete_state_block, -1>;
+
         struct Vertex {
             f32 x;
             f32 y;
@@ -42,6 +48,55 @@ namespace gm {
 
         DrawOption _option;
         LayoutCache _layout;
+        StateBlock _state_block;
+
+        static void _init() {
+            auto device{ env::d3d_device() };
+            GM_THROW_IF_FAILED(device->SetPixelShader(0));
+            GM_THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
+            GM_THROW_IF_FAILED(device->SetTexture(0, nullptr));
+
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ALPHATESTENABLE, false));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPING, true));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPLANEENABLE, 0));
+            GM_THROW_IF_FAILED(device->SetRenderState(
+                D3DRS_COLORWRITEENABLE,
+                D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE
+                    | D3DCOLORWRITEENABLE_ALPHA
+            ));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_EDGEANTIALIAS, false));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_FOGENABLE, false));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, false));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_LIGHTING, false));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_STENCILENABLE, false));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_WRAP0, 0));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ZENABLE, false));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ZWRITEENABLE, false));
+
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_POINT));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_POINT));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_NONE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_RESULTARG, D3DTA_CURRENT));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE));
+            GM_THROW_IF_FAILED(device->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE));
+        }
 
     public:
         Draw() noexcept = default;
@@ -121,56 +176,19 @@ namespace gm {
                 batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
             }
 
-            DWORD state_block;
-            GM_THROW_IF_FAILED(device->CreateStateBlock(D3DSBT_ALL, &state_block));
-            auto _{ wil::scope_exit([&] noexcept {
-                GM_WARN_IF_FAILED(device->ApplyStateBlock(state_block));
-                GM_WARN_IF_FAILED(device->DeleteStateBlock(state_block));
-            }) };
+            if (!_state_block) {
+                StateBlock state_block;
+                {
+                    GM_THROW_IF_FAILED(device->BeginStateBlock());
+                    auto _{ wil::scope_exit([&] noexcept { GM_WARN_IF_FAILED(device->EndStateBlock(&state_block)); }) };
+                    _init();
+                }
+                _state_block = std::move(state_block);
+            }
 
-            GM_THROW_IF_FAILED(device->SetPixelShader(0));
-            GM_THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
-
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ALPHATESTENABLE, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPING, true));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPLANEENABLE, 0));
-            GM_THROW_IF_FAILED(device->SetRenderState(
-                D3DRS_COLORWRITEENABLE,
-                D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE
-                    | D3DCOLORWRITEENABLE_ALPHA
-            ));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_EDGEANTIALIAS, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_FOGENABLE, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_LIGHTING, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_STENCILENABLE, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_WRAP0, 0));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ZENABLE, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ZWRITEENABLE, false));
-
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_POINT));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_POINT));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_NONE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_RESULTARG, D3DTA_CURRENT));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE));
+            GM_THROW_IF_FAILED(device->CaptureStateBlock(_state_block.get()));
+            auto _{ wil::scope_exit([&] noexcept { GM_WARN_IF_FAILED(device->ApplyStateBlock(_state_block.get())); }) };
+            _init();
 
             for (auto& [texture, vertices] : batches) {
                 GM_THROW_IF_FAILED(device->SetTexture(0, texture.get()));
