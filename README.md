@@ -3,7 +3,7 @@
 **Work in progress**. Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
 
 > \[!warning\]
->
+> 
 > Minimum system requirement: Windows 10, Version 1803.
 
 ### Development
@@ -93,10 +93,12 @@ Free a font or all fonts.
 **Removed**: Glyphs are extracted on demand, making manual memory management no longer necessary.
 
 <h2><code>gm2_draw_text(x, y, text)</code><br />
-<code>gm2_text_width(text)</code><br />
-<code>gm2_text_height(text)</code></h2>
++ <code>gm2_get_aabb_x(text)</code><br />
++ <code>gm2_get_aabb_y(text)</code><br />
+<code>gm2_get_aabb_width(text)</code><br />
+<code>gm2_get_aabb_height(text)</code></h2>
 
-Draw a UTF-8 text or get its visual size.
+Draw a UTF-8 text or get its visual AABB.
 
 | **v1** |
 | --- |
@@ -302,3 +304,16 @@ Set or get the text transformation.
 | `gm_get_offset()` |
 | `gm_get_scale()` |
 | `gm_get_rotation()` |
+
+<h2>* <code>gm2_set_color(tl, tr, bl, br)</code><br />
++ <code>gm2_get_color_tl()</code><br />
++ <code>gm2_get_color_tr()</code><br />
++ <code>gm2_get_color_bl()</code><br />
++ <code>gm2_get_color_br()</code></h2>
+
+Set or get the text color;
+
+| **v1** |
+| --- |
+| `gm_set_color()` |
+| `gm_set_color2()` |
