@@ -198,14 +198,14 @@ namespace gm {
             }
         }
 
-        Eigen::Vector2f text_size(std::wstring_view text) {
+        Eigen::AlignedBox2f text_aabb(std::wstring_view text) {
             assert(*this);
 
             if (!_option.is_valid()) {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            return _layout.get({ text, _option }).size;
+            return _layout.get({ text, _option }).aabb;
         }
     };
 

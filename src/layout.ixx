@@ -3,7 +3,7 @@ module;
 #include "log.h"
 
 #include <dwrite_3.h>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 #include <spdlog/spdlog.h>
 #include <wil/com.h>
 #include <wil/cppwinrt.h>
@@ -188,7 +188,7 @@ namespace gm {
 
     export struct Layout {
         std::vector<GlyphInstance> glyphs;
-        Eigen::Vector2f size;
+        Eigen::AlignedBox2f aabb;
 
         static Layout from(std::wstring_view text, const LayoutOption& option) {
             assert(option.is_valid());
@@ -222,8 +222,9 @@ namespace gm {
             );
             wil::com_ptr layout{ layout_base.query<env::DwTextLayout>() };
 
-            Eigen::Vector2f pos{ 0, 0 };
             DWRITE_TEXT_RANGE range{ 0, text.size() };
+            Eigen::Vector2f draw_pos{ 0, 0 };
+            Eigen::Vector2f pos{ 0, 0 };
 
             // [IDWriteTextFormat]
             GM_THROW_IF_FAILED(layout->SetTextAlignment(option.text_alignment()));
@@ -245,22 +246,24 @@ namespace gm {
 
             if (!option.is_box_model()) {
                 if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
-                    pos.x() -= max_size.x() / 2;
+                    draw_pos.x() -= max_size.x() / 2;
                 } else if (
                     (option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
                     == (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
                 ) {
-                    pos.x() -= max_size.x();
+                    draw_pos.x() -= max_size.x();
                 }
 
                 if (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_CENTER) {
-                    pos.y() -= max_size.y() / 2;
+                    draw_pos.y() -= max_size.y() / 2;
                 } else if (
                     (option.par_direction() == DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM)
                     == (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_FAR)
                 ) {
-                    pos.y() -= max_size.y();
+                    draw_pos.y() -= max_size.y();
                 }
+
+                pos = draw_pos;
             }
 
             // [IDWriteTextLayout1]
@@ -268,12 +271,12 @@ namespace gm {
                 GM_THROW_IF_FAILED(layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
             } else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
                 GM_THROW_IF_FAILED(layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
-                pos.x() -= option.letter_spacing;
+                draw_pos.x() -= option.letter_spacing;
             } else {
                 GM_THROW_IF_FAILED(
                     layout->SetCharacterSpacing(option.letter_spacing / 2, option.letter_spacing / 2, 0, range)
                 );
-                pos.x() -= option.letter_spacing / 2;
+                draw_pos.x() -= option.letter_spacing / 2;
             }
 
             // [IDWriteTextLayout3]
@@ -285,12 +288,15 @@ namespace gm {
             Layout result;
             wil::com_ptr<LayoutCollector> collector;
             collector.attach(winrt::make_self<LayoutCollector>().detach());
-            GM_THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), pos.x(), pos.y()));
+            GM_THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), draw_pos.x(), draw_pos.y()));
 
             DWRITE_TEXT_METRICS metrics;
             GM_THROW_IF_FAILED(layout->GetMetrics(&metrics));
 
-            result.size = { std::max(metrics.width - option.letter_spacing, 0.f), metrics.height };
+            Eigen::Vector2f start{ pos + Eigen::Vector2f{ metrics.left, metrics.top } };
+            Eigen::Vector2f size{ std::max(metrics.width - option.letter_spacing, 0.f), metrics.height };
+            result.aabb = { start, start + size };
+
             return result;
         }
     };

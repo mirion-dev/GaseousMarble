@@ -79,10 +79,10 @@ API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try 
 }
 GM_CATCH_RETURN()
 
-API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_size(to_wstring(raw_text)).x(); }
+API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).sizes().x(); }
 GM_CATCH_RETURN()
 
-API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_size(to_wstring(raw_text)).y(); }
+API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).sizes().y(); }
 GM_CATCH_RETURN()
 
 API Real gm2_save_options(StringRef raw_key) noexcept {
