@@ -94,6 +94,10 @@ namespace gm {
         return deg * (std::numbers::pi_v<T> / 180);
     }
 
+    export u32 swap_red_blue(u32 color) noexcept {
+        return color & 0xff00ff00 | color >> 16 & 0xff | (color & 0xff) << 16;
+    }
+
     export std::string to_string(std::wstring_view str) {
         std::u8string str_u8{ std::filesystem::path{ str }.u8string() };
         return { reinterpret_cast<char*>(str_u8.data()), str_u8.size() };
