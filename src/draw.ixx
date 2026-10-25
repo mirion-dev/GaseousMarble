@@ -139,10 +139,11 @@ namespace gm {
             Eigen::Vector2f view_size{ static_cast<f32>(d3d_view.Width), static_cast<f32>(d3d_view.Height) };
             Eigen::AlignedBox2f view{ view_start, view_start + view_size };
 
-            Eigen::Vector2f origin{ 0, 0 };
+            Eigen::Affine2f transform{ _option.transform };
             if (_option.is_box_model()) {
-                origin = _option.max_size.cwiseProduct(_option.origin);
+                transform.translate(-_option.max_size.cwiseProduct(_option.origin));
             }
+            transform.pretranslate(pos - Eigen::Vector2f::Constant(.5));
 
             Eigen::Vector2f texture_size{ atlas.option().texture_size.cast<f32>() };
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
@@ -153,17 +154,8 @@ namespace gm {
 
                 Eigen::Vector2f start{ glyph.pos + meta->offset.cast<f32>() };
                 Eigen::Vector2f size{ meta->size.cast<f32>() };
-                std::array<Eigen::Vector2f, 4> corners;
                 Eigen::AlignedBox2f aabb{ start, start + size };
-                std::array<Eigen::Vector2f, 4> tf_corners;
-                Eigen::AlignedBox2f tf_aabb;
-                for (usize i{}; i < 4; ++i) {
-                    corners[i] = aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i));
-                    tf_corners[i] = pos + _option.transform * (corners[i] - origin) - Eigen::Vector2f::Constant(.5f);
-                    tf_aabb.extend(tf_corners[i]);
-                }
-
-                if (!view.intersects(tf_aabb)) {
+                if (!view.intersects(aabb.transformed(transform))) {
                     continue;
                 }
 
@@ -171,12 +163,15 @@ namespace gm {
                 Eigen::AlignedBox2f uv_aabb{ uv_start, uv_start + size.cwiseQuotient(texture_size) };
                 std::array<Vertex, 4> vertices;
                 for (usize i{}; i < 4; ++i) {
-                    Eigen::Vector2f uv{ uv_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
-                    Eigen::Vector2f factor{ (corners[i] - text_aabb.min()).cwiseQuotient(text_aabb.sizes()) };
+                    Eigen::Vector2f corner{ aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
+                    Eigen::Vector2f factor{ (corner - text_aabb.min()).cwiseQuotient(text_aabb.sizes()) };
                     u32 color{ bilerp_color(
                         _option.color_tl, _option.color_tr, _option.color_bl, _option.color_br, factor.x(), factor.y()
                     ) };
-                    vertices[i] = { tf_corners[i].x(), tf_corners[i].y(), 0, 1, color, uv.x(), uv.y() };
+
+                    corner = transform * corner;
+                    Eigen::Vector2f uv{ uv_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
+                    vertices[i] = { corner.x(), corner.y(), 0, 1, color, uv.x(), uv.y() };
                 }
 
                 batches[meta->texture].append_range(
@@ -219,7 +214,7 @@ namespace gm {
             }
 
             aabb.transform(_option.transform);
-            aabb.translate(-Eigen::Vector2f::Constant(.5f));
+            aabb.translate(-Eigen::Vector2f::Constant(.5));
             return aabb;
         }
     };
