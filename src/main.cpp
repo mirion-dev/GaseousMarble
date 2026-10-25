@@ -79,12 +79,6 @@ API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try 
 }
 GM_CATCH_RETURN()
 
-API Real gm2_text_width(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).sizes().x(); }
-GM_CATCH_RETURN()
-
-API Real gm2_text_height(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).sizes().y(); }
-GM_CATCH_RETURN()
-
 API Real gm2_save_options(StringRef raw_key) noexcept {
     option_map.insert_or_assign(raw_key, draw.option());
     return S_OK;
@@ -302,6 +296,22 @@ API Real gm2_add_skew_x(Real raw_x) noexcept {
 API Real gm2_add_skew_y(Real raw_y) noexcept {
     return gm2_add_skew(0, raw_y);
 }
+
+API Real gm2_get_aabb_x(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).min().x(); }
+GM_CATCH_RETURN()
+
+API Real gm2_get_aabb_y(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).min().y(); }
+GM_CATCH_RETURN()
+
+API Real gm2_get_aabb_width(StringRef raw_text) noexcept try {
+    return draw.text_aabb(to_wstring(raw_text)).sizes().x();
+}
+GM_CATCH_RETURN()
+
+API Real gm2_get_aabb_height(StringRef raw_text) noexcept try {
+    return draw.text_aabb(to_wstring(raw_text)).sizes().y();
+}
+GM_CATCH_RETURN()
 
 API Real gm2_get_text_alignment() noexcept {
     return draw.option().alignment & DrawOption::TEXT_ALIGNMENT_MASK;

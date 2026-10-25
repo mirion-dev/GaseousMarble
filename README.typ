@@ -116,9 +116,9 @@ Free a font or all fonts.
 
 *Removed*: Glyphs are extracted on demand, making manual memory management no longer necessary.
 
-= `gm2_draw_text(x, y, text)`\ `gm2_text_width(text)`\ `gm2_text_height(text)`
+= `gm2_draw_text(x, y, text)`\ + `gm2_get_aabb_x(text)`\ + `gm2_get_aabb_y(text)`\ `gm2_get_aabb_width(text)`\ `gm2_get_aabb_height(text)`
 
-Draw a UTF-8 text or get its visual size.
+Draw a UTF-8 text or get its visual AABB.
 
 - `gm_draw()`
 - `gm_width()`

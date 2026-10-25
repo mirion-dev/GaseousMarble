@@ -205,7 +205,13 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            return _layout.get({ text, _option }).aabb;
+            Eigen::AlignedBox2f aabb{ _layout.get({ text, _option }).aabb };
+            if (_option.is_box_model()) {
+                aabb.translate(-_option.max_size.cwiseProduct(_option.origin));
+            }
+
+            aabb.transform(_option.transform);
+            return aabb;
         }
     };
 
