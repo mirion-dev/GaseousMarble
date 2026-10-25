@@ -269,3 +269,10 @@ Set or get the text transformation.
 - `gm_get_offset()`
 - `gm_get_scale()`
 - `gm_get_rotation()`
+
+= \* `gm2_set_color(tl, tr, bl, br)`\ + `gm2_get_color_tl()`\ + `gm2_get_color_tr()`\  + `gm2_get_color_bl()`\  + `gm2_get_color_br()`
+
+Set or get the text color;
+
+- `gm_set_color()`
+- `gm_set_color2()`

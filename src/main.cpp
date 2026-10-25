@@ -297,6 +297,14 @@ API Real gm2_add_skew_y(Real raw_y) noexcept {
     return gm2_add_skew(0, raw_y);
 }
 
+API Real gm2_set_color(Real raw_tl, Real raw_tr, Real raw_bl, Real raw_br) noexcept {
+    draw.option().color_tl = swap_red_blue(saturating_cast<u32>(raw_tl));
+    draw.option().color_tr = swap_red_blue(saturating_cast<u32>(raw_tr));
+    draw.option().color_bl = swap_red_blue(saturating_cast<u32>(raw_bl));
+    draw.option().color_br = swap_red_blue(saturating_cast<u32>(raw_br));
+    return S_OK;
+}
+
 API Real gm2_get_aabb_x(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).min().x(); }
 GM_CATCH_RETURN()
 
@@ -433,4 +441,20 @@ API Real gm2_get_transform_dx() noexcept {
 
 API Real gm2_get_transform_dy() noexcept {
     return draw.option().transform.translation().y();
+}
+
+API Real gm2_get_color_tl() noexcept {
+    return swap_red_blue(draw.option().color_tl);
+}
+
+API Real gm2_get_color_tr() noexcept {
+    return swap_red_blue(draw.option().color_tr);
+}
+
+API Real gm2_get_color_bl() noexcept {
+    return swap_red_blue(draw.option().color_bl);
+}
+
+API Real gm2_get_color_br() noexcept {
+    return swap_red_blue(draw.option().color_br);
 }

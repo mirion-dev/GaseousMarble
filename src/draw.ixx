@@ -24,8 +24,11 @@ namespace gm {
     export struct DrawOption : LayoutOption {
         Eigen::Vector2f origin{ 0, 0 };
         Eigen::Affine2f transform{ Eigen::Affine2f::Identity() };
-        // TODO: generate_font(): fill, stroke_width, stroke_fill, shadow_offset, shadow_fill
-        // TODO: gm_set_color2(color_top, color_bottom)
+        u32 color_tl{ 0xffffffff };
+        u32 color_tr{ 0xffffffff };
+        u32 color_bl{ 0xffffffff };
+        u32 color_br{ 0xffffffff };
+        // TODO: generate_font(): stroke_width, stroke_fill, shadow_offset, shadow_fill
         // TODO: gm_set_alpha(alpha)
     };
 
@@ -120,7 +123,7 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            auto glyphs{ _layout.get({ text, _option }).glyphs };
+            auto& [glyphs, text_aabb]{ _layout.get({ text, _option }) };
             GlyphAtlas& atlas{ _option.font.first->atlas() };
             auto glyph_meta{ atlas.get(
                 glyphs,
@@ -142,38 +145,43 @@ namespace gm {
             }
 
             Eigen::Vector2f texture_size{ atlas.option().texture_size.cast<f32>() };
-            u32 color{ D3DCOLOR_RGBA(0xff, 0xff, 0xff, 0xff) };
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
             for (auto [glyph, meta] : std::views::zip(glyphs, glyph_meta)) {
                 if (!meta->texture) {
                     continue;
                 }
 
-                Eigen::Vector2f start{ glyph.pos + meta->offset.cast<f32>() - origin };
-                Eigen::Vector2f end{ start + meta->size.cast<f32>() };
-                std::array points{ Eigen::Vector2f{ start.x(), start.y() },
-                                   Eigen::Vector2f{ end.x(), start.y() },
-                                   Eigen::Vector2f{ start.x(), end.y() },
-                                   Eigen::Vector2f{ end.x(), end.y() } };
-
-                Eigen::AlignedBox2f aabb;
-                for (auto& point : points) {
-                    point = pos + _option.transform * point - Eigen::Vector2f::Constant(.5f);
-                    aabb.extend(point);
+                Eigen::Vector2f start{ glyph.pos + meta->offset.cast<f32>() };
+                Eigen::Vector2f size{ meta->size.cast<f32>() };
+                std::array<Eigen::Vector2f, 4> corners;
+                Eigen::AlignedBox2f aabb{ start, start + size };
+                std::array<Eigen::Vector2f, 4> tf_corners;
+                Eigen::AlignedBox2f tf_aabb;
+                for (usize i{}; i < 4; ++i) {
+                    corners[i] = aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i));
+                    tf_corners[i] = pos + _option.transform * (corners[i] - origin) - Eigen::Vector2f::Constant(.5f);
+                    tf_aabb.extend(tf_corners[i]);
                 }
 
-                if ((aabb.max().array() < view.min().array()).any()
-                    || (aabb.min().array() > view.max().array()).any()) {
+                if (!view.intersects(tf_aabb)) {
                     continue;
                 }
 
                 Eigen::Vector2f uv_start{ meta->pos.cast<f32>().cwiseQuotient(texture_size) };
-                Eigen::Vector2f uv_end{ (meta->pos + meta->size).cast<f32>().cwiseQuotient(texture_size) };
-                Vertex a{ points[0].x(), points[0].y(), 0, 1, color, uv_start.x(), uv_start.y() };
-                Vertex b{ points[1].x(), points[1].y(), 0, 1, color, uv_end.x(), uv_start.y() };
-                Vertex c{ points[2].x(), points[2].y(), 0, 1, color, uv_start.x(), uv_end.y() };
-                Vertex d{ points[3].x(), points[3].y(), 0, 1, color, uv_end.x(), uv_end.y() };
-                batches[meta->texture].append_range(std::array{ a, b, c, d, c, b });
+                Eigen::AlignedBox2f uv_aabb{ uv_start, uv_start + size.cwiseQuotient(texture_size) };
+                std::array<Vertex, 4> vertices;
+                for (usize i{}; i < 4; ++i) {
+                    Eigen::Vector2f uv{ uv_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
+                    Eigen::Vector2f factor{ (corners[i] - text_aabb.min()).cwiseQuotient(text_aabb.sizes()) };
+                    u32 color{ bilerp_color(
+                        _option.color_tl, _option.color_tr, _option.color_bl, _option.color_br, factor.x(), factor.y()
+                    ) };
+                    vertices[i] = { tf_corners[i].x(), tf_corners[i].y(), 0, 1, color, uv.x(), uv.y() };
+                }
+
+                batches[meta->texture].append_range(
+                    std::array{ vertices[0], vertices[1], vertices[2], vertices[3], vertices[2], vertices[1] }
+                );
             }
 
             if (!_state_block) {
@@ -211,6 +219,7 @@ namespace gm {
             }
 
             aabb.transform(_option.transform);
+            aabb.translate(-Eigen::Vector2f::Constant(.5f));
             return aabb;
         }
     };
