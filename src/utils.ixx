@@ -94,6 +94,19 @@ namespace gm {
         return deg * (std::numbers::pi_v<T> / 180);
     }
 
+    export u32 lerp_color(u32 from, u32 to, f32 factor) noexcept {
+        u32 result{};
+        for (int shift{}; shift < 32; shift += 8) {
+            result |= static_cast<u32>(std::lerp(from >> shift & 0xff, to >> shift & 0xff, factor)) << shift;
+        }
+
+        return result;
+    }
+
+    export u32 bilerp_color(u32 tl, u32 tr, u32 bl, u32 br, f32 factor_x, f32 factor_y) noexcept {
+        return lerp_color(lerp_color(tl, tr, factor_x), lerp_color(bl, br, factor_x), factor_y);
+    }
+
     export u32 swap_red_blue(u32 color) noexcept {
         return color & 0xff00ff00 | color >> 16 & 0xff | (color & 0xff) << 16;
     }

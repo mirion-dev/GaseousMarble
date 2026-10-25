@@ -107,10 +107,30 @@ TEST_SUITE("gm2") {
             CHECK(saturating_cast<i32>(-std::numeric_limits<f32>::infinity()) == i32_min);
         }
 
-        SUBCASE("to_radian") {
+        SUBCASE("deg_to_rad") {
             CHECK(is_equal(deg_to_rad(0.), 0.));
             CHECK(is_equal(deg_to_rad(180.), std::numbers::pi));
             CHECK(is_equal(deg_to_rad(-180.), -std::numbers::pi));
+        }
+
+        SUBCASE("lerp_color") {
+            CHECK(lerp_color(0x00000000, 0xffffffff, 0) == 0x00000000);
+            CHECK(lerp_color(0x00000000, 0xffffffff, 1) == 0xffffffff);
+            CHECK(lerp_color(0x11223344, 0x55667788, .25) == 0x22334455);
+        }
+
+        SUBCASE("bilerp_color") {
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 0, 0) == 0xff000000);
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 0) == 0x00ff0000);
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 0, 1) == 0x0000ff00);
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 1) == 0x000000ff);
+            CHECK(bilerp_color(0x00000000, 0x00ff0000, 0x0000ff00, 0x000000ff, .25, .25) == 0x002f2f0f);
+        }
+
+        SUBCASE("swap_red_blue") {
+            CHECK(swap_red_blue(0) == 0);
+            CHECK(swap_red_blue(0x12345678) == 0x12785634);
+            CHECK(swap_red_blue(0x12785634) == 0x12345678);
         }
 
         SUBCASE("filename") {
