@@ -28,8 +28,12 @@ namespace gm {
         u32 color_tr{ 0xffffffff };
         u32 color_bl{ 0xffffffff };
         u32 color_br{ 0xffffffff };
+        f32 opacity{ 1 };
         // TODO: generate_font(): stroke_width, stroke_fill, shadow_offset, shadow_fill
-        // TODO: gm_set_alpha(alpha)
+
+        bool is_valid() const noexcept {
+            return LayoutOption::is_valid() && 0 <= opacity && opacity <= 1;
+        }
     };
 
     export class Draw {
@@ -168,8 +172,16 @@ namespace gm {
                     Eigen::Vector2f corner{ transform * aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
                     Eigen::Vector2f uv{ uv_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
                     Eigen::Vector2f factor{ norm_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
-                    u32 color{ bilerp_color(
-                        _option.color_tl, _option.color_tr, _option.color_bl, _option.color_br, factor.x(), factor.y()
+                    u32 color{ with_opacity(
+                        bilerp_color(
+                            _option.color_tl,
+                            _option.color_tr,
+                            _option.color_bl,
+                            _option.color_br,
+                            factor.x(),
+                            factor.y()
+                        ),
+                        _option.opacity
                     ) };
                     vertices[i] = { corner.x(), corner.y(), 0, 1, color, uv.x(), uv.y() };
                 }

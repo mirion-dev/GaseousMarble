@@ -323,6 +323,11 @@ API Real gm2_set_color(Real raw_tl, Real raw_tr, Real raw_bl, Real raw_br) noexc
     return S_OK;
 }
 
+API Real gm2_set_opacity(Real raw_opacity) noexcept {
+    draw.option().opacity = std::clamp(saturating_cast<f32>(raw_opacity), 0.f, 1.f);
+    return S_OK;
+}
+
 API Real gm2_get_aabb_x(StringRef raw_text) noexcept try { return draw.text_aabb(to_wstring(raw_text)).min().x(); }
 GM_CATCH_RETURN()
 
@@ -475,4 +480,8 @@ API Real gm2_get_color_bl() noexcept {
 
 API Real gm2_get_color_br() noexcept {
     return swap_red_blue(draw.option().color_br);
+}
+
+API Real gm2_get_opacity() noexcept {
+    return draw.option().opacity;
 }

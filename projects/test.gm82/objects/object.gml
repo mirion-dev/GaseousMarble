@@ -44,6 +44,7 @@ global.gm2_add_skew                 = external_define(dll_path, "gm2_add_skew", 
 global.gm2_add_skew_x               = external_define(dll_path, "gm2_add_skew_x", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_add_skew_y               = external_define(dll_path, "gm2_add_skew_y", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_color                = external_define(dll_path, "gm2_set_color", dll_cdecl, ty_real, 4, ty_real, ty_real, ty_real, ty_real)
+global.gm2_set_opacity              = external_define(dll_path, "gm2_set_opacity", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_get_aabb_x               = external_define(dll_path, "gm2_get_aabb_x", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_get_aabb_y               = external_define(dll_path, "gm2_get_aabb_y", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_get_aabb_width           = external_define(dll_path, "gm2_get_aabb_width", dll_cdecl, ty_real, 1, ty_string)
@@ -80,6 +81,7 @@ global.gm2_get_color_tl             = external_define(dll_path, "gm2_get_color_t
 global.gm2_get_color_tr             = external_define(dll_path, "gm2_get_color_tr", dll_cdecl, ty_real, 0)
 global.gm2_get_color_bl             = external_define(dll_path, "gm2_get_color_bl", dll_cdecl, ty_real, 0)
 global.gm2_get_color_br             = external_define(dll_path, "gm2_get_color_br", dll_cdecl, ty_real, 0)
+global.gm2_get_opacity              = external_define(dll_path, "gm2_get_opacity", dll_cdecl, ty_real, 0)
 
 global.gm2_font_weight_thin        = 100
 global.gm2_font_weight_extra_light = 200
@@ -734,7 +736,7 @@ if (page == 0) {
 
     var row_header{}
     row_header[1] = "gm2_set_color()"
-    row_header[2] = ""
+    row_header[2] = "gm2_set_opacity()"
     row_header[3] = ""
     row_header[4] = ""
     row_header[5] = ""
@@ -747,8 +749,9 @@ if (page == 0) {
 
     external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
     external_call(global.gm2_set_origin, .5, .5)
+    external_call(global.gm2_save_options, "item")
 
-    var hue{ hue = current_time / 6 }
+    var hue{ hue = current_time / 8 }
     external_call(
         global.gm2_set_color,
         external_call(global.gm2_make_hsv, hue mod 256, 255, 255, 255),
@@ -757,6 +760,11 @@ if (page == 0) {
         external_call(global.gm2_make_hsv, (hue + 64) mod 256, 255, 255, 255)
     )
     external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_load_options, "item")
+
+    external_call(global.gm2_set_opacity, (1 + sin(current_time / 700)) / 2)
+    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_load_options, "item")
 
     external_call(global.gm2_load_options, "")
 }

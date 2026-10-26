@@ -1,5 +1,6 @@
 module;
 
+#include <cassert>
 #include <eigen3/Eigen/Core>
 #include <wil/com.h>
 
@@ -109,6 +110,11 @@ namespace gm {
 
     export u32 swap_red_blue(u32 color) noexcept {
         return color & 0xff00ff00 | color >> 16 & 0xff | (color & 0xff) << 16;
+    }
+
+    export u32 with_opacity(u32 color, f32 opacity) noexcept {
+        assert(0 <= opacity && opacity <= 1);
+        return color & 0x00ffffff | static_cast<u32>(std::lround((color >> 24) * opacity)) << 24;
     }
 
     export u32 make_rgb(u8 red, u8 green, u8 blue, u8 alpha = 255) noexcept {

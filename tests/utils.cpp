@@ -133,6 +133,17 @@ TEST_SUITE("gm2") {
             CHECK(swap_red_blue(0x12785634) == 0x12345678);
         }
 
+        SUBCASE("with_opacity") {
+            CHECK(with_opacity(0x00112233, 0) == 0x00112233);
+            CHECK(with_opacity(0x00112233, 1) == 0x00112233);
+            CHECK(with_opacity(0xff112233, 0) == 0x00112233);
+            CHECK(with_opacity(0xff112233, 1) == 0xff112233);
+            CHECK(with_opacity(0xff112233, .5) == 0x80112233);
+            CHECK(with_opacity(0x80112233, 1) == 0x80112233);
+            CHECK(with_opacity(0x80112233, .5) == 0x40112233);
+            CHECK(with_opacity(0xffffffff, .25) == 0x40ffffff);
+        }
+
         SUBCASE("make_rgb") {
             CHECK(make_rgb(0, 0, 0) == 0xff000000);
             CHECK(make_rgb(255, 255, 255) == 0xffffffff);

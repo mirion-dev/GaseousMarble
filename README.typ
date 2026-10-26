@@ -281,5 +281,14 @@ Set or get the text color. The alpha channel is *respected*.
 
 - `gm_set_color()`
 - `gm_set_color2()`
+- `gm_get_color_top()`
+- `gm_get_color_bottom()`
 
 *New*: 4-way gradients.
+
+= `gm2_set_opacity(opacity)`\ `gm2_get_opacity()`
+
+Set or get the text opacity.
+
+- `gm_set_alpha()`
+- `gm_get_alpha()`
