@@ -36,7 +36,7 @@
 | `atlas.texture_height` | `1024` | Texture height of glyph atlases |
 | `atlas.max_texture_num` | `16` | Maximum number of textures for each glyph atlas |
 | `raster.min_antialiasing_size_h` | `0` | Font horizontal antialiasing threshold |
-| `raster.min_antialiasing_size_v` | `24` | Font vertical antialiasing threshold |
+| `raster.min_antialiasing_size_v` | `0` | Font vertical antialiasing threshold |
 | `max_font_num` | `64` | Maximum number of fonts |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 

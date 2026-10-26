@@ -30,7 +30,7 @@ namespace gm {
     };
 
     export struct RasterOption {
-        Eigen::Vector2<f32> min_antialiasing_size{ 0, 24 };
+        Eigen::Vector2<f32> min_antialiasing_size{ 0, 0 };
 
         bool is_valid() const noexcept {
             return (min_antialiasing_size.array() >= 0).all();
