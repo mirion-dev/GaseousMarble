@@ -161,16 +161,16 @@ namespace gm {
 
                 Eigen::Vector2f uv_start{ meta->pos.cast<f32>().cwiseQuotient(texture_size) };
                 Eigen::AlignedBox2f uv_aabb{ uv_start, uv_start + size.cwiseQuotient(texture_size) };
+                Eigen::AlignedBox2f norm_aabb{ (aabb.min() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()),
+                                               (aabb.max() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()) };
                 std::array<Vertex, 4> vertices;
-                for (usize i{}; i < 4; ++i) {
-                    Eigen::Vector2f corner{ aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
-                    Eigen::Vector2f factor{ (corner - text_aabb.min()).cwiseQuotient(text_aabb.sizes()) };
+                for (usize i{}; i < vertices.size(); ++i) {
+                    Eigen::Vector2f corner{ transform * aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
+                    Eigen::Vector2f uv{ uv_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
+                    Eigen::Vector2f factor{ norm_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
                     u32 color{ bilerp_color(
                         _option.color_tl, _option.color_tr, _option.color_bl, _option.color_br, factor.x(), factor.y()
                     ) };
-
-                    corner = transform * corner;
-                    Eigen::Vector2f uv{ uv_aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
                     vertices[i] = { corner.x(), corner.y(), 0, 1, color, uv.x(), uv.y() };
                 }
 
