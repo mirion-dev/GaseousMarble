@@ -124,13 +124,38 @@ TEST_SUITE("gm2") {
             CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 0) == 0x00ff0000);
             CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 0, 1) == 0x0000ff00);
             CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 1) == 0x000000ff);
-            CHECK(bilerp_color(0x00000000, 0x00ff0000, 0x0000ff00, 0x000000ff, .25, .25) == 0x002f2f0f);
+            CHECK(bilerp_color(0x00000000, 0x00ff0000, 0x0000ff00, 0x000000ff, .25, .25) == 0x00303010);
         }
 
         SUBCASE("swap_red_blue") {
             CHECK(swap_red_blue(0) == 0);
             CHECK(swap_red_blue(0x12345678) == 0x12785634);
             CHECK(swap_red_blue(0x12785634) == 0x12345678);
+        }
+
+        SUBCASE("make_rgb") {
+            CHECK(make_rgb(0, 0, 0) == 0xff000000);
+            CHECK(make_rgb(255, 255, 255) == 0xffffffff);
+            CHECK(make_rgb(255, 0, 0) == 0xffff0000);
+            CHECK(make_rgb(0, 255, 0) == 0xff00ff00);
+            CHECK(make_rgb(0, 0, 255) == 0xff0000ff);
+            CHECK(make_rgb(0x12, 0x34, 0x56) == 0xff123456);
+            CHECK(make_rgb(0x12, 0x34, 0x56, 0x78) == 0x78123456);
+            CHECK(make_rgb(0, 0, 0, 0) == 0x00000000);
+        }
+
+        SUBCASE("make_hsv") {
+            CHECK(make_hsv(0, 0, 0) == 0xff000000);
+            CHECK(make_hsv(0, 0, 128) == 0xff808080);
+            CHECK(make_hsv(0, 0, 255) == 0xffffffff);
+            CHECK(make_hsv(0, 255, 0) == 0xff000000);
+            CHECK(make_hsv(0, 255, 128) == 0xff800000);
+            CHECK(make_hsv(0, 255, 255) == 0xffff0000);
+            CHECK(make_hsv(85, 255, 255) == 0xff00ff00);
+            CHECK(make_hsv(170, 255, 255) == 0xff0000ff);
+            CHECK(make_hsv(149, 202, 86) == 0xff123456);
+            CHECK(make_hsv(149, 202, 86, 0x78) == 0x78123456);
+            CHECK(make_hsv(0, 0, 0, 0) == 0x00000000);
         }
 
         SUBCASE("filename") {
