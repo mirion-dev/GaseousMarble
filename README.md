@@ -9,8 +9,9 @@
 ### Development
 
 1. `git clone --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
-2. Install [DirectX 8.1 SDK](https://archive.org/details/dx81sdk_full) to `third_party/dx81`.
-3. Build [clang-format 24](https://github.com/llvm/llvm-project/) if formatting is needed.
+2. Install [DirectX 8.1b SDK](https://archive.org/details/dx81b_sdk) to `third_party/dx8.1b`.
+3. Install [DirectX 9.0c SDK](https://archive.org/details/dxsdk_jun10) to `third_party/dx9.0c`.
+4. Build [clang-format 24](https://github.com/llvm/llvm-project/) if formatting is needed.
 
 ### Credits
 

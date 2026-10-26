@@ -7,10 +7,10 @@ set_warnings("all", "error")
 
 add_requires("vcpkg::doctest", {debug = is_mode("debug"), configs = {shared = true}})
 add_requires("vcpkg::eigen3", "vcpkg::glaze", "vcpkg::spdlog", "vcpkg::wil", {debug = is_mode("debug"), configs = {runtimes = "MD"}})
-add_linkdirs("third_party/dx81/lib")
+add_linkdirs("third_party/dx8.1b/lib")
 on_config(function (target)
     target:add("sysincludedirs", path.splitenv(target:toolchain("msvc"):runenvs().INCLUDE))
-    target:add("sysincludedirs", "third_party/dx81/include", "third_party/rectpack2d/src")
+    target:add("sysincludedirs", "third_party/dx8.1b/include", "third_party/rectpack2d/src")
 end)
 
 add_defines("GASEOUSMARBLE_EXPORTS", "_UNICODE", "NOMINMAX", "UNICODE")

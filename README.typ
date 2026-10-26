@@ -14,7 +14,8 @@
 == Development
 
 + `git clone --recurse-submodules https://github.com/mirion-dev/GaseousMarble.git`.
-+ Install #link("https://archive.org/details/dx81sdk_full")[DirectX 8.1 SDK] to `third_party/dx81`.
++ Install #link("https://archive.org/details/dx81b_sdk")[DirectX 8.1b SDK] to `third_party/dx8.1b`.
++ Install #link("https://archive.org/details/dxsdk_jun10")[DirectX 9.0c SDK] to `third_party/dx9.0c`.
 + Build #link("https://github.com/llvm/llvm-project/")[clang-format 24] if formatting is needed.
 
 == Credits
