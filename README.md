@@ -41,7 +41,7 @@
 
 <h2>* <code>gm2_new_font(key, name, properties, size, locale)</code></h2>
 
-Add a font from system fonts or font files. `key` should be non-empty.
+Add a font from system fonts or font files. `key` should be **non-empty**.
 
 If `locale` is empty, the user’s default locale applies.
 
@@ -92,13 +92,13 @@ Free a font or all fonts.
 
 **Removed**: Glyphs are extracted on demand, making manual memory management no longer necessary.
 
-<h2><code>gm2_draw_text(x, y, text)</code><br />
+<h2>* <code>gm2_draw_text(x, y, text)</code><br />
 + <code>gm2_get_aabb_x(text)</code><br />
 + <code>gm2_get_aabb_y(text)</code><br />
 <code>gm2_get_aabb_width(text)</code><br />
 <code>gm2_get_aabb_height(text)</code></h2>
 
-Draw a UTF-8 text or get its visual AABB.
+Draw a UTF-8 text or get its **visual** AABB.
 
 | **v1** |
 | --- |
@@ -112,6 +112,11 @@ Draw a UTF-8 text or get its visual AABB.
 + <code>gm2_load_options(key)</code></h2>
 
 Save or load the current draw options.
+
+<h2>+ <code>gm2_make_rgb(red, green, blue, alpha)</code><br />
++ <code>gm2_make_hsv(hue, saturation, value, alpha)</code></h2>
+
+Create a color. The range is **0 to 255**.
 
 <h2><code>gm2_set_font(key)</code><br />
 <code>gm2_get_font()</code><br />
@@ -273,7 +278,7 @@ Set or get the word spacing of the text.
 + <code>gm2_get_origin_x()</code><br />
 + <code>gm2_get_origin_y()</code></h2>
 
-Set or get the normalized origin of the text. Only applies to the box model.
+Set or get the **normalized** origin of the text. Only applies to the **box** model.
 
 <h2>+ <code>gm2_set_transform(a00, a01, a10, a11, dx, dy)</code><br />
 + <code>gm2_add_transform(a00, a01, a10, a11, dx, dy)</code><br />
@@ -294,7 +299,7 @@ Set or get the normalized origin of the text. Only applies to the box model.
 + <code>gm2_get_transform_dx()</code><br />
 + <code>gm2_get_transform_dy()</code></h2>
 
-Set or get the text transformation.
+Set or get the text transformation. Angles are in **degrees**.
 
 | **v1** |
 | --- |
@@ -305,15 +310,19 @@ Set or get the text transformation.
 | `gm_get_scale()` |
 | `gm_get_rotation()` |
 
+**New**: Arbitrary affine transformations.
+
 <h2>* <code>gm2_set_color(tl, tr, bl, br)</code><br />
-+ <code>gm2_get_color_tl()</code><br />
+* <code>gm2_get_color_tl()</code><br />
 + <code>gm2_get_color_tr()</code><br />
-+ <code>gm2_get_color_bl()</code><br />
+* <code>gm2_get_color_bl()</code><br />
 + <code>gm2_get_color_br()</code></h2>
 
-Set or get the text color;
+Set or get the text color. The alpha channel is **respected**.
 
 | **v1** |
 | --- |
 | `gm_set_color()` |
 | `gm_set_color2()` |
+
+**New**: 4-way gradients.
