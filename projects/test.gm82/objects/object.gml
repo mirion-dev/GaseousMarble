@@ -80,49 +80,60 @@ global.gm2_get_color_tl             = external_define(dll_path, "gm2_get_color_t
 global.gm2_get_color_tr             = external_define(dll_path, "gm2_get_color_tr", dll_cdecl, ty_real, 0)
 global.gm2_get_color_bl             = external_define(dll_path, "gm2_get_color_bl", dll_cdecl, ty_real, 0)
 global.gm2_get_color_br             = external_define(dll_path, "gm2_get_color_br", dll_cdecl, ty_real, 0)
-global.gm2_font_weight_thin = 100
+
+global.gm2_font_weight_thin        = 100
 global.gm2_font_weight_extra_light = 200
-global.gm2_font_weight_light = 300
-global.gm2_font_weight_normal = 400
-global.gm2_font_weight_medium = 500
-global.gm2_font_weight_semi_bold = 600
-global.gm2_font_weight_bold = 700
-global.gm2_font_weight_extra_bold = 800
-global.gm2_font_weight_black = 900
+global.gm2_font_weight_light       = 300
+global.gm2_font_weight_normal      = 400
+global.gm2_font_weight_medium      = 500
+global.gm2_font_weight_semi_bold   = 600
+global.gm2_font_weight_bold        = 700
+global.gm2_font_weight_extra_bold  = 800
+global.gm2_font_weight_black       = 900
 global.gm2_font_weight_extra_black = 950
-global.gm2_font_style_normal = 0 << 10
-global.gm2_font_style_italic = 2 << 10
+
+global.gm2_font_style_normal  = 0 << 10
+global.gm2_font_style_italic  = 2 << 10
 global.gm2_font_style_oblique = 1 << 10
+
 global.gm2_font_stretch_ultra_condensed = 1 << 12
 global.gm2_font_stretch_extra_condensed = 2 << 12
-global.gm2_font_stretch_condensed = 3 << 12
-global.gm2_font_stretch_semi_condensed = 4 << 12
-global.gm2_font_stretch_normal = 5 << 12
-global.gm2_font_stretch_semi_expanded = 6 << 12
-global.gm2_font_stretch_expanded = 7 << 12
-global.gm2_font_stretch_extra_expanded = 8 << 12
-global.gm2_font_stretch_ultra_expanded = 9 << 12
+global.gm2_font_stretch_condensed       = 3 << 12
+global.gm2_font_stretch_semi_condensed  = 4 << 12
+global.gm2_font_stretch_normal          = 5 << 12
+global.gm2_font_stretch_semi_expanded   = 6 << 12
+global.gm2_font_stretch_expanded        = 7 << 12
+global.gm2_font_stretch_extra_expanded  = 8 << 12
+global.gm2_font_stretch_ultra_expanded  = 9 << 12
+
 global.gm2_text_direction_ltr = 0
 global.gm2_text_direction_rtl = 1
+
 global.gm2_par_direction_ttb = 0 << 2
 global.gm2_par_direction_btt = 1 << 2
-global.gm2_text_alignment_leading = 0
-global.gm2_text_alignment_center = 2
-global.gm2_text_alignment_trailing = 1
+
+global.gm2_text_alignment_leading   = 0
+global.gm2_text_alignment_center    = 2
+global.gm2_text_alignment_trailing  = 1
 global.gm2_text_alignment_justified = 3
-global.gm2_par_alignment_near = 0 << 2
+
+global.gm2_par_alignment_near   = 0 << 2
 global.gm2_par_alignment_center = 2 << 2
-global.gm2_par_alignment_far = 1 << 2
+global.gm2_par_alignment_far    = 1 << 2
+
 global.gm2_infinity = 100000
-global.gm2_word_wrapping_none = 1
-global.gm2_word_wrapping_char = 4
-global.gm2_word_wrapping_word = 2
+
+global.gm2_word_wrapping_none       = 1
+global.gm2_word_wrapping_char       = 4
+global.gm2_word_wrapping_word       = 2
 global.gm2_word_wrapping_whole_word = 3
+
 global.gm2_trimming_none = 0
 global.gm2_trimming_char = 1
 global.gm2_trimming_word = 2
+
 global.gm2_line_spacing_type_proportional = 2
-global.gm2_line_spacing_type_uniform = 1
+global.gm2_line_spacing_type_uniform      = 1
 
 external_call(
     global.gm2_internal_new_font,
