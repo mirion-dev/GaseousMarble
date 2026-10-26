@@ -140,7 +140,7 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-page = (page + 1) mod 4
+page = (page + 1) mod 5
 #define Draw_0
 /*"/*'/**//* YYD ACTION
 lib_id=1
@@ -704,6 +704,46 @@ if (page == 0) {
     external_call(global.gm2_add_skew_x, cos(phase) * 12)
     external_call(global.gm2_add_translation, cos(phase) * 60, sin(phase) * 10)
     external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[5], "Lorem ipsum dolor sit amet.")
+
+    external_call(global.gm2_load_options, "")
+} else if (page == 4) {
+    grid_mesh(
+        table_padding,
+        table_padding,
+        5,
+        1,
+        room_width - table_padding * 2,
+        room_height - table_padding * 2,
+        170,
+        0,
+        $e6b689
+    )
+
+    var row_header{}
+    row_header[1] = "gm2_set_color()"
+    row_header[2] = ""
+    row_header[3] = ""
+    row_header[4] = ""
+    row_header[5] = ""
+
+    external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+    var i{}
+    for (i = 1; i <= 5; i += 1) {
+        external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
+    }
+
+    external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+    external_call(global.gm2_set_origin, .5, .5)
+
+    var hue{ hue = current_time / 6 }
+    external_call(
+        global.gm2_set_color,
+        make_color_hsv(hue, 255, 255) | $ff000000,
+        make_color_hsv(hue - 64, 255, 255) | $ff000000,
+        make_color_hsv(hue - 128, 255, 255) | $ff000000,
+        make_color_hsv(hue - 192, 255, 255) | $ff000000
+    )
+    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
 
     external_call(global.gm2_load_options, "")
 }
