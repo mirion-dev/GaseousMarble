@@ -97,7 +97,7 @@ namespace gm {
     export u32 lerp_color(u32 from, u32 to, f32 factor) noexcept {
         u32 result{};
         for (int shift{}; shift < 32; shift += 8) {
-            result |= static_cast<u32>(std::lerp(from >> shift & 0xff, to >> shift & 0xff, factor)) << shift;
+            result |= std::lround(std::lerp(from >> shift & 0xff, to >> shift & 0xff, factor)) << shift;
         }
 
         return result;
@@ -109,6 +109,40 @@ namespace gm {
 
     export u32 swap_red_blue(u32 color) noexcept {
         return color & 0xff00ff00 | color >> 16 & 0xff | (color & 0xff) << 16;
+    }
+
+    export u32 make_rgb(u8 red, u8 green, u8 blue, u8 alpha = 255) noexcept {
+        return static_cast<u32>(alpha) << 24 | static_cast<u32>(red) << 16 | static_cast<u32>(green) << 8 | blue;
+    }
+
+    export u32 make_hsv(u8 hue, u8 saturation, u8 value, u8 alpha = 255) noexcept {
+        f32 h{ hue / 255.f * 6 };
+        f32 s{ saturation / 255.f };
+        f32 v{ value / 255.f };
+        f32 c{ v * s };
+        f32 x{ c * (1 - std::abs(std::fmod(h, 2.f) - 1)) };
+        f32 m{ v - c };
+        f32 r, g, b;
+        if (h < 1) {
+            std::tie(r, g, b) = std::tuple{ c, x, 0 };
+        } else if (h < 2) {
+            std::tie(r, g, b) = std::tuple{ x, c, 0 };
+        } else if (h < 3) {
+            std::tie(r, g, b) = std::tuple{ 0, c, x };
+        } else if (h < 4) {
+            std::tie(r, g, b) = std::tuple{ 0, x, c };
+        } else if (h < 5) {
+            std::tie(r, g, b) = std::tuple{ x, 0, c };
+        } else {
+            std::tie(r, g, b) = std::tuple{ c, 0, x };
+        }
+
+        return make_rgb(
+            static_cast<u8>(std::lround((r + m) * 255)),
+            static_cast<u8>(std::lround((g + m) * 255)),
+            static_cast<u8>(std::lround((b + m) * 255)),
+            alpha
+        );
     }
 
     export std::string to_string(std::wstring_view str) {

@@ -95,6 +95,24 @@ API Real gm2_load_options(StringRef raw_key) noexcept try {
 }
 GM_CATCH_RETURN()
 
+API Real gm2_make_rgb(Real raw_red, Real raw_green, Real raw_blue, Real raw_alpha) noexcept {
+    return swap_red_blue(make_rgb(
+        saturating_cast<u8>(raw_red),
+        saturating_cast<u8>(raw_green),
+        saturating_cast<u8>(raw_blue),
+        saturating_cast<u8>(raw_alpha)
+    ));
+}
+
+API Real gm2_make_hsv(Real raw_hue, Real raw_saturation, Real raw_value, Real raw_alpha) noexcept {
+    return swap_red_blue(make_hsv(
+        saturating_cast<u8>(raw_hue),
+        saturating_cast<u8>(raw_saturation),
+        saturating_cast<u8>(raw_value),
+        saturating_cast<u8>(raw_alpha)
+    ));
+}
+
 API Real gm2_set_alignment(Real raw_alignment) noexcept {
     draw.option().alignment = saturating_cast<u8>(raw_alignment, 0) & DrawOption::ALIGNMENT_MASK;
     return S_OK;
