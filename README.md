@@ -99,7 +99,7 @@ Free a font or all fonts.
 <code>gm2_get_aabb_width(text)</code><br />
 <code>gm2_get_aabb_height(text)</code></h2>
 
-Draw a UTF-8 text or get its **visual** AABB.
+Draw a UTF-8 text or get its **actual** AABB.
 
 | **v1** |
 | --- |

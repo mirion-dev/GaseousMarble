@@ -118,7 +118,7 @@ Free a font or all fonts.
 
 = \* `gm2_draw_text(x, y, text)`\ + `gm2_get_aabb_x(text)`\ + `gm2_get_aabb_y(text)`\ `gm2_get_aabb_width(text)`\ `gm2_get_aabb_height(text)`
 
-Draw a UTF-8 text or get its *visual* AABB.
+Draw a UTF-8 text or get its *actual* AABB.
 
 - `gm_draw()`
 - `gm_width()`
