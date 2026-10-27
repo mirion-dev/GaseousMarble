@@ -96,6 +96,8 @@ namespace gm {
     }
 
     export u32 lerp_color(u32 from, u32 to, f32 factor) noexcept {
+        assert(0 <= factor && factor <= 1);
+
         u32 result{};
         for (int shift{}; shift < 32; shift += 8) {
             result |= std::lround(std::lerp(from >> shift & 0xff, to >> shift & 0xff, factor)) << shift;
@@ -105,6 +107,7 @@ namespace gm {
     }
 
     export u32 bilerp_color(u32 tl, u32 tr, u32 bl, u32 br, f32 factor_x, f32 factor_y) noexcept {
+        assert(0 <= factor_x && factor_x <= 1 && 0 <= factor_y && factor_y <= 1);
         return lerp_color(lerp_color(tl, tr, factor_x), lerp_color(bl, br, factor_x), factor_y);
     }
 

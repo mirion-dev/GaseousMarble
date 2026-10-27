@@ -165,8 +165,10 @@ namespace gm {
 
                 Eigen::Vector2f uv_start{ meta->pos.cast<f32>().cwiseQuotient(texture_size) };
                 Eigen::AlignedBox2f uv_aabb{ uv_start, uv_start + size.cwiseQuotient(texture_size) };
-                Eigen::AlignedBox2f norm_aabb{ (aabb.min() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()),
-                                               (aabb.max() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()) };
+                Eigen::AlignedBox2f norm_aabb{
+                    (aabb.min() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()).cwiseMax(0).cwiseMin(1),
+                    (aabb.max() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()).cwiseMax(0).cwiseMin(1)
+                };
                 std::array<Vertex, 4> vertices;
                 for (usize i{}; i < vertices.size(); ++i) {
                     Eigen::Vector2f corner{ transform * aabb.corner(static_cast<Eigen::AlignedBox2f::CornerType>(i)) };
