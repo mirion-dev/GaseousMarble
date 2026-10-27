@@ -42,13 +42,12 @@ namespace gm {
             GM_THROW_IF_FAILED(builder->CreateFontSet(&set_base));
             wil::com_ptr set{ set_base.query<env::DwFontSet>() };
 
-            wil::com_ptr<IDWriteFontCollection2> collection_base;
+            wil::com_ptr<env::DwFontCollection> collection;
             GM_THROW_IF_FAILED(
                 env::dw_factory()->CreateFontCollectionFromFontSet(
-                    set.get(), DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE, &collection_base
+                    set.get(), DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE, &collection
                 )
             );
-            wil::com_ptr collection{ collection_base.query<env::DwFontCollection>() };
 
             wil::com_ptr<env::DwLocalizedStrings> names;
             BOOL exists;

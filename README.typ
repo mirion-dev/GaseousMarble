@@ -8,7 +8,7 @@
 #quote[
     [!warning]
 
-    Minimum system requirement: Windows 10, Version 1803.
+    Minimum system requirement: Windows 10, Version 1709.
 ]
 
 == Development

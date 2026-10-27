@@ -149,11 +149,14 @@ namespace gm::env {
     }
 
     export {
-        using DwFactory = IDWriteFactory7;
+        // Latest `IDWriteFactory7` requires Windows 10, Version 1803
+        using DwFactory = IDWriteFactory6;
         using DwFontFace = IDWriteFontFace5;
-        using DwFontSet = IDWriteFontSet4;
+        // Latest `IDWriteFontSet4` requires Windows 11, Version 22H2
+        using DwFontSet = IDWriteFontSet1;
         using DwFontSetBuilder = IDWriteFontSetBuilder2;
-        using DwFontCollection = IDWriteFontCollection3;
+        // Latest `IDWriteFontCollection3` requires Windows 10, Version 1803
+        using DwFontCollection = IDWriteFontCollection2;
         using DwLocalizedStrings = IDWriteLocalizedStrings;
         using DwGlyphRunAnalysis = IDWriteGlyphRunAnalysis;
         // UNSUPPORTED: `IDWriteTextRenderer1::orientationAngle`; used for vertical writing mode
