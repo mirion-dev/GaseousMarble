@@ -137,7 +137,14 @@ namespace gm::env {
     };
 
     const D3dResource& d3d_resource() noexcept {
-        return *reinterpret_cast<D3dResource*>(0x006886a4);
+        const D3dResource& result{ *reinterpret_cast<D3dResource*>(0x006886a4) };
+
+        // The game has exited and the engine has released resources
+        if (result.interface == nullptr || result.device == nullptr) {
+            std::exit(0);
+        }
+
+        return result;
     }
 
     export IDirect3D8* d3d_interface() noexcept {
