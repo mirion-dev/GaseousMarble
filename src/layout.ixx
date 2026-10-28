@@ -60,22 +60,47 @@ namespace gm {
             wil::com_ptr<env::DwFontFace> face;
             GM_RETURN_IF_FAILED(face_base.query_to<env::DwFontFace>(&face));
 
+            DWRITE_FONT_METRICS face_metrics;
+            face->GetMetrics(&face_metrics);
+
             f32 size{ glyph_run->fontEmSize };
+            f32 scale{ size / face_metrics.designUnitsPerEm };
             bool is_ltr{ glyph_run->bidiLevel % 2 == 0 };
 
-            for (usize i{}; i < glyph_run->glyphCount; ++i) {
-                u16 gid{ glyph_run->glyphIndices[i] };
-                f32 advance{ glyph_run->glyphAdvances == nullptr ? 0 : glyph_run->glyphAdvances[i] };
-                auto [offset_x, offset_y]{ glyph_run->glyphOffsets == nullptr ? DWRITE_GLYPH_OFFSET{}
-                                                                              : glyph_run->glyphOffsets[i] };
+            std::vector<i32> raw_advances;
+            if (!is_ltr) {
+                raw_advances.resize(glyph_run->glyphCount);
+                GM_RETURN_IF_FAILED(
+                    face->GetDesignGlyphAdvances(glyph_run->glyphCount, glyph_run->glyphIndices, raw_advances.data())
+                );
+            }
 
+            for (usize i{}; i < glyph_run->glyphCount; ++i) {
+                GlyphSpec spec{ face, glyph_run->glyphIndices[i], size };
+                Eigen::Vector2f draw_pos{ pos };
+
+                f32 advance{};
+                if (glyph_run->glyphAdvances != nullptr) {
+                    advance = glyph_run->glyphAdvances[i];
+                }
+
+                f32 offset_x{};
+                f32 offset_y{};
+                if (glyph_run->glyphOffsets != nullptr) {
+                    offset_x = glyph_run->glyphOffsets[i].advanceOffset;
+                    offset_y = glyph_run->glyphOffsets[i].ascenderOffset;
+                }
+
+                draw_pos.y() -= offset_y;
                 if (is_ltr) {
-                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, pos + Eigen::Vector2f{ offset_x, -offset_y });
+                    draw_pos.x() += offset_x;
                     pos.x() += advance;
                 } else {
+                    draw_pos.x() -= offset_x + raw_advances[i] * scale;
                     pos.x() -= advance;
-                    glyphs.emplace_back(GlyphSpec{ face, gid, size }, pos + Eigen::Vector2f{ -offset_x, -offset_y });
                 }
+
+                glyphs.emplace_back(spec, draw_pos);
             }
 
             return S_OK;
