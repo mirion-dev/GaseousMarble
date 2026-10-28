@@ -92,8 +92,8 @@ namespace gm {
 
     export struct GlyphMeta {
         wil::com_ptr<IDirect3DTexture8> texture;
-        Eigen::Vector2<usize> pos{ 0, 0 };
-        Eigen::Vector2<usize> size{ 0, 0 };
+        Eigen::Vector2<usize> start{ 0, 0 };
+        Eigen::Vector2<usize> end{ 0, 0 };
         Eigen::Vector2<isize> offset{ 0, 0 };
     };
 
@@ -237,7 +237,8 @@ namespace gm {
                 _current_bin = std::move(bin);
 
                 result.push_back(
-                    &_data.try_emplace(static_cast<GlyphDesc>(spec), _current_texture, pos, size, start).first->second
+                    &_data.try_emplace(static_cast<GlyphDesc>(spec), _current_texture, pos, pos + size, start)
+                         .first->second
                 );
             }
 

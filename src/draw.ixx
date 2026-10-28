@@ -166,14 +166,14 @@ namespace gm {
                 }
 
                 Eigen::Vector2f start{ glyph.pos + meta->offset.cast<f32>() };
-                Eigen::Vector2f size{ meta->size.cast<f32>() };
-                Eigen::AlignedBox2f aabb{ start, start + size };
+                Eigen::Vector2f end{ start + (meta->end - meta->start).cast<f32>() };
+                Eigen::AlignedBox2f aabb{ start, end };
                 if (!view.intersects(aabb.transformed(transform))) {
                     continue;
                 }
 
-                Eigen::Vector2f uv_start{ meta->pos.cast<f32>().cwiseQuotient(texture_size) };
-                Eigen::AlignedBox2f uv_aabb{ uv_start, uv_start + size.cwiseQuotient(texture_size) };
+                Eigen::AlignedBox2f uv_aabb{ meta->start.cast<f32>().cwiseQuotient(texture_size),
+                                             meta->end.cast<f32>().cwiseQuotient(texture_size) };
                 Eigen::AlignedBox2f norm_aabb{
                     (aabb.min() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()).cwiseMax(0).cwiseMin(1),
                     (aabb.max() - text_aabb.min()).cwiseQuotient(text_aabb.sizes()).cwiseMax(0).cwiseMin(1)
