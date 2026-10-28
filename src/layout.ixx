@@ -267,17 +267,20 @@ namespace gm {
             }
 
             // [IDWriteTextLayout1]
-            if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_LEADING) {
-                GM_THROW_IF_FAILED(layout->SetCharacterSpacing(0, option.letter_spacing, 0, range));
-            } else if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING) {
-                GM_THROW_IF_FAILED(layout->SetCharacterSpacing(option.letter_spacing, 0, 0, range));
-                draw_pos.x() -= option.letter_spacing;
-            } else {
-                GM_THROW_IF_FAILED(
-                    layout->SetCharacterSpacing(option.letter_spacing / 2, option.letter_spacing / 2, 0, range)
-                );
-                draw_pos.x() -= option.letter_spacing / 2;
+            f32 leading_spacing{};
+            if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
+                leading_spacing = option.letter_spacing / 2;
+            } else if (
+                (option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
+                == (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
+            ) {
+                leading_spacing = option.letter_spacing;
             }
+            f32 trailing_spacing{ option.letter_spacing - leading_spacing };
+            GM_THROW_IF_FAILED(layout->SetCharacterSpacing(leading_spacing, trailing_spacing, 0, range));
+
+            draw_pos.x() -= option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT ? leading_spacing
+                                                                                              : trailing_spacing;
 
             // [IDWriteTextLayout3]
             DWRITE_LINE_SPACING line_spacing{
