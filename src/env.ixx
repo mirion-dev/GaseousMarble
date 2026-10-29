@@ -128,23 +128,30 @@ namespace gm::env {
         return value;
     }
 
+    export enum class Status {
+        // A positive number indicates the room to jump to
+        running     = -1,
+        exiting     = -100,
+        restarting  = -200,
+        loading     = -300,
+        terminating = -400
+    };
+
+    export Status status() noexcept {
+        return *reinterpret_cast<Status*>(0x00845300);
+    }
+
     struct D3dResource {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
-        u64 _;
-        u32 render_width;
-        u32 render_height;
     };
 
     const D3dResource& d3d_resource() noexcept {
-        const D3dResource& result{ *reinterpret_cast<D3dResource*>(0x006886a4) };
-
-        // The game has exited and the engine has released resources
-        if (result.interface == nullptr || result.device == nullptr) {
+        if (status() != Status::running) {
             std::exit(0);
         }
 
-        return result;
+        return *reinterpret_cast<D3dResource*>(0x006886a4);
     }
 
     export IDirect3D8* d3d_interface() noexcept {
