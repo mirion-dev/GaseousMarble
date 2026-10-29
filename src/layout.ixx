@@ -211,124 +211,6 @@ namespace gm {
         friend bool operator==(const LayoutOption& left, const LayoutOption& right) noexcept = default;
     };
 
-    export struct Layout {
-        std::vector<GlyphInstance> glyphs;
-        Eigen::AlignedBox2f aabb;
-
-        static Layout from(std::wstring_view text, const LayoutOption& option) {
-            assert(option.is_valid());
-
-            const FontDesc& font_desc{ option.font.first->desc() };
-            wil::com_ptr<IDWriteTextFormat> format_base;
-            GM_THROW_IF_FAILED(
-                env::dw_factory()->CreateTextFormat(
-                    font_desc.name.data(),
-                    font_desc.collection.get(),
-                    font_desc.weight(),
-                    font_desc.style(),
-                    font_desc.stretch(),
-                    font_desc.size,
-                    font_desc.locale.data(),
-                    &format_base
-                )
-            );
-            wil::com_ptr format{ format_base.query<env::DwTextFormat>() };
-
-            wil::com_ptr<IDWriteTextLayout> layout_base;
-            GM_THROW_IF_FAILED(
-                env::dw_factory()->CreateTextLayout(
-                    text.data(),
-                    text.size(),
-                    format.get(),
-                    LayoutOption::INFINITY_,
-                    LayoutOption::INFINITY_,
-                    &layout_base
-                )
-            );
-            wil::com_ptr layout{ layout_base.query<env::DwTextLayout>() };
-
-            DWRITE_TEXT_RANGE range{ 0, text.size() };
-            Eigen::Vector2f draw_pos{ 0, 0 };
-            Eigen::Vector2f pos{ 0, 0 };
-
-            // [IDWriteTextFormat]
-            GM_THROW_IF_FAILED(layout->SetTextAlignment(option.text_alignment()));
-            GM_THROW_IF_FAILED(layout->SetParagraphAlignment(option.par_alignment()));
-            GM_THROW_IF_FAILED(layout->SetWordWrapping(option.word_wrapping));
-            GM_THROW_IF_FAILED(layout->SetReadingDirection(option.text_direction()));
-            GM_THROW_IF_FAILED(layout->SetFlowDirection(option.par_direction()));
-            GM_THROW_IF_FAILED(layout->SetIncrementalTabStop(option.tab_spacing));
-
-            DWRITE_TRIMMING trimming{ option.trimming };
-            GM_THROW_IF_FAILED(layout->SetTrimming(&trimming, nullptr));
-
-            // [IDWriteTextLayout]
-            Eigen::Vector2f max_size{
-                (option.max_size.array() == 0).select(LayoutOption::INFINITY_, option.max_size.array())
-            };
-            GM_THROW_IF_FAILED(layout->SetMaxWidth(max_size.x() + option.letter_spacing));
-            GM_THROW_IF_FAILED(layout->SetMaxHeight(max_size.y()));
-
-            if (!option.is_box_model()) {
-                if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
-                    draw_pos.x() -= max_size.x() / 2;
-                } else if (
-                    (option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
-                    == (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
-                ) {
-                    draw_pos.x() -= max_size.x();
-                }
-
-                if (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_CENTER) {
-                    draw_pos.y() -= max_size.y() / 2;
-                } else if (
-                    (option.par_direction() == DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM)
-                    == (option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_FAR)
-                ) {
-                    draw_pos.y() -= max_size.y();
-                }
-
-                pos = draw_pos;
-            }
-
-            // [IDWriteTextLayout1]
-            f32 leading_spacing{};
-            if (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
-                leading_spacing = option.letter_spacing / 2;
-            } else if (
-                (option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
-                == (option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
-            ) {
-                leading_spacing = option.letter_spacing;
-            }
-            f32 trailing_spacing{ option.letter_spacing - leading_spacing };
-            GM_THROW_IF_FAILED(layout->SetCharacterSpacing(leading_spacing, trailing_spacing, 0, range));
-
-            draw_pos.x() -= option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT ? leading_spacing
-                                                                                              : trailing_spacing;
-
-            // [IDWriteTextLayout3]
-            DWRITE_LINE_SPACING line_spacing{
-                option.line_spacing_type, option.line_height, option.baseline, 0, DWRITE_FONT_LINE_GAP_USAGE_ENABLED
-            };
-            GM_THROW_IF_FAILED(layout->SetLineSpacing(&line_spacing));
-
-            Layout result;
-            wil::com_ptr<LayoutCollector> collector;
-            collector.attach(winrt::make_self<LayoutCollector>().detach());
-            GM_THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), draw_pos.x(), draw_pos.y()));
-
-            DWRITE_TEXT_METRICS metrics;
-            GM_THROW_IF_FAILED(layout->GetMetrics(&metrics));
-
-            Eigen::Vector2f start{ pos + Eigen::Vector2f{ metrics.left, metrics.top } };
-            Eigen::Vector2f size{ std::max(metrics.width - option.letter_spacing, 0.f), metrics.height };
-            result.aabb = { start, start + size };
-
-            return result;
-        }
-    };
-
     export struct LayoutSpecRef {
         std::wstring_view text;
         const LayoutOption& option;
@@ -350,6 +232,126 @@ namespace gm {
 
         operator LayoutSpecRef() const noexcept {
             return { text, option };
+        }
+    };
+
+    export struct Layout {
+        std::vector<GlyphInstance> glyphs;
+        Eigen::AlignedBox2f aabb;
+
+        static Layout from(const LayoutSpecRef& spec) {
+            assert(spec.option.is_valid());
+
+            const FontDesc& font_desc{ spec.option.font.first->desc() };
+            wil::com_ptr<IDWriteTextFormat> format_base;
+            GM_THROW_IF_FAILED(
+                env::dw_factory()->CreateTextFormat(
+                    font_desc.name.data(),
+                    font_desc.collection.get(),
+                    font_desc.weight(),
+                    font_desc.style(),
+                    font_desc.stretch(),
+                    font_desc.size,
+                    font_desc.locale.data(),
+                    &format_base
+                )
+            );
+            wil::com_ptr format{ format_base.query<env::DwTextFormat>() };
+
+            wil::com_ptr<IDWriteTextLayout> layout_base;
+            GM_THROW_IF_FAILED(
+                env::dw_factory()->CreateTextLayout(
+                    spec.text.data(),
+                    spec.text.size(),
+                    format.get(),
+                    LayoutOption::INFINITY_,
+                    LayoutOption::INFINITY_,
+                    &layout_base
+                )
+            );
+            wil::com_ptr layout{ layout_base.query<env::DwTextLayout>() };
+
+            DWRITE_TEXT_RANGE range{ 0, spec.text.size() };
+            Eigen::Vector2f draw_pos{ 0, 0 };
+            Eigen::Vector2f pos{ 0, 0 };
+
+            // [IDWriteTextFormat]
+            GM_THROW_IF_FAILED(layout->SetTextAlignment(spec.option.text_alignment()));
+            GM_THROW_IF_FAILED(layout->SetParagraphAlignment(spec.option.par_alignment()));
+            GM_THROW_IF_FAILED(layout->SetWordWrapping(spec.option.word_wrapping));
+            GM_THROW_IF_FAILED(layout->SetReadingDirection(spec.option.text_direction()));
+            GM_THROW_IF_FAILED(layout->SetFlowDirection(spec.option.par_direction()));
+            GM_THROW_IF_FAILED(layout->SetIncrementalTabStop(spec.option.tab_spacing));
+
+            DWRITE_TRIMMING trimming{ spec.option.trimming };
+            GM_THROW_IF_FAILED(layout->SetTrimming(&trimming, nullptr));
+
+            // [IDWriteTextLayout]
+            Eigen::Vector2f max_size{
+                (spec.option.max_size.array() == 0).select(LayoutOption::INFINITY_, spec.option.max_size.array())
+            };
+            GM_THROW_IF_FAILED(layout->SetMaxWidth(max_size.x() + spec.option.letter_spacing));
+            GM_THROW_IF_FAILED(layout->SetMaxHeight(max_size.y()));
+
+            if (!spec.option.is_box_model()) {
+                if (spec.option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
+                    draw_pos.x() -= max_size.x() / 2;
+                } else if (
+                    (spec.option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
+                    == (spec.option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
+                ) {
+                    draw_pos.x() -= max_size.x();
+                }
+
+                if (spec.option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_CENTER) {
+                    draw_pos.y() -= max_size.y() / 2;
+                } else if (
+                    (spec.option.par_direction() == DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM)
+                    == (spec.option.par_alignment() == DWRITE_PARAGRAPH_ALIGNMENT_FAR)
+                ) {
+                    draw_pos.y() -= max_size.y();
+                }
+
+                pos = draw_pos;
+            }
+
+            // [IDWriteTextLayout1]
+            f32 leading_spacing{};
+            if (spec.option.text_alignment() == DWRITE_TEXT_ALIGNMENT_CENTER) {
+                leading_spacing = spec.option.letter_spacing / 2;
+            } else if (
+                (spec.option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT)
+                == (spec.option.text_alignment() == DWRITE_TEXT_ALIGNMENT_TRAILING)
+            ) {
+                leading_spacing = spec.option.letter_spacing;
+            }
+            f32 trailing_spacing{ spec.option.letter_spacing - leading_spacing };
+            GM_THROW_IF_FAILED(layout->SetCharacterSpacing(leading_spacing, trailing_spacing, 0, range));
+
+            draw_pos.x() -= spec.option.text_direction() == DWRITE_READING_DIRECTION_LEFT_TO_RIGHT ? leading_spacing
+                                                                                                   : trailing_spacing;
+
+            // [IDWriteTextLayout3]
+            DWRITE_LINE_SPACING line_spacing{ spec.option.line_spacing_type,
+                                              spec.option.line_height,
+                                              spec.option.baseline,
+                                              0,
+                                              DWRITE_FONT_LINE_GAP_USAGE_ENABLED };
+            GM_THROW_IF_FAILED(layout->SetLineSpacing(&line_spacing));
+
+            Layout result;
+            wil::com_ptr<LayoutCollector> collector;
+            collector.attach(winrt::make_self<LayoutCollector>().detach());
+            GM_THROW_IF_FAILED(layout->Draw(&result.glyphs, collector.get(), draw_pos.x(), draw_pos.y()));
+
+            DWRITE_TEXT_METRICS metrics;
+            GM_THROW_IF_FAILED(layout->GetMetrics(&metrics));
+
+            Eigen::Vector2f start{ pos + Eigen::Vector2f{ metrics.left, metrics.top } };
+            Eigen::Vector2f size{ std::max(metrics.width - spec.option.letter_spacing, 0.f), metrics.height };
+            result.aabb = { start, start + size };
+
+            return result;
         }
     };
 
@@ -416,7 +418,7 @@ namespace gm {
                 return iter->second;
             }
 
-            auto iter{ _data.emplace(_data.end(), LayoutSpec::from(spec), Layout::from(spec.text, spec.option)) };
+            auto iter{ _data.emplace(_data.end(), LayoutSpec::from(spec), Layout::from(spec)) };
             _map.try_emplace(iter->first, iter);
 
             if (_data.size() > _cache_size) {
