@@ -85,6 +85,7 @@ namespace gm {
                 D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE
                     | D3DCOLORWRITEENABLE_ALPHA
             ));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
 
             GM_THROW_IF_FAILED(device->SetPixelShader(0));
             GM_THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
