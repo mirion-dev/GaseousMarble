@@ -148,6 +148,7 @@ namespace gm::env {
 
     const D3dResource& d3d_resource() noexcept {
         if (status() != Status::running) {
+            // No logging here because the engine releases resources before detaching DLLs
             std::exit(0);
         }
 
