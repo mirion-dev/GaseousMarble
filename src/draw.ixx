@@ -59,22 +59,18 @@ namespace gm {
 
         static void _init() {
             auto device{ env::d3d_device() };
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, false));
-
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPING, true));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPLANEENABLE, 0));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
+            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_EDGEANTIALIAS, false));
 
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_LIGHTING, false));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_FOGENABLE, false));
 
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ALPHATESTENABLE, false));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_STENCILENABLE, false));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ZENABLE, false));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ZWRITEENABLE, false));
 
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
@@ -85,7 +81,6 @@ namespace gm {
                 D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE
                     | D3DCOLORWRITEENABLE_ALPHA
             ));
-            GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
 
             GM_THROW_IF_FAILED(device->SetPixelShader(0));
             GM_THROW_IF_FAILED(device->SetVertexShader(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1));
@@ -107,9 +102,7 @@ namespace gm {
             GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE));
             GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE));
             GM_THROW_IF_FAILED(device->SetTextureStageState(0, D3DTSS_RESULTARG, D3DTA_CURRENT));
-
             GM_THROW_IF_FAILED(device->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE));
-            GM_THROW_IF_FAILED(device->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE));
 
             GM_THROW_IF_FAILED(device->SetTexture(0, nullptr));
             GM_THROW_IF_FAILED(device->SetStreamSource(0, nullptr, 0));
