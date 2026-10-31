@@ -98,29 +98,40 @@ namespace gm {
         }
     };
 
-    export class Font {
-        static inline usize _id_counter{ 1 };
+    export struct Font {
+        FontDesc desc;
+        GlyphAtlas atlas;
+    };
 
-        usize _id{ _id_counter++ };
-        FontDesc _desc;
-        GlyphAtlas _atlas;
+    export class FontManager {
+        static inline usize _next_id{};
+
+        std::unordered_map<usize, Font> _data;
 
     public:
-        Font() noexcept = default;
+        FontManager() noexcept = default;
 
-        Font(FontDesc desc, GlyphAtlas&& atlas) noexcept
-            : _desc{ std::move(desc) }, _atlas{ std::move(atlas) } {}
+        FontManager(FontManager&&) noexcept = default;
 
-        usize id() const noexcept {
-            return _id;
+        FontManager& operator=(FontManager&&) noexcept = default;
+
+        template <class... Args>
+        usize insert(Args&&... args) noexcept {
+            return _data.try_emplace(_next_id++, std::forward<Args>(args)...).first->first;
         }
 
-        const FontDesc& desc() const noexcept {
-            return _desc;
+        bool erase(usize id) noexcept {
+            return _data.erase(id);
         }
 
-        auto& atlas(this auto& self) noexcept {
-            return std::forward_like<decltype(self)>(self._atlas);
+        Font* get(usize id) noexcept {
+            auto iter{ _data.find(id) };
+            return iter == _data.end() ? nullptr : &iter->second;
+        }
+
+        const Font* get(usize id) const noexcept {
+            auto iter{ _data.find(id) };
+            return iter == _data.end() ? nullptr : &iter->second;
         }
     };
 

@@ -16,12 +16,19 @@ import gm;
 
 using namespace gm;
 
+struct SavedOption : DrawOption {
+    std::string font_key;
+};
+
 String string_value;
 
-std::unordered_map<std::string, DrawOption> option_map;
-std::unordered_map<std::string, Font> font_map;
-std::unordered_map<usize, std::string_view> id_map;
-Draw draw{ env::config().layout_cache_size };
+FontManager font_manager;
+LayoutCache layout_cache{ env::config().layout_cache_size };
+Draw draw{ layout_cache };
+
+std::unordered_map<std::string, usize> id_map;
+std::unordered_map<usize, std::string_view> key_map;
+std::unordered_map<std::string, SavedOption> option_map;
 
 template <std::floating_point R>
 R saturating_cast(Real value) noexcept {
@@ -43,11 +50,8 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
         throw std::invalid_argument{ "Font key must not be empty." };
     }
 
-    if (font_map.contains(key)) { // Silent failure because duplicate keys may also occur after the game restart.
-        return S_FALSE;
-    }
-
-    if (font_map.size() >= env::config().max_font_num) {
+    auto iter{ id_map.find(key) };
+    if (iter == id_map.end() && id_map.size() >= env::config().max_font_num) {
         throw std::runtime_error{ "Too many fonts." };
     }
 
@@ -66,9 +70,21 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
         throw std::invalid_argument{ "Invalid font description." };
     }
 
-    GlyphAtlas atlas{ env::config().atlas, env::config().raster };
-    auto iter{ font_map.try_emplace(std::move(key), std::move(desc), std::move(atlas)).first };
-    id_map.try_emplace(iter->second.id(), iter->first);
+    Font font{ std::move(desc), { env::config().atlas, env::config().raster } };
+    if (iter == id_map.end()) {
+        iter = id_map.try_emplace(std::move(key), font_manager.insert(std::move(font))).first;
+    } else {
+        usize old_id{ iter->second };
+        font_manager.erase(old_id);
+        key_map.erase(old_id);
+
+        iter->second = font_manager.insert(std::move(font));
+        if (draw.option().font_id == old_id) {
+            draw.option().font_id = iter->second;
+        }
+    }
+
+    key_map.try_emplace(iter->second, iter->first);
     return S_OK;
 }
 GM_CATCH_RETURN()
@@ -80,7 +96,12 @@ API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try 
 GM_CATCH_RETURN()
 
 API Real gm2_save_options(StringRef raw_key) noexcept {
-    option_map.insert_or_assign(raw_key, draw.option());
+    std::string font_key;
+    if (draw.option().font() != nullptr) {
+        font_key = key_map.at(draw.option().font_id);
+    }
+
+    option_map.insert_or_assign(raw_key, SavedOption{ draw.option(), std::move(font_key) });
     return S_OK;
 }
 
@@ -90,7 +111,12 @@ API Real gm2_load_options(StringRef raw_key) noexcept try {
         throw std::runtime_error{ "Options not found." };
     }
 
-    draw.option() = iter->second;
+    DrawOption option{ iter->second };
+    if (!iter->second.font_key.empty()) {
+        option.font_id = id_map.at(iter->second.font_key);
+    }
+
+    draw.option() = std::move(option);
     return S_OK;
 }
 GM_CATCH_RETURN()
@@ -207,12 +233,13 @@ API Real gm2_set_max_size(Real raw_max_width, Real raw_max_height) noexcept {
 }
 
 API Real gm2_set_font(StringRef raw_key) noexcept try {
-    auto iter{ font_map.find(raw_key) };
-    if (iter == font_map.end()) {
+    auto iter{ id_map.find(raw_key) };
+    if (iter == id_map.end()) {
         throw std::invalid_argument{ "Font not found." };
     }
 
-    draw.option().font = { &iter->second, iter->second.id() };
+    draw.option().font_manager = &font_manager;
+    draw.option().font_id = iter->second;
     return S_OK;
 }
 GM_CATCH_RETURN()
@@ -381,40 +408,40 @@ API Real gm2_get_max_height() noexcept {
 }
 
 API StringRef gm2_get_font() noexcept {
-    usize id{ draw.option().font.second };
-    string_value = id == 0 ? String{} : String{ id_map.at(id) };
+    Font* font{ draw.option().font() };
+    string_value = font == nullptr ? String{} : String{ key_map.at(draw.option().font_id) };
     return string_value.data();
 }
 
 API StringRef gm2_get_font_name() noexcept {
-    Font* font{ draw.option().font.first };
-    string_value = font == nullptr ? String{} : String{ to_string(font->desc().name) };
+    Font* font{ draw.option().font() };
+    string_value = font == nullptr ? String{} : String{ to_string(font->desc.name) };
     return string_value.data();
 }
 
 API Real gm2_get_font_weight() noexcept {
-    Font* font{ draw.option().font.first };
-    return font == nullptr ? -1 : font->desc().properties & FontDesc::WEIGHT_MASK;
+    Font* font{ draw.option().font() };
+    return font == nullptr ? -1 : font->desc.properties & FontDesc::WEIGHT_MASK;
 }
 
 API Real gm2_get_font_style() noexcept {
-    Font* font{ draw.option().font.first };
-    return font == nullptr ? -1 : font->desc().properties & FontDesc::STYLE_MASK;
+    Font* font{ draw.option().font() };
+    return font == nullptr ? -1 : font->desc.properties & FontDesc::STYLE_MASK;
 }
 
 API Real gm2_get_font_stretch() noexcept {
-    Font* font{ draw.option().font.first };
-    return font == nullptr ? -1 : font->desc().properties & FontDesc::STRETCH_MASK;
+    Font* font{ draw.option().font() };
+    return font == nullptr ? -1 : font->desc.properties & FontDesc::STRETCH_MASK;
 }
 
 API Real gm2_get_font_size() noexcept {
-    Font* font{ draw.option().font.first };
-    return font == nullptr ? -1 : font->desc().size;
+    Font* font{ draw.option().font() };
+    return font == nullptr ? -1 : font->desc.size;
 }
 
 API StringRef gm2_get_font_locale() noexcept {
-    Font* font{ draw.option().font.first };
-    string_value = font == nullptr ? String{} : String{ to_string(font->desc().locale) };
+    Font* font{ draw.option().font() };
+    string_value = font == nullptr ? String{} : String{ to_string(font->desc.locale) };
     return string_value.data();
 }
 

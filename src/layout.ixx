@@ -148,7 +148,8 @@ namespace gm {
 
         // [IDWriteTextLayout]
         Eigen::Vector2f max_size{ 0, 0 };
-        std::pair<Font*, usize> font{};
+        FontManager* font_manager{};
+        usize font_id{ static_cast<usize>(-1) };
         // UNSUPPORTED: `Underline`, `Strikethrough`, `Strikethrough`; decorations
         // UNSUPPORTED: `InlineObject`
         // UNSUPPORTED: `Typography`                                 ; advanced typography properties
@@ -192,6 +193,10 @@ namespace gm {
             return (max_size.array() > 0).all();
         }
 
+        Font* font() const noexcept {
+            return font_manager == nullptr ? nullptr : font_manager->get(font_id);
+        }
+
         bool is_valid() const noexcept {
             return alignment <= ALIGNMENT_MASK
                    && word_wrapping != DWRITE_WORD_WRAPPING_WRAP
@@ -202,8 +207,7 @@ namespace gm {
                    && par_direction() != DWRITE_FLOW_DIRECTION_RIGHT_TO_LEFT
                    && tab_spacing >= 0
                    && (max_size.array() >= 0).all()
-                   && font.first != nullptr
-                   && font.second > 0
+                   && font() != nullptr
                    && line_spacing_type != DWRITE_LINE_SPACING_METHOD_DEFAULT
                    && line_height >= 0;
         }
@@ -242,17 +246,17 @@ namespace gm {
         static Layout from(const LayoutSpecRef& spec) {
             assert(spec.option.is_valid());
 
-            const FontDesc& font_desc{ spec.option.font.first->desc() };
+            const Font& font{ *spec.option.font() };
             wil::com_ptr<IDWriteTextFormat> format_base;
             GM_THROW_IF_FAILED(
                 env::dw_factory()->CreateTextFormat(
-                    font_desc.name.data(),
-                    font_desc.collection.get(),
-                    font_desc.weight(),
-                    font_desc.style(),
-                    font_desc.stretch(),
-                    font_desc.size,
-                    font_desc.locale.data(),
+                    font.desc.name.data(),
+                    font.desc.collection.get(),
+                    font.desc.weight(),
+                    font.desc.style(),
+                    font.desc.stretch(),
+                    font.desc.size,
+                    font.desc.locale.data(),
                     &format_base
                 )
             );
@@ -368,7 +372,7 @@ namespace gm {
                     value.tab_spacing,
                     value.trimming,
                     value.max_size,
-                    value.font.second,
+                    value.font_id,
                     value.letter_spacing,
                     value.line_spacing_type,
                     value.line_height,

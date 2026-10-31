@@ -54,8 +54,8 @@ namespace gm {
         };
 
         DrawOption _option;
-        LayoutCache _layout;
         StateBlock _state_block;
+        LayoutCache* _cache{};
 
         static void _init() {
             auto device{ env::d3d_device() };
@@ -111,11 +111,11 @@ namespace gm {
     public:
         Draw() noexcept = default;
 
-        explicit Draw(usize cache_size) noexcept
-            : _layout{ cache_size } {}
+        explicit Draw(LayoutCache& cache) noexcept
+            : _cache{ &cache } {}
 
-        operator bool() noexcept {
-            return _layout;
+        operator bool() const noexcept {
+            return _cache != nullptr;
         }
 
         auto& option(this auto& self) noexcept {
@@ -130,8 +130,8 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            auto& [glyphs, text_aabb]{ _layout.get({ text, _option }) };
-            GlyphAtlas& atlas{ _option.font.first->atlas() };
+            auto& [glyphs, text_aabb]{ _cache->get({ text, _option }) };
+            GlyphAtlas& atlas{ _option.font()->atlas };
             auto glyph_meta{ atlas.get(
                 glyphs,
                 [](const GlyphInstance& glyph) noexcept -> const GlyphDesc& { return glyph; },
@@ -225,7 +225,7 @@ namespace gm {
                 throw std::invalid_argument{ "Invalid draw options." };
             }
 
-            Eigen::AlignedBox2f aabb{ _layout.get({ text, _option }).aabb };
+            Eigen::AlignedBox2f aabb{ _cache->get({ text, _option }).aabb };
             if (_option.is_box_model()) {
                 aabb.translate(-_option.max_size.cwiseProduct(_option.origin));
             }
