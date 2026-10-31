@@ -66,6 +66,8 @@
 
 Add a font from system fonts or font files. `key` should be *non-empty*.
 
+Adding a font to an existing key still *requires* setting the font.
+
 If `locale` is empty, the user's default locale applies.
 
 #table(
@@ -110,11 +112,14 @@ If `locale` is empty, the user's default locale applies.
 
 *Dropped*: Loading from sprites.
 
-= - `gm_free()`\ - `gm_clear()`
+= `gm2_delete_font(key)`
 
-Free a font or all fonts.
+Remove a font.
 
-*Removed*: Glyphs are extracted on demand, making manual memory management no longer necessary.
+- `gm_free()`
+- `gm_clear()`
+
+*Dropped*: Removing all fonts.
 
 = \* `gm2_draw_text(x, y, text)`\ + `gm2_get_aabb_x(text)`\ + `gm2_get_aabb_y(text)`\ `gm2_get_aabb_width(text)`\ `gm2_get_aabb_height(text)`
 
@@ -257,7 +262,7 @@ Set or get the letter spacing of the text.
 
 Set or get the word spacing of the text.
 
-*Removed*: Not useful.
+*Removed*: Unsupported by DirectWrite.
 
 = + `gm2_set_origin(x, y)`\ + `gm2_get_origin_x()`\ + `gm2_get_origin_y()`
 

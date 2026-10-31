@@ -16,10 +16,6 @@ import gm;
 
 using namespace gm;
 
-struct SavedOption : DrawOption {
-    std::string font_key;
-};
-
 String string_value;
 
 FontManager font_manager;
@@ -28,7 +24,7 @@ Draw draw{ layout_cache };
 
 std::unordered_map<std::string, usize> id_map;
 std::unordered_map<usize, std::string_view> key_map;
-std::unordered_map<std::string, SavedOption> option_map;
+std::unordered_map<std::string, DrawOption> option_map;
 
 template <std::floating_point R>
 R saturating_cast(Real value) noexcept {
@@ -74,20 +70,27 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
     if (iter == id_map.end()) {
         iter = id_map.try_emplace(std::move(key), font_manager.insert(std::move(font))).first;
     } else {
-        usize old_id{ iter->second };
-        font_manager.erase(old_id);
-        key_map.erase(old_id);
-
+        font_manager.erase(iter->second);
+        key_map.erase(iter->second);
         iter->second = font_manager.insert(std::move(font));
-        if (draw.option().font_id == old_id) {
-            draw.option().font_id = iter->second;
-        }
     }
 
     key_map.try_emplace(iter->second, iter->first);
     return S_OK;
 }
 GM_CATCH_RETURN()
+
+API Real gm2_delete_font(StringRef raw_key) noexcept {
+    auto iter{ id_map.find(raw_key) };
+    if (iter == id_map.end()) {
+        return S_FALSE;
+    }
+
+    font_manager.erase(iter->second);
+    key_map.erase(iter->second);
+    id_map.erase(iter);
+    return S_OK;
+}
 
 API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try {
     draw.text({ saturating_cast<f32>(raw_x), saturating_cast<f32>(raw_y) }, to_wstring(raw_text));
@@ -96,12 +99,7 @@ API Real gm2_draw_text(Real raw_x, Real raw_y, StringRef raw_text) noexcept try 
 GM_CATCH_RETURN()
 
 API Real gm2_save_options(StringRef raw_key) noexcept {
-    std::string font_key;
-    if (draw.option().font() != nullptr) {
-        font_key = key_map.at(draw.option().font_id);
-    }
-
-    option_map.insert_or_assign(raw_key, SavedOption{ draw.option(), std::move(font_key) });
+    option_map.insert_or_assign(raw_key, draw.option());
     return S_OK;
 }
 
@@ -111,12 +109,7 @@ API Real gm2_load_options(StringRef raw_key) noexcept try {
         throw std::runtime_error{ "Options not found." };
     }
 
-    DrawOption option{ iter->second };
-    if (!iter->second.font_key.empty()) {
-        option.font_id = id_map.at(iter->second.font_key);
-    }
-
-    draw.option() = std::move(option);
+    draw.option() = iter->second;
     return S_OK;
 }
 GM_CATCH_RETURN()
