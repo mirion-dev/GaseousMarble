@@ -126,7 +126,6 @@ namespace gm {
         }
 
         GlyphAtlas(GlyphAtlas&&) noexcept = default;
-
         GlyphAtlas& operator=(GlyphAtlas&&) noexcept = default;
 
         operator bool() const noexcept {

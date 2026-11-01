@@ -110,9 +110,7 @@ namespace gm {
 
     public:
         FontManager() noexcept = default;
-
         FontManager(FontManager&&) noexcept = default;
-
         FontManager& operator=(FontManager&&) noexcept = default;
 
         template <class... Args>

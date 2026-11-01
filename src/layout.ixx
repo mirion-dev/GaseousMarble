@@ -400,7 +400,6 @@ namespace gm {
         }
 
         LayoutCache(LayoutCache&&) noexcept = default;
-
         LayoutCache& operator=(LayoutCache&&) noexcept = default;
 
         operator bool() const noexcept {
