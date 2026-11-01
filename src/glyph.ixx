@@ -189,7 +189,7 @@ namespace gm {
                 }
 
                 if ((size.array() > _option.texture_size.array()).any()) {
-                    throw std::runtime_error{ "Glyph too large." };
+                    throw std::runtime_error{ "Glyph too large" };
                 }
 
                 std::vector<u8> alpha(size.prod());
@@ -203,7 +203,7 @@ namespace gm {
                 auto insert_result{ bin.insert({ static_cast<isize>(size.x()), static_cast<isize>(size.y()) }) };
                 if (!insert_result) {
                     if (texture_num++ >= _option.max_texture_num) {
-                        throw std::runtime_error{ "Too many textures." };
+                        throw std::runtime_error{ "Too many textures" };
                     }
 
                     GM_THROW_IF_FAILED(

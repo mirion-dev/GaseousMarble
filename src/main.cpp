@@ -43,12 +43,12 @@ API Real
 gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw_size, Real raw_locale) noexcept try {
     std::string key{ from_real(raw_key) };
     if (key.empty()) {
-        throw std::invalid_argument{ "Font key must not be empty." };
+        throw std::invalid_argument{ "Font key must not be empty" };
     }
 
     auto iter{ id_map.find(key) };
     if (iter == id_map.end() && id_map.size() >= env::config().max_font_num) {
-        throw std::runtime_error{ "Too many fonts." };
+        throw std::runtime_error{ "Too many fonts" };
     }
 
     std::wstring name{ to_wstring(from_real(raw_name)) };
@@ -63,7 +63,7 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw
                        ? FontDesc::from(name, properties, size, locale)
                        : FontDesc{ {}, std::move(name), properties, size, std::move(locale) } };
     if (!desc.is_valid()) {
-        throw std::invalid_argument{ "Invalid font description." };
+        throw std::invalid_argument{ "Invalid font description" };
     }
 
     Font font{ std::move(desc), { env::config().atlas, env::config().raster } };
@@ -106,7 +106,7 @@ API Real gm2_save_options(StringRef raw_key) noexcept {
 API Real gm2_load_options(StringRef raw_key) noexcept try {
     auto iter{ option_map.find(raw_key) };
     if (iter == option_map.end()) {
-        throw std::runtime_error{ "Options not found." };
+        throw std::runtime_error{ "Options not found" };
     }
 
     draw.option() = iter->second;
@@ -228,7 +228,7 @@ API Real gm2_set_max_size(Real raw_max_width, Real raw_max_height) noexcept {
 API Real gm2_set_font(StringRef raw_key) noexcept try {
     auto iter{ id_map.find(raw_key) };
     if (iter == id_map.end()) {
-        throw std::invalid_argument{ "Font not found." };
+        throw std::invalid_argument{ "Font not found" };
     }
 
     draw.option().font_manager = &font_manager;

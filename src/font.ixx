@@ -55,7 +55,7 @@ namespace gm {
                 set->GetPropertyValues(0, DWRITE_FONT_PROPERTY_ID_WEIGHT_STRETCH_STYLE_FAMILY_NAME, &exists, &names)
             );
             if (!exists) {
-                throw std::runtime_error{ "Font name not found." };
+                throw std::runtime_error{ "Font name not found" };
             }
 
             std::wstring locale_name{ locale };

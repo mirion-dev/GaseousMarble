@@ -47,7 +47,7 @@
         RETURN_CAUGHT_EXCEPTION();                                                                                     \
     }                                                                                                                  \
     catch (const std::exception& error) {                                                                              \
-        GM_ERROR("{}", error.what());                                                                                  \
+        GM_ERROR("{}.", error.what());                                                                                 \
         RETURN_CAUGHT_EXCEPTION();                                                                                     \
     }                                                                                                                  \
     catch (...) {                                                                                                      \

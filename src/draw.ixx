@@ -127,7 +127,7 @@ namespace gm {
             assert(*this);
 
             if (!_option.is_valid()) {
-                throw std::invalid_argument{ "Invalid draw options." };
+                throw std::invalid_argument{ "Invalid draw options" };
             }
 
             auto& [glyphs, text_aabb]{ _cache->get({ text, _option }) };
@@ -222,7 +222,7 @@ namespace gm {
             assert(*this);
 
             if (!_option.is_valid()) {
-                throw std::invalid_argument{ "Invalid draw options." };
+                throw std::invalid_argument{ "Invalid draw options" };
             }
 
             Eigen::AlignedBox2f aabb{ _cache->get({ text, _option }).aabb };
