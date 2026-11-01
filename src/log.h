@@ -43,13 +43,7 @@
 #define GM_CATCH_RETURN()                                                                                              \
     catch (const wil::ResultException& error) {                                                                        \
         const wil::FailureInfo& info{ error.GetFailureInfo() };                                                        \
-        GM_ERROR(                                                                                                      \
-            "-> [{}:{}:{}] Error {:#x}.",                                                                              \
-            gm::filename(info.pszFile),                                                                                \
-            info.uLineNumber,                                                                                          \
-            info.pszFunction,                                                                                          \
-            static_cast<u32>(info.hr)                                                                                  \
-        );                                                                                                             \
+        GM_ERROR("-> [{}:{}] Error {:#x}.", gm::filename(info.pszFile), info.uLineNumber, static_cast<u32>(info.hr));  \
         RETURN_CAUGHT_EXCEPTION();                                                                                     \
     }                                                                                                                  \
     catch (const std::exception& error) {                                                                              \
