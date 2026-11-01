@@ -34,7 +34,7 @@ namespace gm {
 
         static FontDesc from(std::wstring_view path, u16 properties, f32 size, std::wstring_view locale) {
             wil::com_ptr<env::DwFontSetBuilder> builder;
-            GM_THROW_IF_FAILED(env::dw_factory()->CreateFontSetBuilder(&builder));
+            GM_THROW_IF_FAILED(env::dw().factory->CreateFontSetBuilder(&builder));
 
             auto abs_path{ std::filesystem::absolute(path) };
             wil::com_ptr<IDWriteFontSet> set_base;
@@ -44,7 +44,7 @@ namespace gm {
 
             wil::com_ptr<env::DwFontCollection> collection;
             GM_THROW_IF_FAILED(
-                env::dw_factory()->CreateFontCollectionFromFontSet(
+                env::dw().factory->CreateFontCollectionFromFontSet(
                     set.get(), DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE, &collection
                 )
             );

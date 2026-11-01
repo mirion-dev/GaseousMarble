@@ -249,7 +249,7 @@ namespace gm {
             const Font& font{ *spec.option.font() };
             wil::com_ptr<IDWriteTextFormat> format_base;
             GM_THROW_IF_FAILED(
-                env::dw_factory()->CreateTextFormat(
+                env::dw().factory->CreateTextFormat(
                     font.desc.name.data(),
                     font.desc.collection.get(),
                     font.desc.weight(),
@@ -264,7 +264,7 @@ namespace gm {
 
             wil::com_ptr<IDWriteTextLayout> layout_base;
             GM_THROW_IF_FAILED(
-                env::dw_factory()->CreateTextLayout(
+                env::dw().factory->CreateTextLayout(
                     spec.text.data(),
                     spec.text.size(),
                     format.get(),

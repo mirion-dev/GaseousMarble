@@ -164,7 +164,7 @@ namespace gm {
                                                          : DWRITE_RENDERING_MODE1_NATURAL_SYMMETRIC };
                 wil::com_ptr<env::DwGlyphRunAnalysis> rasterizer;
                 GM_THROW_IF_FAILED(
-                    env::dw_factory()->CreateGlyphRunAnalysis(
+                    env::dw().factory->CreateGlyphRunAnalysis(
                         &run,
                         nullptr,
                         antialiasing,
@@ -207,7 +207,7 @@ namespace gm {
                     }
 
                     GM_THROW_IF_FAILED(
-                        env::d3d_device()->CreateTexture(
+                        env::d3d().device->CreateTexture(
                             _option.texture_size.x(),
                             _option.texture_size.y(),
                             1,

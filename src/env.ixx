@@ -112,17 +112,24 @@ namespace gm::env {
         return value;
     }
 
-    export const std::wstring& default_locale() noexcept {
-        static auto value{ [] noexcept -> std::wstring {
-            std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> raw;
-            auto size{ static_cast<usize>(GetUserDefaultLocaleName(raw.data(), raw.size())) };
+    export struct SystemInfo {
+        std::wstring user_locale;
+    };
+
+    export const SystemInfo& system() noexcept {
+        static auto value{ [] noexcept -> SystemInfo {
+            SystemInfo result;
+
+            std::array<wchar_t, LOCALE_NAME_MAX_LENGTH> raw_locale;
+            auto size{ static_cast<usize>(GetUserDefaultLocaleName(raw_locale.data(), raw_locale.size())) };
             if (size == 0) {
-                GM_WARN("Failed to get the user's default locale, falling back to \"en-US\".");
-                return L"en-US";
+                result.user_locale = L"en-US";
+                GM_WARN("Failed to get the user default locale, falling back to \"en-US\".");
+            } else {
+                result.user_locale = { raw_locale.data(), size - 1 };
+                GM_INFO("Resolved the user default locale to \"{}\".", to_string(result.user_locale));
             }
 
-            std::wstring result{ raw.data(), size - 1 };
-            GM_INFO("Resolved the user's default locale to \"{}\".", to_string(result));
             return result;
         }() };
         return value;
@@ -141,26 +148,18 @@ namespace gm::env {
         return *reinterpret_cast<Status*>(0x00845300);
     }
 
-    struct D3dResource {
+    export struct D3dResource {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
     };
 
-    const D3dResource& d3d_resource() noexcept {
+    export const D3dResource& d3d() noexcept {
         if (status() != Status::running) {
             // No logging here because the engine releases resources before detaching DLLs
             std::exit(0);
         }
 
         return *reinterpret_cast<D3dResource*>(0x006886a4);
-    }
-
-    export IDirect3D8* d3d_interface() noexcept {
-        return d3d_resource().interface;
-    }
-
-    export IDirect3DDevice8* d3d_device() noexcept {
-        return d3d_resource().device;
     }
 
     export {
@@ -180,23 +179,19 @@ namespace gm::env {
         using DwTextLayout = IDWriteTextLayout4;
     }
 
-    struct DwResource {
+    export struct DwResource {
         wil::com_ptr<DwFactory> factory;
     };
 
-    const DwResource& dw_resource() {
-        static auto value{ [] {
+    export const DwResource& dw() noexcept {
+        static auto value{ [] noexcept -> DwResource {
             DwResource result;
-            GM_THROW_IF_FAILED(
+            GM_ABORT_IF_FAILED(
                 DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(DwFactory), result.factory.put_unknown())
             );
             return result;
         }() };
         return value;
-    }
-
-    export DwFactory* dw_factory() {
-        return dw_resource().factory.get();
     }
 
 }

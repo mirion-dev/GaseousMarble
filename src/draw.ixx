@@ -38,7 +38,7 @@ namespace gm {
 
     export class Draw {
         static void _delete_state_block(DWORD state_block) noexcept {
-            GM_WARN_IF_FAILED(env::d3d_device()->DeleteStateBlock(state_block));
+            GM_WARN_IF_FAILED(env::d3d().device->DeleteStateBlock(state_block));
         }
 
         using StateBlock = Handle<DWORD, _delete_state_block, -1>;
@@ -58,7 +58,7 @@ namespace gm {
         LayoutCache* _cache{};
 
         static void _init() {
-            auto device{ env::d3d_device() };
+            auto device{ env::d3d().device };
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPING, true));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CLIPPLANEENABLE, 0));
             GM_THROW_IF_FAILED(device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
@@ -138,7 +138,7 @@ namespace gm {
                 [](const GlyphInstance& glyph) noexcept -> const GlyphSpec& { return glyph; }
             ) };
 
-            auto device{ env::d3d_device() };
+            auto device{ env::d3d().device };
             D3DVIEWPORT8 d3d_view;
             GM_THROW_IF_FAILED(device->GetViewport(&d3d_view));
 
