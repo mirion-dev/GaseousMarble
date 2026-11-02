@@ -118,6 +118,11 @@ namespace gm {
             return _cache != nullptr;
         }
 
+        void dx_reset() noexcept {
+            assert(*this);
+            _state_block.reset();
+        }
+
         auto& option(this auto& self) noexcept {
             assert(self);
             return std::forward_like<decltype(self)>(self._option);

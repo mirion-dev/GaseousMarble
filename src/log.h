@@ -40,6 +40,11 @@
         }                                                                                                              \
     } while (false)
 
+#define GM_WARN_IF_FAILED_WIN32_BOOL(result) GM_WARN_IF_FAILED(gm::win32_bool_to_hr(result))
+#define GM_RETURN_IF_FAILED_WIN32_BOOL(result) GM_RETURN_IF_FAILED(gm::win32_bool_to_hr(result))
+#define GM_THROW_IF_FAILED_WIN32_BOOL(result) GM_THROW_IF_FAILED(gm::win32_bool_to_hr(result))
+#define GM_ABORT_IF_FAILED_WIN32_BOOL(result) GM_ABORT_IF_FAILED(gm::win32_bool_to_hr(result))
+
 #define GM_CATCH_RETURN()                                                                                              \
     catch (const wil::ResultException& error) {                                                                        \
         const wil::FailureInfo& info{ error.GetFailureInfo() };                                                        \

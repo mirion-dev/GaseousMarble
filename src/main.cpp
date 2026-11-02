@@ -6,6 +6,7 @@
 
 #include "log.h"
 
+#include <d3d8.h>
 #include <dwrite_3.h>
 #include <eigen3/Eigen/Geometry>
 #include <spdlog/spdlog.h>
@@ -29,6 +30,11 @@ std::unordered_map<std::string, DrawOption> option_map;
 template <std::floating_point R>
 R saturating_cast(Real value) noexcept {
     return gm::saturating_cast<R>(value, -LayoutOption::INFINITY_, LayoutOption::INFINITY_);
+}
+
+API Real gm2_internal_init() noexcept {
+    hook::d3d_reset([](D3DPRESENT_PARAMETERS*) noexcept { draw.dx_reset(); });
+    return S_OK;
 }
 
 API Real gm2_internal_to_real(StringRef string) noexcept {

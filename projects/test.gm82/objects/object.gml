@@ -5,6 +5,7 @@ action_id=603
 applies_to=self
 */
 var dll_path{ dll_path = parameter_string(1) }
+global.gm2_internal_init            = external_define(dll_path, "gm2_internal_init", dll_cdecl, ty_real, 0)
 global.gm2_internal_to_real         = external_define(dll_path, "gm2_internal_to_real", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_internal_new_font        = external_define(dll_path, "gm2_internal_new_font", dll_cdecl, ty_real, 5, ty_real, ty_real, ty_real, ty_real, ty_real)
 global.gm2_delete_font              = external_define(dll_path, "gm2_delete_font", dll_cdecl, ty_real, 1, ty_string)
@@ -138,6 +139,7 @@ global.gm2_trimming_word = 2
 global.gm2_line_spacing_type_proportional = 2
 global.gm2_line_spacing_type_uniform      = 1
 
+external_call(global.gm2_internal_init)
 external_call(
     global.gm2_internal_new_font,
     external_call(global.gm2_internal_to_real, "default"),
