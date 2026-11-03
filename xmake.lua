@@ -47,6 +47,7 @@ target("gm2")
 
 target("gm2_test")
     set_kind("binary")
+    set_default(false)
     add_files("tests/*.cpp")
     add_deps("gm2_core")
     add_packages("vcpkg::doctest")
