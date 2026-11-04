@@ -11,6 +11,21 @@ import gm.types;
 
 namespace gm {
 
+    export template <std::integral R, std::floating_point T>
+    R round(T value) noexcept {
+        return static_cast<R>(std::round(value));
+    }
+
+    export template <std::floating_point T>
+    T deg_to_rad(T deg) noexcept {
+        return deg * (std::numbers::pi_v<T> / 180);
+    }
+
+    export template <std::floating_point T>
+    T rad_to_deg(T rad) noexcept {
+        return rad * (180 / std::numbers::pi_v<T>);
+    }
+
     struct Bound {
         int a{};
         int b{};
@@ -24,7 +39,7 @@ namespace gm {
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    constexpr Bound upper_bound() {
+    constexpr Bound upper_bound() noexcept {
         static constexpr int D{ std::numeric_limits<T>::digits };
         static constexpr int E{ std::numeric_limits<T>::max_exponent };
         return std::integral<T> ? Bound{ D, 0 } : Bound{ E, E - D };
@@ -32,12 +47,26 @@ namespace gm {
 
     template <class T>
         requires std::is_arithmetic_v<T>
-    constexpr Bound neg_lower_bound() {
+    constexpr Bound neg_lower_bound() noexcept {
         static constexpr int D{ std::numeric_limits<T>::digits };
         static constexpr int E{ std::numeric_limits<T>::max_exponent };
         return std::unsigned_integral<T> ? Bound{ 0, 0 }
                : std::signed_integral<T> ? Bound{ D, D + 1 }
                                          : Bound{ E - D, E };
+    }
+
+    template <class T>
+        requires std::is_arithmetic_v<T>
+    constexpr T pow(T x, unsigned n) noexcept {
+        T result{ 1 };
+        while (n != 0) {
+            if (n % 2 == 1) {
+                result *= x;
+            }
+            x *= x;
+            n >>= 1;
+        }
+        return result;
     }
 
     export template <class R, class T>
@@ -65,7 +94,8 @@ namespace gm {
                 && std::integral<R>
                 && std::numeric_limits<T>::digits < std::numeric_limits<R>::digits
             ) {
-                if (num >= std::exp2(static_cast<T>(std::numeric_limits<R>::digits))) {
+                static constexpr T r_max{ gm::pow(T{ 2 }, std::numeric_limits<R>::digits) };
+                if (num >= r_max) {
                     return pos_overflow;
                 }
             } else {
@@ -88,21 +118,6 @@ namespace gm {
         requires std::is_arithmetic_v<R> && std::is_arithmetic_v<T>
     R saturating_cast(T num) noexcept {
         return gm::saturating_cast(num, std::numeric_limits<R>::lowest(), std::numeric_limits<R>::max());
-    }
-
-    export template <std::integral R, std::floating_point T>
-    R round(T value) noexcept {
-        return static_cast<R>(std::round(value));
-    }
-
-    export template <std::floating_point T>
-    T deg_to_rad(T deg) noexcept {
-        return deg * (std::numbers::pi_v<T> / 180);
-    }
-
-    export template <std::floating_point T>
-    T rad_to_deg(T rad) noexcept {
-        return rad * (180 / std::numbers::pi_v<T>);
     }
 
     export u32 make_rgb(u8 red, u8 green, u8 blue, u8 alpha = 255) noexcept {
