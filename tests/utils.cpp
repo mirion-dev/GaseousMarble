@@ -113,6 +113,12 @@ TEST_SUITE("gm2") {
             CHECK(is_equal(deg_to_rad(-180.), -std::numbers::pi));
         }
 
+        SUBCASE("rad_to_deg") {
+            CHECK(is_equal(rad_to_deg(0.), 0.));
+            CHECK(is_equal(rad_to_deg(std::numbers::pi), 180.));
+            CHECK(is_equal(rad_to_deg(-std::numbers::pi), -180.));
+        }
+
         SUBCASE("make_rgb") {
             CHECK(make_rgb(0, 0, 0) == 0xff000000);
             CHECK(make_rgb(255, 255, 255) == 0xffffffff);

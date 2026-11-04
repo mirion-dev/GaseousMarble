@@ -100,6 +100,11 @@ namespace gm {
         return deg * (std::numbers::pi_v<T> / 180);
     }
 
+    export template <std::floating_point T>
+    T rad_to_deg(T rad) noexcept {
+        return rad * (180 / std::numbers::pi_v<T>);
+    }
+
     export u32 make_rgb(u8 red, u8 green, u8 blue, u8 alpha = 255) noexcept {
         return static_cast<u32>(alpha) << 24 | static_cast<u32>(red) << 16 | static_cast<u32>(green) << 8 | blue;
     }
