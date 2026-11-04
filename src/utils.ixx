@@ -11,11 +11,6 @@ import gm.types;
 
 namespace gm {
 
-    export template <std::integral R, std::floating_point T>
-    R round(T value) noexcept {
-        return static_cast<R>(std::round(value));
-    }
-
     export template <std::floating_point T>
     T deg_to_rad(T deg) noexcept {
         return deg * (std::numbers::pi_v<T> / 180);
@@ -120,6 +115,11 @@ namespace gm {
         return gm::saturating_cast(num, std::numeric_limits<R>::lowest(), std::numeric_limits<R>::max());
     }
 
+    template <std::unsigned_integral R, std::floating_point T>
+    R round(T value) noexcept {
+        return static_cast<R>(value + T{ .5 });
+    }
+
     export u32 make_rgb(u8 red, u8 green, u8 blue, u8 alpha = 255) noexcept {
         return static_cast<u32>(alpha) << 24 | static_cast<u32>(red) << 16 | static_cast<u32>(green) << 8 | blue;
     }
@@ -163,7 +163,9 @@ namespace gm {
 
         u32 result{};
         for (int shift{}; shift < 32; shift += 8) {
-            result |= round<u32>(std::lerp(from >> shift & 0xff, to >> shift & 0xff, factor)) << shift;
+            u8 a{ static_cast<u8>(from >> shift & 0xff) };
+            u8 b{ static_cast<u8>(to >> shift & 0xff) };
+            result |= round<u32>(a + (b - a) * factor) << shift;
         }
 
         return result;
