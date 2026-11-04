@@ -90,34 +90,14 @@ namespace gm {
         return gm::saturating_cast(num, std::numeric_limits<R>::lowest(), std::numeric_limits<R>::max());
     }
 
+    export template <std::integral R, std::floating_point T>
+    R round(T value) noexcept {
+        return static_cast<R>(std::round(value));
+    }
+
     export template <std::floating_point T>
     T deg_to_rad(T deg) noexcept {
         return deg * (std::numbers::pi_v<T> / 180);
-    }
-
-    export u32 lerp_color(u32 from, u32 to, f32 factor) noexcept {
-        assert(0 <= factor && factor <= 1);
-
-        u32 result{};
-        for (int shift{}; shift < 32; shift += 8) {
-            result |= std::lround(std::lerp(from >> shift & 0xff, to >> shift & 0xff, factor)) << shift;
-        }
-
-        return result;
-    }
-
-    export u32 bilerp_color(u32 tl, u32 tr, u32 bl, u32 br, f32 factor_x, f32 factor_y) noexcept {
-        assert(0 <= factor_x && factor_x <= 1 && 0 <= factor_y && factor_y <= 1);
-        return lerp_color(lerp_color(tl, tr, factor_x), lerp_color(bl, br, factor_x), factor_y);
-    }
-
-    export u32 swap_red_blue(u32 color) noexcept {
-        return color & 0xff00ff00 | color >> 16 & 0xff | (color & 0xff) << 16;
-    }
-
-    export u32 with_opacity(u32 color, f32 opacity) noexcept {
-        assert(0 <= opacity && opacity <= 1);
-        return color & 0x00ffffff | static_cast<u32>(std::lround((color >> 24) * opacity)) << 24;
     }
 
     export u32 make_rgb(u8 red, u8 green, u8 blue, u8 alpha = 255) noexcept {
@@ -146,12 +126,32 @@ namespace gm {
             std::tie(r, g, b) = std::tuple{ c, 0, x };
         }
 
-        return make_rgb(
-            static_cast<u8>(std::lround((r + m) * 255)),
-            static_cast<u8>(std::lround((g + m) * 255)),
-            static_cast<u8>(std::lround((b + m) * 255)),
-            alpha
-        );
+        return make_rgb(round<u8>((r + m) * 255), round<u8>((g + m) * 255), round<u8>((b + m) * 255), alpha);
+    }
+
+    export u32 swap_red_blue(u32 color) noexcept {
+        return color & 0xff00ff00 | color >> 16 & 0xff | (color & 0xff) << 16;
+    }
+
+    export u32 with_opacity(u32 color, f32 opacity) noexcept {
+        assert(0 <= opacity && opacity <= 1);
+        return color & 0x00ffffff | round<u32>((color >> 24) * opacity) << 24;
+    }
+
+    export u32 lerp_color(u32 from, u32 to, f32 factor) noexcept {
+        assert(0 <= factor && factor <= 1);
+
+        u32 result{};
+        for (int shift{}; shift < 32; shift += 8) {
+            result |= round<u32>(std::lerp(from >> shift & 0xff, to >> shift & 0xff, factor)) << shift;
+        }
+
+        return result;
+    }
+
+    export u32 bilerp_color(u32 tl, u32 tr, u32 bl, u32 br, f32 factor_x, f32 factor_y) noexcept {
+        assert(0 <= factor_x && factor_x <= 1 && 0 <= factor_y && factor_y <= 1);
+        return lerp_color(lerp_color(tl, tr, factor_x), lerp_color(bl, br, factor_x), factor_y);
     }
 
     export std::string to_string(std::wstring_view str) {
@@ -182,9 +182,6 @@ namespace gm {
         );
     }
 
-    export template <class T, auto Deleter, T Null = {}>
-    using Handle = wil::unique_any<T, decltype(Deleter), Deleter, wil::details::pointer_access_all, T, T, Null>;
-
     export struct Hash {
         template <class T>
         usize operator()(const T& value) const noexcept {
@@ -201,5 +198,8 @@ namespace gm {
             return Hash{}(value.get());
         }
     };
+
+    export template <class T, auto Deleter, T Null = {}>
+    using Handle = wil::unique_any<T, decltype(Deleter), Deleter, wil::details::pointer_access_all, T, T, Null>;
 
 }

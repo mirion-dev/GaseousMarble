@@ -155,7 +155,7 @@ namespace gm {
             if (_option.is_box_model()) {
                 transform.translate(-_option.max_size.cwiseProduct(_option.origin));
             }
-            transform.pretranslate(pos - Eigen::Vector2f::Constant(.5));
+            transform.pretranslate(pos - Eigen::Vector2f::Constant(.5f));
 
             Eigen::Vector2f texture_size{ atlas.option().texture_size.cast<f32>() };
             std::unordered_map<wil::com_ptr<IDirect3DTexture8>, std::vector<Vertex>, Hash> batches;
@@ -236,7 +236,7 @@ namespace gm {
             }
 
             aabb.transform(_option.transform);
-            aabb.translate(-Eigen::Vector2f::Constant(.5));
+            aabb.translate(-Eigen::Vector2f::Constant(.5f));
             return aabb;
         }
     };

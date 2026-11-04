@@ -113,37 +113,6 @@ TEST_SUITE("gm2") {
             CHECK(is_equal(deg_to_rad(-180.), -std::numbers::pi));
         }
 
-        SUBCASE("lerp_color") {
-            CHECK(lerp_color(0x00000000, 0xffffffff, 0) == 0x00000000);
-            CHECK(lerp_color(0x00000000, 0xffffffff, 1) == 0xffffffff);
-            CHECK(lerp_color(0x11223344, 0x55667788, .25) == 0x22334455);
-        }
-
-        SUBCASE("bilerp_color") {
-            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 0, 0) == 0xff000000);
-            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 0) == 0x00ff0000);
-            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 0, 1) == 0x0000ff00);
-            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 1) == 0x000000ff);
-            CHECK(bilerp_color(0x00000000, 0x00ff0000, 0x0000ff00, 0x000000ff, .25, .25) == 0x00303010);
-        }
-
-        SUBCASE("swap_red_blue") {
-            CHECK(swap_red_blue(0) == 0);
-            CHECK(swap_red_blue(0x12345678) == 0x12785634);
-            CHECK(swap_red_blue(0x12785634) == 0x12345678);
-        }
-
-        SUBCASE("with_opacity") {
-            CHECK(with_opacity(0x00112233, 0) == 0x00112233);
-            CHECK(with_opacity(0x00112233, 1) == 0x00112233);
-            CHECK(with_opacity(0xff112233, 0) == 0x00112233);
-            CHECK(with_opacity(0xff112233, 1) == 0xff112233);
-            CHECK(with_opacity(0xff112233, .5) == 0x80112233);
-            CHECK(with_opacity(0x80112233, 1) == 0x80112233);
-            CHECK(with_opacity(0x80112233, .5) == 0x40112233);
-            CHECK(with_opacity(0xffffffff, .25) == 0x40ffffff);
-        }
-
         SUBCASE("make_rgb") {
             CHECK(make_rgb(0, 0, 0) == 0xff000000);
             CHECK(make_rgb(255, 255, 255) == 0xffffffff);
@@ -167,6 +136,37 @@ TEST_SUITE("gm2") {
             CHECK(make_hsv(149, 202, 86) == 0xff123456);
             CHECK(make_hsv(149, 202, 86, 0x78) == 0x78123456);
             CHECK(make_hsv(0, 0, 0, 0) == 0x00000000);
+        }
+
+        SUBCASE("swap_red_blue") {
+            CHECK(swap_red_blue(0) == 0);
+            CHECK(swap_red_blue(0x12345678) == 0x12785634);
+            CHECK(swap_red_blue(0x12785634) == 0x12345678);
+        }
+
+        SUBCASE("with_opacity") {
+            CHECK(with_opacity(0x00112233, 0) == 0x00112233);
+            CHECK(with_opacity(0x00112233, 1) == 0x00112233);
+            CHECK(with_opacity(0xff112233, 0) == 0x00112233);
+            CHECK(with_opacity(0xff112233, 1) == 0xff112233);
+            CHECK(with_opacity(0xff112233, .5) == 0x80112233);
+            CHECK(with_opacity(0x80112233, 1) == 0x80112233);
+            CHECK(with_opacity(0x80112233, .5) == 0x40112233);
+            CHECK(with_opacity(0xffffffff, .25) == 0x40ffffff);
+        }
+
+        SUBCASE("lerp_color") {
+            CHECK(lerp_color(0x00000000, 0xffffffff, 0) == 0x00000000);
+            CHECK(lerp_color(0x00000000, 0xffffffff, 1) == 0xffffffff);
+            CHECK(lerp_color(0x11223344, 0x55667788, .25) == 0x22334455);
+        }
+
+        SUBCASE("bilerp_color") {
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 0, 0) == 0xff000000);
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 0) == 0x00ff0000);
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 0, 1) == 0x0000ff00);
+            CHECK(bilerp_color(0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, 1, 1) == 0x000000ff);
+            CHECK(bilerp_color(0x00000000, 0x00ff0000, 0x0000ff00, 0x000000ff, .25, .25) == 0x00303010);
         }
 
         SUBCASE("filename") {
