@@ -16,7 +16,7 @@ add_defines("GASEOUSMARBLE_EXPORTS", "_UNICODE", "NOMINMAX", "UNICODE")
 add_defines(is_mode("debug") and "_DEBUG" or "NDEBUG")
 add_syslinks("d3d8", "dwrite", "ole32", "oleaut32")
 
-add_cxxflags("/diagnostics:caret", "/sdl", "/Zc:__cplusplus,checkGwOdr,enumTypes,inline,preprocessor,templateScope,throwingNew", {tools = "cl"})
+add_cxxflags("/diagnostics:caret", "/sdl", "/Zc:__cplusplus,checkGwOdr,cmath,enumTypes,inline,preprocessor,templateScope,throwingNew", {tools = "cl"})
 
 if is_mode("debug") then
     add_cxxflags("/JMC", "/RTC1", {tools = "cl", force = true})
@@ -47,7 +47,7 @@ target("gm2")
 
 target("gm2_test")
     set_kind("binary")
-    set_default(false)
+    set_default(os.getenv("XMAKE_IN_PROJECT_GENERATOR") == "true")
     add_files("tests/*.cpp")
     add_deps("gm2_core")
     add_packages("vcpkg::doctest")
