@@ -15,4 +15,4 @@ if (argument_count >= 4) {
     arg3 = argument0
 }
 
-external_call(global.gm2_internal_set_color, argument0, arg1, arg2, arg3)
+return external_call(global.gm2_internal_set_color, argument0, arg1, arg2, arg3)

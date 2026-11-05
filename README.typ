@@ -269,7 +269,7 @@ Set or get the *normalized* origin of the text. Only applies to the *box* model.
 
 = + `gm2_set_transform()`\ + `gm2_set_transform(a00, a01, a10, a11)`\ + `gm2_set_transform(a00, a01, a10, a11, dx, dy)`\ + `gm2_add_transform(a00, a01, a10, a11)`\ + `gm2_add_transform(a00, a01, a10, a11, dx, dy)`\ \* `gm2_add_translation(x, y)`\ + `gm2_add_translation_x(x)`\ + `gm2_add_translation_y(y)`\ \* `gm2_add_scale(x, y)`\ + `gm2_add_scale_x(x)`\ + `gm2_add_scale_y(y)`\ \* `gm2_add_rotation(theta)`\ + `gm2_add_skew(x, y)`\ + `gm2_add_skew_x(x)`\ + `gm2_add_skew_y(y)`\ + `gm2_get_transform_a00()` \ + `gm2_get_transform_a01()` \ + `gm2_get_transform_a10()` \ + `gm2_get_transform_a11()` \ + `gm2_get_transform_dx()` \ + `gm2_get_transform_dy()`
 
-Set or get the text transformation. Angles are in *degrees*.
+Set or get the text transformation. Angles are in *radians*.
 
 - `gm_set_offset()`
 - `gm_set_scale()`

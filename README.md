@@ -287,7 +287,10 @@ Set or get the word spacing of the text.
 
 Set or get the **normalized** origin of the text. Only applies to the **box** model.
 
-<h2>+ <code>gm2_set_transform(a00, a01, a10, a11, dx, dy)</code><br />
+<h2>+ <code>gm2_set_transform()</code><br />
++ <code>gm2_set_transform(a00, a01, a10, a11)</code><br />
++ <code>gm2_set_transform(a00, a01, a10, a11, dx, dy)</code><br />
++ <code>gm2_add_transform(a00, a01, a10, a11)</code><br />
 + <code>gm2_add_transform(a00, a01, a10, a11, dx, dy)</code><br />
 * <code>gm2_add_translation(x, y)</code><br />
 + <code>gm2_add_translation_x(x)</code><br />
@@ -306,7 +309,7 @@ Set or get the **normalized** origin of the text. Only applies to the **box** mo
 + <code>gm2_get_transform_dx()</code><br />
 + <code>gm2_get_transform_dy()</code></h2>
 
-Set or get the text transformation. Angles are in **degrees**.
+Set or get the text transformation. Angles are in **radians**.
 
 | **v1** |
 | --- |
@@ -319,13 +322,15 @@ Set or get the text transformation. Angles are in **degrees**.
 
 **New**: Arbitrary affine transformations.
 
-<h2>* <code>gm2_set_color(tl, tr, bl, br)</code><br />
+<h2><code>gm2_set_color(color)</code><br />
+<code>gm2_set_color(top, bottom)</code><br />
++ <code>gm2_set_color(tl, tr, bl, br)</code><br />
 * <code>gm2_get_color_tl()</code><br />
 + <code>gm2_get_color_tr()</code><br />
 * <code>gm2_get_color_bl()</code><br />
 + <code>gm2_get_color_br()</code></h2>
 
-Set or get the text color. The alpha channel is **respected**.
+Set or get the text color. The alpha channel is **respected**. See `gm2_make_rgb()` and `gm2_make_hsv()`.
 
 | **v1** |
 | --- |

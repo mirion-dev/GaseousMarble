@@ -16,4 +16,4 @@ if (argument_count >= 4) {
     }
 }
 
-external_call(global.gm2_internal_set_transform, arg0, arg1, arg2, arg3, arg4, arg5)
+return external_call(global.gm2_internal_set_transform, arg0, arg1, arg2, arg3, arg4, arg5)

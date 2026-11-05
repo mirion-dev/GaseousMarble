@@ -701,18 +701,18 @@ if (page == 0) {
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
 
     gm2_set_transform()
-    external_call(global.gm2_add_rotation, sin(current_time / 800) * 10)
+    external_call(global.gm2_add_rotation, sin(current_time / 800) * pi / 18)
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[3], "Lorem ipsum dolor sit amet.")
 
     gm2_set_transform()
-    external_call(global.gm2_add_skew, sin(current_time / 500) * 20, sin(current_time / 700) * 10)
+    external_call(global.gm2_add_skew, sin(current_time / 500) * pi / 9, sin(current_time / 700) * pi / 18)
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[4], "Lorem ipsum dolor sit amet.")
 
     var phase{ phase = current_time / 400 }
     gm2_set_transform()
-    external_call(global.gm2_add_rotation, sin(phase) * 12)
+    external_call(global.gm2_add_rotation, sin(phase) * pi / 15)
     external_call(global.gm2_add_scale, 1.15, 1.15)
-    external_call(global.gm2_add_skew_x, cos(phase) * 12)
+    external_call(global.gm2_add_skew_x, cos(phase) * pi / 15)
     external_call(global.gm2_add_translation, cos(phase) * 60, sin(phase) * 10)
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[5], "Lorem ipsum dolor sit amet.")
 

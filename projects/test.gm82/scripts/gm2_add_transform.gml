@@ -5,4 +5,4 @@ if (argument_count >= 6) {
     arg5 = argument[5]
 }
 
-external_call(global.gm2_internal_add_transform, argument0, argument1, argument2, argument3, arg4, arg5)
+return external_call(global.gm2_internal_add_transform, argument0, argument1, argument2, argument3, arg4, arg5)

@@ -8,7 +8,7 @@ if (argument_count >= 4) {
     }
 }
 
-external_call(global.gm2_internal_new_font,
+return external_call(global.gm2_internal_new_font,
     external_call(global.gm2_internal_to_real, argument0),
     external_call(global.gm2_internal_to_real, argument1),
     argument2,
