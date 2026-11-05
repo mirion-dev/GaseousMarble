@@ -207,20 +207,20 @@ if (page == 0) {
         row_param[2] = gm2_par_alignment_center
         row_param[3] = gm2_par_alignment_far
 
-        external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[0], "point")
+        external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[0], "point")
         var i{}
         for (i = 1; i <= 3; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
-            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], row_header[i])
         }
 
         var row{}
         for (row = 1; row <= 3; row += 1) {
             var col{}
             for (col = 1; col <= 3; col += 1) {
-                draw_circle_color(grid_mesh_col[col], grid_mesh_row[row], 5, $e6b689, $e6b689, false)
+                draw_circle_color(global.grid_mesh_col[col], global.grid_mesh_row[row], 5, $e6b689, $e6b689, false)
                 external_call(global.gm2_set_alignment, col_param[col] | row_param[row])
-                external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], "Text")
+                external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[row], "Text")
             }
         }
 
@@ -237,21 +237,21 @@ if (page == 0) {
         )
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
-        external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[0], "box")
+        external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[0], "box")
         var i{}
         for (i = 1; i <= 3; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
-            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], row_header[i])
         }
 
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var row{}
         for (row = 1; row <= 3; row += 1) {
             var col{}
             for (col = 1; col <= 3; col += 1) {
                 external_call(global.gm2_set_alignment, col_param[col] | row_param[row])
-                external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], "Text")
+                external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[row], "Text")
             }
         }
 
@@ -296,12 +296,12 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 2; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
-            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], row_header[i])
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         external_call(global.gm2_set_line_height, .9)
         var row{}
@@ -309,7 +309,7 @@ if (page == 0) {
             var col{}
             for (col = 1; col <= 2; col += 1) {
                 external_call(global.gm2_set_direction, col_param[col] | row_param[row])
-                external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[row], text[col])
+                external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[row], text[col])
             }
         }
 
@@ -340,16 +340,16 @@ if (page == 0) {
         external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         var i{}
         for (i = 1; i <= 2; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
         for (col = 1; col <= 2; col += 1) {
             external_call(global.gm2_set_text_alignment, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
+            external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
 
         external_call(global.gm2_load_options, "")
@@ -378,14 +378,14 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 3; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
+            external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], string(row_param[i]))
         }
 
         var row{}
         for (row = 1; row <= 3; row += 1) {
-            draw_circle_color(grid_mesh_col[1], grid_mesh_row[row], 5, $e6b689, $e6b689, false)
+            draw_circle_color(global.grid_mesh_col[1], global.grid_mesh_row[row], 5, $e6b689, $e6b689, false)
             external_call(global.gm2_set_max_width, row_param[row])
-            external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
+            external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[row], "It was the best of times, 这是一个最坏的时代, それは智慧の時代であり, 어리석음의 시대이기도 했다.")
         }
 
         external_call(global.gm2_load_options, "")
@@ -421,11 +421,11 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 4; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         external_call(global.gm2_set_line_height, .9)
         var col{}
@@ -436,7 +436,7 @@ if (page == 0) {
             }
 
             external_call(global.gm2_set_word_wrapping, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
+            external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[1], text)
         }
 
         external_call(global.gm2_load_options, "")
@@ -470,11 +470,11 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 3; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         external_call(global.gm2_set_word_wrapping, gm2_word_wrapping_none)
         var col{}
@@ -485,7 +485,7 @@ if (page == 0) {
             }
 
             external_call(global.gm2_set_trimming, col_param[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], text)
+            external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[1], text)
         }
 
         external_call(global.gm2_load_options, "")
@@ -527,16 +527,16 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 4; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
         for (col = 1; col <= 4; col += 1) {
             external_call(global.gm2_set_line_spacing, col_param1[col], col_param2[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
+            external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
 
         external_call(global.gm2_load_options, "")
@@ -578,16 +578,16 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 4; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
+            external_call(global.gm2_draw_text, global.grid_mesh_col[i], global.grid_mesh_row[0], col_header[i])
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
         for (col = 1; col <= 4; col += 1) {
             external_call(global.gm2_set_uniform_line_spacing, col_param1[col], col_param2[col])
-            external_call(global.gm2_draw_text, grid_mesh_col[col], grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
+            external_call(global.gm2_draw_text, global.grid_mesh_col[col], global.grid_mesh_row[1], "The quick brown fox jumps over the lazy dog.")
         }
 
         external_call(global.gm2_load_options, "")
@@ -616,16 +616,16 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 3; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
+            external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], string(row_param[i]))
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var row{}
         for (row = 1; row <= 3; row += 1) {
             external_call(global.gm2_set_tab_spacing, row_param[row])
-            external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], chr(9) + "The quick brown fox jumps over the lazy dog.")
+            external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[row], chr(9) + "The quick brown fox jumps over the lazy dog.")
         }
 
         external_call(global.gm2_load_options, "")
@@ -654,16 +654,16 @@ if (page == 0) {
 
         var i{}
         for (i = 1; i <= 3; i += 1) {
-            external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
+            external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], string(row_param[i]))
         }
 
         external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
-        external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+        external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var row{}
         for (row = 1; row <= 3; row += 1) {
             external_call(global.gm2_set_letter_spacing, row_param[row])
-            external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[row], "The quick brown fox jumps over the lazy dog.")
+            external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[row], "The quick brown fox jumps over the lazy dog.")
         }
 
         external_call(global.gm2_load_options, "")
@@ -693,27 +693,27 @@ if (page == 0) {
 
     var i{}
     for (i = 1; i <= 5; i += 1) {
-        external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
+        external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], row_header[i])
     }
 
-    external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+    external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
     external_call(global.gm2_set_origin, .5, .5)
 
     external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
     external_call(global.gm2_add_translation, sin(current_time / 500) * 20, sin(current_time / 700) * 10)
-    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
 
     external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
     external_call(global.gm2_add_scale, 1 + sin(current_time / 600) * .5, 1 + sin(current_time / 750) * .5)
-    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
 
     external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
     external_call(global.gm2_add_rotation, sin(current_time / 800) * 10)
-    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[3], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[3], "Lorem ipsum dolor sit amet.")
 
     external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
     external_call(global.gm2_add_skew, sin(current_time / 500) * 20, sin(current_time / 700) * 10)
-    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[4], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[4], "Lorem ipsum dolor sit amet.")
 
     var phase{ phase = current_time / 400 }
     external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
@@ -721,7 +721,7 @@ if (page == 0) {
     external_call(global.gm2_add_scale, 1.15, 1.15)
     external_call(global.gm2_add_skew_x, cos(phase) * 12)
     external_call(global.gm2_add_translation, cos(phase) * 60, sin(phase) * 10)
-    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[5], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[5], "Lorem ipsum dolor sit amet.")
 
     external_call(global.gm2_load_options, "")
 } else if (page == 4) {
@@ -747,10 +747,10 @@ if (page == 0) {
     external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
     var i{}
     for (i = 1; i <= 5; i += 1) {
-        external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
+        external_call(global.gm2_draw_text, global.grid_mesh_col[0], global.grid_mesh_row[i], row_header[i])
     }
 
-    external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
+    external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
     external_call(global.gm2_set_origin, .5, .5)
     external_call(global.gm2_save_options, "item")
 
@@ -762,11 +762,11 @@ if (page == 0) {
         external_call(global.gm2_make_hsv, (hue + 128) mod 256, 255, 255, 255),
         external_call(global.gm2_make_hsv, (hue + 64) mod 256, 255, 255, 255)
     )
-    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
     external_call(global.gm2_load_options, "item")
 
     external_call(global.gm2_set_opacity, (1 + sin(current_time / 700)) / 2)
-    external_call(global.gm2_draw_text, grid_mesh_col[1], grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
+    external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
     external_call(global.gm2_load_options, "item")
 
     external_call(global.gm2_load_options, "")
