@@ -85,66 +85,66 @@ global.gm2_get_color_bl             = external_define(dll_name, "gm2_get_color_b
 global.gm2_get_color_br             = external_define(dll_name, "gm2_get_color_br", dll_cdecl, ty_real, 0)
 global.gm2_get_opacity              = external_define(dll_name, "gm2_get_opacity", dll_cdecl, ty_real, 0)
 
-global.gm2_font_weight_thin        = 100
-global.gm2_font_weight_extra_light = 200
-global.gm2_font_weight_light       = 300
-global.gm2_font_weight_normal      = 400
-global.gm2_font_weight_medium      = 500
-global.gm2_font_weight_semi_bold   = 600
-global.gm2_font_weight_bold        = 700
-global.gm2_font_weight_extra_bold  = 800
-global.gm2_font_weight_black       = 900
-global.gm2_font_weight_extra_black = 950
+globalvar gm2_font_weight_thin       { gm2_font_weight_thin        = 100 }
+globalvar gm2_font_weight_extra_light{ gm2_font_weight_extra_light = 200 }
+globalvar gm2_font_weight_light      { gm2_font_weight_light       = 300 }
+globalvar gm2_font_weight_normal     { gm2_font_weight_normal      = 400 }
+globalvar gm2_font_weight_medium     { gm2_font_weight_medium      = 500 }
+globalvar gm2_font_weight_semi_bold  { gm2_font_weight_semi_bold   = 600 }
+globalvar gm2_font_weight_bold       { gm2_font_weight_bold        = 700 }
+globalvar gm2_font_weight_extra_bold { gm2_font_weight_extra_bold  = 800 }
+globalvar gm2_font_weight_black      { gm2_font_weight_black       = 900 }
+globalvar gm2_font_weight_extra_black{ gm2_font_weight_extra_black = 950 }
 
-global.gm2_font_style_normal  = 0 << 10
-global.gm2_font_style_italic  = 2 << 10
-global.gm2_font_style_oblique = 1 << 10
+globalvar gm2_font_style_normal { gm2_font_style_normal  = 0 << 10 }
+globalvar gm2_font_style_italic { gm2_font_style_italic  = 2 << 10 }
+globalvar gm2_font_style_oblique{ gm2_font_style_oblique = 1 << 10 }
 
-global.gm2_font_stretch_ultra_condensed = 1 << 12
-global.gm2_font_stretch_extra_condensed = 2 << 12
-global.gm2_font_stretch_condensed       = 3 << 12
-global.gm2_font_stretch_semi_condensed  = 4 << 12
-global.gm2_font_stretch_normal          = 5 << 12
-global.gm2_font_stretch_semi_expanded   = 6 << 12
-global.gm2_font_stretch_expanded        = 7 << 12
-global.gm2_font_stretch_extra_expanded  = 8 << 12
-global.gm2_font_stretch_ultra_expanded  = 9 << 12
+globalvar gm2_font_stretch_ultra_condensed{ gm2_font_stretch_ultra_condensed = 1 << 12 }
+globalvar gm2_font_stretch_extra_condensed{ gm2_font_stretch_extra_condensed = 2 << 12 }
+globalvar gm2_font_stretch_condensed      { gm2_font_stretch_condensed       = 3 << 12 }
+globalvar gm2_font_stretch_semi_condensed { gm2_font_stretch_semi_condensed  = 4 << 12 }
+globalvar gm2_font_stretch_normal         { gm2_font_stretch_normal          = 5 << 12 }
+globalvar gm2_font_stretch_semi_expanded  { gm2_font_stretch_semi_expanded   = 6 << 12 }
+globalvar gm2_font_stretch_expanded       { gm2_font_stretch_expanded        = 7 << 12 }
+globalvar gm2_font_stretch_extra_expanded { gm2_font_stretch_extra_expanded  = 8 << 12 }
+globalvar gm2_font_stretch_ultra_expanded { gm2_font_stretch_ultra_expanded  = 9 << 12 }
 
-global.gm2_text_direction_ltr = 0
-global.gm2_text_direction_rtl = 1
+globalvar gm2_text_direction_ltr{ gm2_text_direction_ltr = 0 }
+globalvar gm2_text_direction_rtl{ gm2_text_direction_rtl = 1 }
 
-global.gm2_par_direction_ttb = 0 << 2
-global.gm2_par_direction_btt = 1 << 2
+globalvar gm2_par_direction_ttb{ gm2_par_direction_ttb = 0 << 2 }
+globalvar gm2_par_direction_btt{ gm2_par_direction_btt = 1 << 2 }
 
-global.gm2_text_alignment_leading   = 0
-global.gm2_text_alignment_center    = 2
-global.gm2_text_alignment_trailing  = 1
-global.gm2_text_alignment_justified = 3
+globalvar gm2_text_alignment_leading  { gm2_text_alignment_leading   = 0 }
+globalvar gm2_text_alignment_center   { gm2_text_alignment_center    = 2 }
+globalvar gm2_text_alignment_trailing { gm2_text_alignment_trailing  = 1 }
+globalvar gm2_text_alignment_justified{ gm2_text_alignment_justified = 3 }
 
-global.gm2_par_alignment_near   = 0 << 2
-global.gm2_par_alignment_center = 2 << 2
-global.gm2_par_alignment_far    = 1 << 2
+globalvar gm2_par_alignment_near  { gm2_par_alignment_near   = 0 << 2 }
+globalvar gm2_par_alignment_center{ gm2_par_alignment_center = 2 << 2 }
+globalvar gm2_par_alignment_far   { gm2_par_alignment_far    = 1 << 2 }
 
-global.gm2_infinity = 100000
+globalvar gm2_infinity{ gm2_infinity = 100000 }
 
-global.gm2_word_wrapping_none       = 1
-global.gm2_word_wrapping_char       = 4
-global.gm2_word_wrapping_word       = 2
-global.gm2_word_wrapping_whole_word = 3
+globalvar gm2_word_wrapping_none      { gm2_word_wrapping_none       = 1 }
+globalvar gm2_word_wrapping_char      { gm2_word_wrapping_char       = 4 }
+globalvar gm2_word_wrapping_word      { gm2_word_wrapping_word       = 2 }
+globalvar gm2_word_wrapping_whole_word{ gm2_word_wrapping_whole_word = 3 }
 
-global.gm2_trimming_none = 0
-global.gm2_trimming_char = 1
-global.gm2_trimming_word = 2
+globalvar gm2_trimming_none{ gm2_trimming_none = 0 }
+globalvar gm2_trimming_char{ gm2_trimming_char = 1 }
+globalvar gm2_trimming_word{ gm2_trimming_word = 2 }
 
-global.gm2_line_spacing_type_proportional = 2
-global.gm2_line_spacing_type_uniform      = 1
+globalvar gm2_line_spacing_type_proportional{ gm2_line_spacing_type_proportional = 2 }
+globalvar gm2_line_spacing_type_uniform     { gm2_line_spacing_type_uniform      = 1 }
 
 external_call(global.gm2_internal_init)
 external_call(
     global.gm2_internal_new_font,
     external_call(global.gm2_internal_to_real, "default"),
     external_call(global.gm2_internal_to_real, "Source Han Serif SC"),
-    global.gm2_font_weight_normal | global.gm2_font_style_normal | global.gm2_font_stretch_normal,
+    gm2_font_weight_normal | gm2_font_style_normal | gm2_font_stretch_normal,
     18,
     external_call(global.gm2_internal_to_real, "")
 )
@@ -172,7 +172,7 @@ var table_padding{ table_padding = room_width / 2 * .05 }
 var cell_padding{ cell_padding = room_width / 2 * .05 }
 if (page == 0) {
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_alignment()")
 
         grid_mesh(
@@ -198,14 +198,14 @@ if (page == 0) {
         row_header[3] = "far"
 
         var col_param{}
-        col_param[1] = global.gm2_text_alignment_leading
-        col_param[2] = global.gm2_text_alignment_center
-        col_param[3] = global.gm2_text_alignment_trailing
+        col_param[1] = gm2_text_alignment_leading
+        col_param[2] = gm2_text_alignment_center
+        col_param[3] = gm2_text_alignment_trailing
 
         var row_param{}
-        row_param[1] = global.gm2_par_alignment_near
-        row_param[2] = global.gm2_par_alignment_center
-        row_param[3] = global.gm2_par_alignment_far
+        row_param[1] = gm2_par_alignment_near
+        row_param[2] = gm2_par_alignment_center
+        row_param[3] = gm2_par_alignment_far
 
         external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[0], "point")
         var i{}
@@ -236,7 +236,7 @@ if (page == 0) {
             $e6b689
         )
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[0], "box")
         var i{}
         for (i = 1; i <= 3; i += 1) {
@@ -259,7 +259,7 @@ if (page == 0) {
     }
 
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_direction()")
 
         grid_mesh(
@@ -283,12 +283,12 @@ if (page == 0) {
         row_header[2] = "btt"
 
         var col_param{}
-        col_param[1] = global.gm2_text_direction_ltr
-        col_param[2] = global.gm2_text_direction_rtl
+        col_param[1] = gm2_text_direction_ltr
+        col_param[2] = gm2_text_direction_rtl
 
         var row_param{}
-        row_param[1] = global.gm2_par_direction_ttb
-        row_param[2] = global.gm2_par_direction_btt
+        row_param[1] = gm2_par_direction_ttb
+        row_param[2] = gm2_par_direction_btt
 
         var text{}
         text[1] = "The quick brown fox jumps over the lazy dog."
@@ -300,7 +300,7 @@ if (page == 0) {
             external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         external_call(global.gm2_set_line_height, .9)
@@ -334,16 +334,16 @@ if (page == 0) {
         col_header[2] = "justified"
 
         var col_param{}
-        col_param[1] = global.gm2_text_alignment_leading
-        col_param[2] = global.gm2_text_alignment_justified
+        col_param[1] = gm2_text_alignment_leading
+        col_param[2] = gm2_text_alignment_justified
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         var i{}
         for (i = 1; i <= 2; i += 1) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
@@ -356,7 +356,7 @@ if (page == 0) {
     }
 } else if (page == 1) {
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_max_width()")
 
         grid_mesh(
@@ -392,7 +392,7 @@ if (page == 0) {
     }
 
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_word_wrapping()")
 
         grid_mesh(
@@ -414,17 +414,17 @@ if (page == 0) {
         col_header[4] = "whole word"
 
         var col_param{}
-        col_param[1] = global.gm2_word_wrapping_none
-        col_param[2] = global.gm2_word_wrapping_char
-        col_param[3] = global.gm2_word_wrapping_word
-        col_param[4] = global.gm2_word_wrapping_whole_word
+        col_param[1] = gm2_word_wrapping_none
+        col_param[2] = gm2_word_wrapping_char
+        col_param[3] = gm2_word_wrapping_word
+        col_param[4] = gm2_word_wrapping_whole_word
 
         var i{}
         for (i = 1; i <= 4; i += 1) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         external_call(global.gm2_set_line_height, .9)
@@ -443,7 +443,7 @@ if (page == 0) {
     }
 
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_trimming()")
 
         grid_mesh(
@@ -464,19 +464,19 @@ if (page == 0) {
         col_header[3] = "word"
 
         var col_param{}
-        col_param[1] = global.gm2_trimming_none
-        col_param[2] = global.gm2_trimming_char
-        col_param[3] = global.gm2_trimming_word
+        col_param[1] = gm2_trimming_none
+        col_param[2] = gm2_trimming_char
+        col_param[3] = gm2_trimming_word
 
         var i{}
         for (i = 1; i <= 3; i += 1) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
-        external_call(global.gm2_set_word_wrapping, global.gm2_word_wrapping_none)
+        external_call(global.gm2_set_word_wrapping, gm2_word_wrapping_none)
         var col{}
         for (col = 1; col <= 3; col += 1) {
             var text{ text = "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife." + chr(10) + "However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters." }
@@ -492,7 +492,7 @@ if (page == 0) {
     }
 } else if (page == 2) {
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, title_height / 2, "gm2_set_line_spacing()")
 
         grid_mesh(
@@ -530,7 +530,7 @@ if (page == 0) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
@@ -543,7 +543,7 @@ if (page == 0) {
     }
 
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width * 3 / 4, title_height / 2, "gm2_set_uniform_line_spacing()")
 
         grid_mesh(
@@ -581,7 +581,7 @@ if (page == 0) {
             external_call(global.gm2_draw_text, grid_mesh_col[i], grid_mesh_row[0], col_header[i])
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var col{}
@@ -594,7 +594,7 @@ if (page == 0) {
     }
 
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width / 4, room_height / 2 + title_height / 2, "gm2_set_tab_spacing()")
 
         grid_mesh(
@@ -619,7 +619,7 @@ if (page == 0) {
             external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var row{}
@@ -632,7 +632,7 @@ if (page == 0) {
     }
 
     {
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
         external_call(global.gm2_draw_text, room_width * 3 / 4, room_height / 2 + title_height / 2, "gm2_set_letter_spacing()")
 
         grid_mesh(
@@ -657,7 +657,7 @@ if (page == 0) {
             external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], string(row_param[i]))
         }
 
-        external_call(global.gm2_set_alignment, global.gm2_text_alignment_leading | global.gm2_par_alignment_near)
+        external_call(global.gm2_set_alignment, gm2_text_alignment_leading | gm2_par_alignment_near)
         external_call(global.gm2_set_max_size, grid_mesh_cell_width, grid_mesh_cell_height)
         external_call(global.gm2_set_origin, .5, .5)
         var row{}
@@ -669,7 +669,7 @@ if (page == 0) {
         external_call(global.gm2_load_options, "")
     }
 } else if (page == 3) {
-    external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+    external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
     external_call(global.gm2_draw_text, room_width / 2, title_height / 2, "gm2_set_transform()")
 
     grid_mesh(
@@ -744,7 +744,7 @@ if (page == 0) {
     row_header[4] = ""
     row_header[5] = ""
 
-    external_call(global.gm2_set_alignment, global.gm2_text_alignment_center | global.gm2_par_alignment_center)
+    external_call(global.gm2_set_alignment, gm2_text_alignment_center | gm2_par_alignment_center)
     var i{}
     for (i = 1; i <= 5; i += 1) {
         external_call(global.gm2_draw_text, grid_mesh_col[0], grid_mesh_row[i], row_header[i])
