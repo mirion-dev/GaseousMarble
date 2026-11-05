@@ -126,21 +126,28 @@ TEST_SUITE("gm2") {
             CHECK(make_rgb(0, 255, 0) == 0xff00ff00);
             CHECK(make_rgb(0, 0, 255) == 0xff0000ff);
             CHECK(make_rgb(0x12, 0x34, 0x56) == 0xff123456);
-            CHECK(make_rgb(0x12, 0x34, 0x56, 0x78) == 0x78123456);
+            CHECK(make_rgb(0x12, 0x34, 0x56, 0) == 0x00123456);
+            CHECK(make_rgb(0x12, 0x34, 0x56, .5) == 0x80123456);
+            CHECK(make_rgb(0x12, 0x34, 0x56, 1) == 0xff123456);
             CHECK(make_rgb(0, 0, 0, 0) == 0x00000000);
         }
 
         SUBCASE("make_hsv") {
             CHECK(make_hsv(0, 0, 0) == 0xff000000);
-            CHECK(make_hsv(0, 0, 128) == 0xff808080);
-            CHECK(make_hsv(0, 0, 255) == 0xffffffff);
-            CHECK(make_hsv(0, 255, 0) == 0xff000000);
-            CHECK(make_hsv(0, 255, 128) == 0xff800000);
-            CHECK(make_hsv(0, 255, 255) == 0xffff0000);
-            CHECK(make_hsv(85, 255, 255) == 0xff00ff00);
-            CHECK(make_hsv(170, 255, 255) == 0xff0000ff);
-            CHECK(make_hsv(149, 202, 86) == 0xff123456);
-            CHECK(make_hsv(149, 202, 86, 0x78) == 0x78123456);
+            CHECK(make_hsv(0, 0, .5) == 0xff808080);
+            CHECK(make_hsv(0, 0, 1) == 0xffffffff);
+            CHECK(make_hsv(0, 1, 0) == 0xff000000);
+            CHECK(make_hsv(0, 1, .5) == 0xff800000);
+            CHECK(make_hsv(0, 1, 1) == 0xffff0000);
+            CHECK(make_hsv(60, 1, 1) == 0xffffff00);
+            CHECK(make_hsv(120, 1, 1) == 0xff00ff00);
+            CHECK(make_hsv(180, 1, 1) == 0xff00ffff);
+            CHECK(make_hsv(240, 1, 1) == 0xff0000ff);
+            CHECK(make_hsv(300, 1, 1) == 0xffff00ff);
+            CHECK(make_hsv(360, 1, 1) == 0xffff0000);
+            CHECK(make_hsv(420, 1, 1) == 0xffffff00);
+            CHECK(make_hsv(210, .793f, .337f) == 0xff123456);
+            CHECK(make_hsv(210, .793f, .337f, .5) == 0x80123456);
             CHECK(make_hsv(0, 0, 0, 0) == 0x00000000);
         }
 

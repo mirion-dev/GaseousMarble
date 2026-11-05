@@ -120,17 +120,18 @@ namespace gm {
         return static_cast<R>(value + T{ .5 });
     }
 
-    export u32 make_rgb(u8 red, u8 green, u8 blue, u8 alpha = 255) noexcept {
-        return static_cast<u32>(alpha) << 24 | static_cast<u32>(red) << 16 | static_cast<u32>(green) << 8 | blue;
+    export u32 make_rgb(u8 red, u8 green, u8 blue, f32 alpha = 1) noexcept {
+        assert(0 <= alpha && alpha <= 1);
+        return round<u32>(alpha * 255) << 24 | static_cast<u32>(red) << 16 | static_cast<u32>(green) << 8 | blue;
     }
 
-    export u32 make_hsv(u8 hue, u8 saturation, u8 value, u8 alpha = 255) noexcept {
-        f32 h{ hue / 255.f * 6 };
-        f32 s{ saturation / 255.f };
-        f32 v{ value / 255.f };
-        f32 c{ v * s };
+    export u32 make_hsv(f32 hue, f32 saturation, f32 value, f32 alpha = 1) noexcept {
+        assert(0 <= saturation && saturation <= 1 && 0 <= value && value <= 1 && 0 <= alpha && alpha <= 1);
+
+        f32 h{ std::fmod(hue + 360, 360.f) / 60 };
+        f32 c{ value * saturation };
         f32 x{ c * (1 - std::abs(std::fmod(h, 2.f) - 1)) };
-        f32 m{ v - c };
+        f32 m{ value - c };
         f32 r, g, b;
         if (h < 1) {
             std::tie(r, g, b) = std::tuple{ c, x, 0 };

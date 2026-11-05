@@ -120,21 +120,21 @@ API Real gm2_load_options(StringRef raw_key) noexcept try {
 }
 GM_CATCH_RETURN()
 
-API Real gm2_make_rgb(Real raw_red, Real raw_green, Real raw_blue, Real raw_alpha) noexcept {
+API Real gm2_internal_make_rgb(Real raw_red, Real raw_green, Real raw_blue, Real raw_alpha) noexcept {
     return swap_red_blue(make_rgb(
         saturating_cast<u8>(raw_red),
         saturating_cast<u8>(raw_green),
         saturating_cast<u8>(raw_blue),
-        saturating_cast<u8>(raw_alpha)
+        std::clamp(saturating_cast<f32>(raw_alpha), 0.f, 1.f)
     ));
 }
 
-API Real gm2_make_hsv(Real raw_hue, Real raw_saturation, Real raw_value, Real raw_alpha) noexcept {
+API Real gm2_internal_make_hsv(Real raw_hue, Real raw_saturation, Real raw_value, Real raw_alpha) noexcept {
     return swap_red_blue(make_hsv(
-        saturating_cast<u8>(raw_hue),
-        saturating_cast<u8>(raw_saturation),
-        saturating_cast<u8>(raw_value),
-        saturating_cast<u8>(raw_alpha)
+        saturating_cast<f32>(raw_hue),
+        std::clamp(saturating_cast<f32>(raw_saturation), 0.f, 1.f),
+        std::clamp(saturating_cast<f32>(raw_value), 0.f, 1.f),
+        std::clamp(saturating_cast<f32>(raw_alpha), 0.f, 1.f)
     ));
 }
 

@@ -134,9 +134,9 @@ Draw a UTF-8 text or get its *layout* AABB.
 
 Save or load the current draw options.
 
-= + `gm2_make_rgb(red, green, blue, alpha)`\ + `gm2_make_hsv(hue, saturation, value, alpha)`
+= + `gm2_make_rgb(rgb, alpha = 1)`\ + `gm2_make_rgb(red, green, blue, alpha = 1)`\ + `gm2_make_hsv(hue, saturation, value, alpha = 1)`
 
-Create a color. The range is *0 to 255*.
+Create a color. The range of `red`, `green` and `blue` is *0 to 255*. The range of `hue` is *0 to 360*. The range of `saturation`, `value` and `alpha` is *0 to 1*.
 
 = `gm2_set_font(key)`\ `gm2_get_font()`\ + `gm2_get_font_name()`\ + `gm2_get_font_weight()`\ + `gm2_get_font_style()`\ + `gm2_get_font_stretch()`\ + `gm2_get_font_size()`\ + `gm2_get_font_locale()`
 

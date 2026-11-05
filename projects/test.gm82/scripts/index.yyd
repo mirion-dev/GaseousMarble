@@ -1,2 +1,4 @@
 grid_mesh
 gm2_new_font
+gm2_make_rgb
+gm2_make_hsv

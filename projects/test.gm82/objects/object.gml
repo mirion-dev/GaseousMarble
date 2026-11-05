@@ -12,8 +12,8 @@ global.gm2_delete_font              = external_define(dll_name, "gm2_delete_font
 global.gm2_draw_text                = external_define(dll_name, "gm2_draw_text", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_string)
 global.gm2_save_options             = external_define(dll_name, "gm2_save_options", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_load_options             = external_define(dll_name, "gm2_load_options", dll_cdecl, ty_real, 1, ty_string)
-global.gm2_make_rgb                 = external_define(dll_name, "gm2_make_rgb", dll_cdecl, ty_real, 4, ty_real, ty_real, ty_real, ty_real)
-global.gm2_make_hsv                 = external_define(dll_name, "gm2_make_hsv", dll_cdecl, ty_real, 4, ty_real, ty_real, ty_real, ty_real)
+global.gm2_internal_make_rgb        = external_define(dll_name, "gm2_internal_make_rgb", dll_cdecl, ty_real, 4, ty_real, ty_real, ty_real, ty_real)
+global.gm2_internal_make_hsv        = external_define(dll_name, "gm2_internal_make_hsv", dll_cdecl, ty_real, 4, ty_real, ty_real, ty_real, ty_real)
 global.gm2_set_alignment            = external_define(dll_name, "gm2_set_alignment", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_text_alignment       = external_define(dll_name, "gm2_set_text_alignment", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_par_alignment        = external_define(dll_name, "gm2_set_par_alignment", dll_cdecl, ty_real, 1, ty_real)
@@ -747,13 +747,13 @@ if (page == 0) {
     external_call(global.gm2_set_origin, .5, .5)
     external_call(global.gm2_save_options, "item")
 
-    var hue{ hue = current_time / 8 }
+    var hue{ hue = current_time / 8 mod 360 }
     external_call(
         global.gm2_set_color,
-        external_call(global.gm2_make_hsv, hue mod 256, 255, 255, 255),
-        external_call(global.gm2_make_hsv, (hue + 192) mod 256, 255, 255, 255),
-        external_call(global.gm2_make_hsv, (hue + 128) mod 256, 255, 255, 255),
-        external_call(global.gm2_make_hsv, (hue + 64) mod 256, 255, 255, 255)
+        gm2_make_hsv(hue, 1, 1),
+        gm2_make_hsv(hue - 90, 1, 1),
+        gm2_make_hsv(hue - 180, 1, 1),
+        gm2_make_hsv(hue - 270, 1, 1)
     )
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
     external_call(global.gm2_load_options, "item")

@@ -20,3 +20,25 @@ gm2_internal_new_font(
     arg3,
     gm2_internal_to_real(arg4)
 )
+
+#define gm2_make_rgb
+if (argument_count == 1) {
+    return gm2_internal_make_rgb(argument0 & 255, argument0 >> 8 & 255, argument0 >> 16 & 255, 1)
+}
+
+if (argument_count == 2) {
+    return gm2_internal_make_rgb(argument0 & 255, argument0 >> 8 & 255, argument0 >> 16 & 255, argument[1])
+}
+
+if (argument_count == 3) {
+    return gm2_internal_make_rgb(argument0, argument[1], argument[2], 1)
+}
+
+return gm2_internal_make_rgb(argument0, argument[1], argument[2], argument[3])
+
+#define gm2_make_hsv
+if (argument_count == 3) {
+    return gm2_internal_make_hsv(argument0, argument1, argument2, 1)
+}
+
+return gm2_internal_make_hsv(argument0, argument1, argument2, argument[3])
