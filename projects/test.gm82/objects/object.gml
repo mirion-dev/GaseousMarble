@@ -140,14 +140,7 @@ globalvar gm2_line_spacing_type_proportional{ gm2_line_spacing_type_proportional
 globalvar gm2_line_spacing_type_uniform     { gm2_line_spacing_type_uniform      = 1 }
 
 external_call(global.gm2_internal_init)
-external_call(
-    global.gm2_internal_new_font,
-    external_call(global.gm2_internal_to_real, "default"),
-    external_call(global.gm2_internal_to_real, "Source Han Serif SC"),
-    gm2_font_weight_normal | gm2_font_style_normal | gm2_font_stretch_normal,
-    18,
-    external_call(global.gm2_internal_to_real, "")
-)
+gm2_new_font("default", "Source Han Serif SC", 18)
 external_call(global.gm2_set_font, "default")
 external_call(global.gm2_save_options, "")
 

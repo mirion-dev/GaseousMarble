@@ -46,7 +46,7 @@ StringRef from_real(Real real) noexcept {
 }
 
 API Real
-gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_properties, Real raw_size, Real raw_locale) noexcept try {
+gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_size, Real raw_properties, Real raw_locale) noexcept try {
     std::string key{ from_real(raw_key) };
     if (key.empty()) {
         throw std::invalid_argument{ "Font key must not be empty" };

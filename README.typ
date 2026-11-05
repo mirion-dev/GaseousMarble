@@ -61,7 +61,7 @@
     `layout_cache_size`, `1024`, [Maximum number of cached layouts],
 )
 
-= \* `gm2_new_font(key, name, properties, size, locale)`
+= \* `gm2_new_font(key, name, size, properties = normal, locale = "")`
 
 Add a font from system fonts or font files. `key` should be *non-empty*.
 

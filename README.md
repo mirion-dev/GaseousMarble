@@ -39,7 +39,7 @@
 | `max_font_num` | `64` | Maximum number of fonts |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 
-<h2>* <code>gm2_new_font(key, name, properties, size, locale)</code></h2>
+<h2>* <code>gm2_new_font(key, name, size, properties = normal, locale = "")</code></h2>
 
 Add a font from system fonts or font files. `key` should be **non-empty**.
 
