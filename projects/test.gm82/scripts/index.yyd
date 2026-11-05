@@ -2,3 +2,6 @@ grid_mesh
 gm2_new_font
 gm2_make_rgb
 gm2_make_hsv
+gm2_set_transform
+gm2_add_transform
+gm2_set_color

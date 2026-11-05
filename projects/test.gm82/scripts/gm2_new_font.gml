@@ -1,15 +1,11 @@
-var arg3{}
+var arg3{ arg3 = gm2_font_weight_normal | gm2_font_style_normal | gm2_font_stretch_normal }
+var arg4{ arg4 = "" }
 if (argument_count >= 4) {
     arg3 = argument[3]
-} else {
-    arg3 = gm2_font_weight_normal | gm2_font_style_normal | gm2_font_stretch_normal
-}
 
-var arg4{}
-if (argument_count >= 5) {
-    arg4 = argument[4]
-} else {
-    arg4 = ""
+    if (argument_count >= 5) {
+        arg4 = argument[4]
+    }
 }
 
 external_call(global.gm2_internal_new_font,

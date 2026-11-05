@@ -285,12 +285,12 @@ Eigen::Affine2f to_affine(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11
     return result;
 }
 
-API Real gm2_set_transform(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
+API Real gm2_internal_set_transform(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
     draw.option().transform = to_affine(raw_a00, raw_a01, raw_a10, raw_a11, raw_dx, raw_dy);
     return S_OK;
 }
 
-API Real gm2_add_transform(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
+API Real gm2_internal_add_transform(Real raw_a00, Real raw_a01, Real raw_a10, Real raw_a11, Real raw_dx, Real raw_dy) noexcept {
     draw.option().transform = to_affine(raw_a00, raw_a01, raw_a10, raw_a11, raw_dx, raw_dy) * draw.option().transform;
     return S_OK;
 }
@@ -341,7 +341,7 @@ API Real gm2_add_skew_y(Real raw_y) noexcept {
     return gm2_add_skew(0, raw_y);
 }
 
-API Real gm2_set_color(Real raw_tl, Real raw_tr, Real raw_bl, Real raw_br) noexcept {
+API Real gm2_internal_set_color(Real raw_tl, Real raw_tr, Real raw_bl, Real raw_br) noexcept {
     draw.option().color_tl = swap_red_blue(saturating_cast<u32>(raw_tl));
     draw.option().color_tr = swap_red_blue(saturating_cast<u32>(raw_tr));
     draw.option().color_bl = swap_red_blue(saturating_cast<u32>(raw_bl));

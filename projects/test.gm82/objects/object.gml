@@ -33,8 +33,8 @@ global.gm2_set_uniform_line_spacing = external_define(dll_name, "gm2_set_uniform
 global.gm2_set_line_height          = external_define(dll_name, "gm2_set_line_height", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_baseline             = external_define(dll_name, "gm2_set_baseline", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_set_origin               = external_define(dll_name, "gm2_set_origin", dll_cdecl, ty_real, 2, ty_real, ty_real)
-global.gm2_set_transform            = external_define(dll_name, "gm2_set_transform", dll_cdecl, ty_real, 6, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
-global.gm2_add_transform            = external_define(dll_name, "gm2_add_transform", dll_cdecl, ty_real, 6, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
+global.gm2_internal_set_transform   = external_define(dll_name, "gm2_internal_set_transform", dll_cdecl, ty_real, 6, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
+global.gm2_internal_add_transform   = external_define(dll_name, "gm2_internal_add_transform", dll_cdecl, ty_real, 6, ty_real, ty_real, ty_real, ty_real, ty_real, ty_real)
 global.gm2_add_translation          = external_define(dll_name, "gm2_add_translation", dll_cdecl, ty_real, 2, ty_real, ty_real)
 global.gm2_add_translation_x        = external_define(dll_name, "gm2_add_translation_x", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_add_translation_y        = external_define(dll_name, "gm2_add_translation_y", dll_cdecl, ty_real, 1, ty_real)
@@ -45,7 +45,7 @@ global.gm2_add_rotation             = external_define(dll_name, "gm2_add_rotatio
 global.gm2_add_skew                 = external_define(dll_name, "gm2_add_skew", dll_cdecl, ty_real, 2, ty_real, ty_real)
 global.gm2_add_skew_x               = external_define(dll_name, "gm2_add_skew_x", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_add_skew_y               = external_define(dll_name, "gm2_add_skew_y", dll_cdecl, ty_real, 1, ty_real)
-global.gm2_set_color                = external_define(dll_name, "gm2_set_color", dll_cdecl, ty_real, 4, ty_real, ty_real, ty_real, ty_real)
+global.gm2_internal_set_color       = external_define(dll_name, "gm2_internal_set_color", dll_cdecl, ty_real, 4, ty_real, ty_real, ty_real, ty_real)
 global.gm2_set_opacity              = external_define(dll_name, "gm2_set_opacity", dll_cdecl, ty_real, 1, ty_real)
 global.gm2_get_aabb_x               = external_define(dll_name, "gm2_get_aabb_x", dll_cdecl, ty_real, 1, ty_string)
 global.gm2_get_aabb_y               = external_define(dll_name, "gm2_get_aabb_y", dll_cdecl, ty_real, 1, ty_string)
@@ -692,24 +692,24 @@ if (page == 0) {
     external_call(global.gm2_set_max_size, global.grid_mesh_cell_width, global.grid_mesh_cell_height)
     external_call(global.gm2_set_origin, .5, .5)
 
-    external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
+    gm2_set_transform()
     external_call(global.gm2_add_translation, sin(current_time / 500) * 20, sin(current_time / 700) * 10)
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[1], "Lorem ipsum dolor sit amet.")
 
-    external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
+    gm2_set_transform()
     external_call(global.gm2_add_scale, 1 + sin(current_time / 600) * .5, 1 + sin(current_time / 750) * .5)
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[2], "Lorem ipsum dolor sit amet.")
 
-    external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
+    gm2_set_transform()
     external_call(global.gm2_add_rotation, sin(current_time / 800) * 10)
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[3], "Lorem ipsum dolor sit amet.")
 
-    external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
+    gm2_set_transform()
     external_call(global.gm2_add_skew, sin(current_time / 500) * 20, sin(current_time / 700) * 10)
     external_call(global.gm2_draw_text, global.grid_mesh_col[1], global.grid_mesh_row[4], "Lorem ipsum dolor sit amet.")
 
     var phase{ phase = current_time / 400 }
-    external_call(global.gm2_set_transform, 1, 0, 0, 1, 0, 0)
+    gm2_set_transform()
     external_call(global.gm2_add_rotation, sin(phase) * 12)
     external_call(global.gm2_add_scale, 1.15, 1.15)
     external_call(global.gm2_add_skew_x, cos(phase) * 12)
@@ -748,8 +748,7 @@ if (page == 0) {
     external_call(global.gm2_save_options, "item")
 
     var hue{ hue = current_time / 8 mod 360 }
-    external_call(
-        global.gm2_set_color,
+    gm2_set_color(
         gm2_make_hsv(hue, 1, 1),
         gm2_make_hsv(hue - 90, 1, 1),
         gm2_make_hsv(hue - 180, 1, 1),
