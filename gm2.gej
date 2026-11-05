@@ -1,0 +1,1146 @@
+{
+	"name": "GaseousMarble2",
+	"folder": "gm2",
+	"version": "2.0.0-beta.1",
+	"author": "Mirion",
+	"date": "11/5/2026",
+	"license": "MIT",
+	"description": "Professional typography in GameMaker 8.2.",
+	"helpfile": "",
+	"hidden": false,
+	"dependencies": [],
+	"files": [
+		{
+			"filename": "gm2.dll",
+			"origname": "build/release/gm2.dll",
+			"kind": 1,
+			"init": "gm2_internal_init",
+			"final": "",
+			"functions": [
+				{
+					"name": "gm2_add_rotation",
+					"extname": "gm2_add_rotation",
+					"calltype": 12,
+					"helpline": "gm2_add_rotation(theta)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_scale",
+					"extname": "gm2_add_scale",
+					"calltype": 12,
+					"helpline": "gm2_add_scale(x,y)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_scale_x",
+					"extname": "gm2_add_scale_x",
+					"calltype": 12,
+					"helpline": "gm2_add_scale_x(x)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_scale_y",
+					"extname": "gm2_add_scale_y",
+					"calltype": 12,
+					"helpline": "gm2_add_scale_y(y)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_skew",
+					"extname": "gm2_add_skew",
+					"calltype": 12,
+					"helpline": "gm2_add_skew(x,y)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_skew_x",
+					"extname": "gm2_add_skew_x",
+					"calltype": 12,
+					"helpline": "gm2_add_skew_x(x)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_skew_y",
+					"extname": "gm2_add_skew_y",
+					"calltype": 12,
+					"helpline": "gm2_add_skew_y(y)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_translation",
+					"extname": "gm2_add_translation",
+					"calltype": 12,
+					"helpline": "gm2_add_translation(x,y)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_translation_x",
+					"extname": "gm2_add_translation_x",
+					"calltype": 12,
+					"helpline": "gm2_add_translation_x(x)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_translation_y",
+					"extname": "gm2_add_translation_y",
+					"calltype": 12,
+					"helpline": "gm2_add_translation_y(y)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_delete_font",
+					"extname": "gm2_delete_font",
+					"calltype": 12,
+					"helpline": "gm2_delete_font(key)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_draw_text",
+					"extname": "gm2_draw_text",
+					"calltype": 12,
+					"helpline": "gm2_draw_text(x,y,text)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2,
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_aabb_height",
+					"extname": "gm2_get_aabb_height",
+					"calltype": 12,
+					"helpline": "gm2_get_aabb_height(text)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_aabb_width",
+					"extname": "gm2_get_aabb_width",
+					"calltype": 12,
+					"helpline": "gm2_get_aabb_width(text)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_aabb_x",
+					"extname": "gm2_get_aabb_x",
+					"calltype": 12,
+					"helpline": "gm2_get_aabb_x(text)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_aabb_y",
+					"extname": "gm2_get_aabb_y",
+					"calltype": 12,
+					"helpline": "gm2_get_aabb_y(text)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_baseline",
+					"extname": "gm2_get_baseline",
+					"calltype": 12,
+					"helpline": "gm2_get_baseline()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_color_bl",
+					"extname": "gm2_get_color_bl",
+					"calltype": 12,
+					"helpline": "gm2_get_color_bl()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_color_br",
+					"extname": "gm2_get_color_br",
+					"calltype": 12,
+					"helpline": "gm2_get_color_br()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_color_tl",
+					"extname": "gm2_get_color_tl",
+					"calltype": 12,
+					"helpline": "gm2_get_color_tl()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_color_tr",
+					"extname": "gm2_get_color_tr",
+					"calltype": 12,
+					"helpline": "gm2_get_color_tr()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_font",
+					"extname": "gm2_get_font",
+					"calltype": 12,
+					"helpline": "gm2_get_font()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 1
+				},
+				{
+					"name": "gm2_get_font_locale",
+					"extname": "gm2_get_font_locale",
+					"calltype": 12,
+					"helpline": "gm2_get_font_locale()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 1
+				},
+				{
+					"name": "gm2_get_font_name",
+					"extname": "gm2_get_font_name",
+					"calltype": 12,
+					"helpline": "gm2_get_font_name()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 1
+				},
+				{
+					"name": "gm2_get_font_size",
+					"extname": "gm2_get_font_size",
+					"calltype": 12,
+					"helpline": "gm2_get_font_size()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_font_stretch",
+					"extname": "gm2_get_font_stretch",
+					"calltype": 12,
+					"helpline": "gm2_get_font_stretch()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_font_style",
+					"extname": "gm2_get_font_style",
+					"calltype": 12,
+					"helpline": "gm2_get_font_style()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_font_weight",
+					"extname": "gm2_get_font_weight",
+					"calltype": 12,
+					"helpline": "gm2_get_font_weight()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_letter_spacing",
+					"extname": "gm2_get_letter_spacing",
+					"calltype": 12,
+					"helpline": "gm2_get_letter_spacing()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_line_height",
+					"extname": "gm2_get_line_height",
+					"calltype": 12,
+					"helpline": "gm2_get_line_height()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_line_spacing_type",
+					"extname": "gm2_get_line_spacing_type",
+					"calltype": 12,
+					"helpline": "gm2_get_line_spacing_type()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_max_height",
+					"extname": "gm2_get_max_height",
+					"calltype": 12,
+					"helpline": "gm2_get_max_height()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_max_width",
+					"extname": "gm2_get_max_width",
+					"calltype": 12,
+					"helpline": "gm2_get_max_width()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_opacity",
+					"extname": "gm2_get_opacity",
+					"calltype": 12,
+					"helpline": "gm2_get_opacity()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_origin_x",
+					"extname": "gm2_get_origin_x",
+					"calltype": 12,
+					"helpline": "gm2_get_origin_x()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_origin_y",
+					"extname": "gm2_get_origin_y",
+					"calltype": 12,
+					"helpline": "gm2_get_origin_y()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_par_alignment",
+					"extname": "gm2_get_par_alignment",
+					"calltype": 12,
+					"helpline": "gm2_get_par_alignment()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_par_direction",
+					"extname": "gm2_get_par_direction",
+					"calltype": 12,
+					"helpline": "gm2_get_par_direction()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_tab_spacing",
+					"extname": "gm2_get_tab_spacing",
+					"calltype": 12,
+					"helpline": "gm2_get_tab_spacing()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_text_alignment",
+					"extname": "gm2_get_text_alignment",
+					"calltype": 12,
+					"helpline": "gm2_get_text_alignment()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_text_direction",
+					"extname": "gm2_get_text_direction",
+					"calltype": 12,
+					"helpline": "gm2_get_text_direction()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_transform_a00",
+					"extname": "gm2_get_transform_a00",
+					"calltype": 12,
+					"helpline": "gm2_get_transform_a00()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_transform_a01",
+					"extname": "gm2_get_transform_a01",
+					"calltype": 12,
+					"helpline": "gm2_get_transform_a01()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_transform_a10",
+					"extname": "gm2_get_transform_a10",
+					"calltype": 12,
+					"helpline": "gm2_get_transform_a10()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_transform_a11",
+					"extname": "gm2_get_transform_a11",
+					"calltype": 12,
+					"helpline": "gm2_get_transform_a11()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_transform_dx",
+					"extname": "gm2_get_transform_dx",
+					"calltype": 12,
+					"helpline": "gm2_get_transform_dx()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_transform_dy",
+					"extname": "gm2_get_transform_dy",
+					"calltype": 12,
+					"helpline": "gm2_get_transform_dy()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_trimming",
+					"extname": "gm2_get_trimming",
+					"calltype": 12,
+					"helpline": "gm2_get_trimming()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_get_word_wrapping",
+					"extname": "gm2_get_word_wrapping",
+					"calltype": 12,
+					"helpline": "gm2_get_word_wrapping()",
+					"hidden": false,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_add_transform",
+					"extname": "gm2_internal_add_transform",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [
+						2,
+						2,
+						2,
+						2,
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_init",
+					"extname": "gm2_internal_init",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_make_hsv",
+					"extname": "gm2_internal_make_hsv",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [
+						2,
+						2,
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_make_rgb",
+					"extname": "gm2_internal_make_rgb",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [
+						2,
+						2,
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_new_font",
+					"extname": "gm2_internal_new_font",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [
+						2,
+						2,
+						2,
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_set_color",
+					"extname": "gm2_internal_set_color",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [
+						2,
+						2,
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_set_transform",
+					"extname": "gm2_internal_set_transform",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [
+						2,
+						2,
+						2,
+						2,
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_internal_to_real",
+					"extname": "gm2_internal_to_real",
+					"calltype": 12,
+					"helpline": "",
+					"hidden": true,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_load_options",
+					"extname": "gm2_load_options",
+					"calltype": 12,
+					"helpline": "gm2_load_options(key)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_save_options",
+					"extname": "gm2_save_options",
+					"calltype": 12,
+					"helpline": "gm2_save_options(key)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_alignment",
+					"extname": "gm2_set_alignment",
+					"calltype": 12,
+					"helpline": "gm2_set_alignment(alignment)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_baseline",
+					"extname": "gm2_set_baseline",
+					"calltype": 12,
+					"helpline": "gm2_set_baseline(baseline)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_direction",
+					"extname": "gm2_set_direction",
+					"calltype": 12,
+					"helpline": "gm2_set_direction(direction)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_font",
+					"extname": "gm2_set_font",
+					"calltype": 12,
+					"helpline": "gm2_set_font(key)",
+					"hidden": false,
+					"argtypes": [
+						1
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_letter_spacing",
+					"extname": "gm2_set_letter_spacing",
+					"calltype": 12,
+					"helpline": "gm2_set_letter_spacing(letter_spacing)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_line_height",
+					"extname": "gm2_set_line_height",
+					"calltype": 12,
+					"helpline": "gm2_set_line_height(line_height)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_line_spacing",
+					"extname": "gm2_set_line_spacing",
+					"calltype": 12,
+					"helpline": "gm2_set_line_spacing(line_height,baseline)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_max_height",
+					"extname": "gm2_set_max_height",
+					"calltype": 12,
+					"helpline": "gm2_set_max_height(max_height)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_max_size",
+					"extname": "gm2_set_max_size",
+					"calltype": 12,
+					"helpline": "gm2_set_max_size(max_width,max_height)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_max_width",
+					"extname": "gm2_set_max_width",
+					"calltype": 12,
+					"helpline": "gm2_set_max_width(max_width)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_opacity",
+					"extname": "gm2_set_opacity",
+					"calltype": 12,
+					"helpline": "gm2_set_opacity(opacity)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_origin",
+					"extname": "gm2_set_origin",
+					"calltype": 12,
+					"helpline": "gm2_set_origin(x,y)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_par_alignment",
+					"extname": "gm2_set_par_alignment",
+					"calltype": 12,
+					"helpline": "gm2_set_par_alignment(par_alignment)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_par_direction",
+					"extname": "gm2_set_par_direction",
+					"calltype": 12,
+					"helpline": "gm2_set_par_direction(par_direction)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_tab_spacing",
+					"extname": "gm2_set_tab_spacing",
+					"calltype": 12,
+					"helpline": "gm2_set_tab_spacing(tab_spacing)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_text_alignment",
+					"extname": "gm2_set_text_alignment",
+					"calltype": 12,
+					"helpline": "gm2_set_text_alignment(text_alignment)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_text_direction",
+					"extname": "gm2_set_text_direction",
+					"calltype": 12,
+					"helpline": "gm2_set_text_direction(text_direction)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_trimming",
+					"extname": "gm2_set_trimming",
+					"calltype": 12,
+					"helpline": "gm2_set_trimming(trimming)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_uniform_line_spacing",
+					"extname": "gm2_set_uniform_line_spacing",
+					"calltype": 12,
+					"helpline": "gm2_set_uniform_line_spacing(line_height,baseline)",
+					"hidden": false,
+					"argtypes": [
+						2,
+						2
+					],
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_word_wrapping",
+					"extname": "gm2_set_word_wrapping",
+					"calltype": 12,
+					"helpline": "gm2_set_word_wrapping(word_wrapping)",
+					"hidden": false,
+					"argtypes": [
+						2
+					],
+					"returntype": 2
+				}
+			],
+			"constants": [
+				{
+					"name": "gm2_font_weight_thin",
+					"value": "100",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_extra_light",
+					"value": "200",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_light",
+					"value": "300",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_normal",
+					"value": "400",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_medium",
+					"value": "500",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_semi_bold",
+					"value": "600",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_bold",
+					"value": "700",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_extra_bold",
+					"value": "800",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_black",
+					"value": "900",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_weight_extra_black",
+					"value": "950",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_style_normal",
+					"value": "0",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_style_oblique",
+					"value": "1024",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_style_italic",
+					"value": "2048",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_ultra_condensed",
+					"value": "4096",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_extra_condensed",
+					"value": "8192",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_condensed",
+					"value": "12288",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_semi_condensed",
+					"value": "16384",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_normal",
+					"value": "20480",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_semi_expanded",
+					"value": "24576",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_expanded",
+					"value": "28672",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_extra_expanded",
+					"value": "32768",
+					"hidden": false
+				},
+				{
+					"name": "gm2_font_stretch_ultra_expanded",
+					"value": "36864",
+					"hidden": false
+				},
+				{
+					"name": "gm2_text_alignment_leading",
+					"value": "0",
+					"hidden": false
+				},
+				{
+					"name": "gm2_text_alignment_trailing",
+					"value": "1",
+					"hidden": false
+				},
+				{
+					"name": "gm2_text_alignment_center",
+					"value": "2",
+					"hidden": false
+				},
+				{
+					"name": "gm2_text_alignment_justified",
+					"value": "3",
+					"hidden": false
+				},
+				{
+					"name": "gm2_par_alignment_near",
+					"value": "0",
+					"hidden": false
+				},
+				{
+					"name": "gm2_par_alignment_center",
+					"value": "8",
+					"hidden": false
+				},
+				{
+					"name": "gm2_par_alignment_far",
+					"value": "4",
+					"hidden": false
+				},
+				{
+					"name": "gm2_text_direction_ltr",
+					"value": "0",
+					"hidden": false
+				},
+				{
+					"name": "gm2_text_direction_rtl",
+					"value": "1",
+					"hidden": false
+				},
+				{
+					"name": "gm2_par_direction_ttb",
+					"value": "0",
+					"hidden": false
+				},
+				{
+					"name": "gm2_par_direction_btt",
+					"value": "4",
+					"hidden": false
+				},
+				{
+					"name": "gm2_word_wrapping_none",
+					"value": "1",
+					"hidden": false
+				},
+				{
+					"name": "gm2_word_wrapping_char",
+					"value": "4",
+					"hidden": false
+				},
+				{
+					"name": "gm2_word_wrapping_word",
+					"value": "2",
+					"hidden": false
+				},
+				{
+					"name": "gm2_word_wrapping_whole_word",
+					"value": "3",
+					"hidden": false
+				},
+				{
+					"name": "gm2_trimming_none",
+					"value": "0",
+					"hidden": false
+				},
+				{
+					"name": "gm2_trimming_char",
+					"value": "1",
+					"hidden": false
+				},
+				{
+					"name": "gm2_trimming_word",
+					"value": "2",
+					"hidden": false
+				},
+				{
+					"name": "gm2_line_spacing_type_uniform",
+					"value": "1",
+					"hidden": false
+				},
+				{
+					"name": "gm2_line_spacing_type_proportional",
+					"value": "2",
+					"hidden": false
+				},
+				{
+					"name": "gm2_infinity",
+					"value": "100000",
+					"hidden": false
+				}
+			]
+		},
+		{
+			"filename": "fmt.dll",
+			"origname": "build/release/fmt.dll",
+			"kind": 1,
+			"init": "",
+			"final": "",
+			"functions": [],
+			"constants": []
+		},
+		{
+			"filename": "main.gml",
+			"origname": "src/main.gml",
+			"kind": 2,
+			"init": "",
+			"final": "",
+			"functions": [
+				{
+					"name": "gm2_new_font",
+					"extname": "gm2_new_font",
+					"calltype": 2,
+					"helpline": "gm2_new_font(key,name,size,properties=normal,locale=\"\")",
+					"hidden": false,
+					"argtypes": null,
+					"returntype": 2
+				},
+				{
+					"name": "gm2_make_rgb",
+					"extname": "gm2_make_rgb",
+					"calltype": 2,
+					"helpline": "gm2_make_rgb(...)",
+					"hidden": false,
+					"argtypes": null,
+					"returntype": 2
+				},
+				{
+					"name": "gm2_make_hsv",
+					"extname": "gm2_make_hsv",
+					"calltype": 2,
+					"helpline": "gm2_make_hsv(hue,saturation,value,alpha=1)",
+					"hidden": false,
+					"argtypes": null,
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_transform",
+					"extname": "gm2_set_transform",
+					"calltype": 2,
+					"helpline": "gm2_set_transform(...)",
+					"hidden": false,
+					"argtypes": null,
+					"returntype": 2
+				},
+				{
+					"name": "gm2_add_transform",
+					"extname": "gm2_add_transform",
+					"calltype": 2,
+					"helpline": "gm2_add_transform(...)",
+					"hidden": false,
+					"argtypes": null,
+					"returntype": 2
+				},
+				{
+					"name": "gm2_set_color",
+					"extname": "gm2_set_color",
+					"calltype": 2,
+					"helpline": "gm2_set_color(...)",
+					"hidden": false,
+					"argtypes": null,
+					"returntype": 2
+				}
+			],
+			"constants": []
+		}
+	]
+}

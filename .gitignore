@@ -1,5 +1,6 @@
 *.log
 *.exe
+*.gex
 
 .idea
 .vscode
