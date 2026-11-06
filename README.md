@@ -1,10 +1,15 @@
 <h1>GaseousMarble</h1>
 
-**Work in progress**. Draw Unicode text in [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with high performance and rich features.
+Professional, high-performance text rendering for [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with 80 functions covering layout control, arbitrary transformations, and multi-directional gradients.
 
 > \[!warning\]
 > 
 > Minimum system requirement: Windows 10, Version 1709.
+
+### Roadmap
+
+- Support text effects.
+- Support vertical writing.
 
 ### Development
 

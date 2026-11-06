@@ -5,7 +5,7 @@
 	"author": "Mirion",
 	"date": "11/6/2026",
 	"license": "MIT",
-	"description": "Professional typography in GameMaker 8.2.",
+	"description": "Professional, high-performance text rendering for GameMaker 8.2.",
 	"helpfile": "",
 	"hidden": false,
 	"dependencies": [],
