@@ -29,7 +29,6 @@ namespace gm {
         u32 color_bl{ 0xffffffff };
         u32 color_br{ 0xffffffff };
         f32 opacity{ 1 };
-        // TODO: generate_font(): stroke_width, stroke_fill, shadow_offset, shadow_fill
 
         bool is_valid() const noexcept {
             return LayoutOption::is_valid() && 0 <= opacity && opacity <= 1;

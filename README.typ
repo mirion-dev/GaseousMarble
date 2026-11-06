@@ -109,7 +109,7 @@ If `locale` is empty, the user's default locale applies.
 
 *New*: Dynamic creation and more options.
 
-*Dropped*: Loading from sprites.
+*Dropped*: Loading from sprites and effects.
 
 = `gm2_delete_font(key)`
 
