@@ -36,7 +36,6 @@
 | `atlas.max_texture_num` | `16` | Maximum number of textures for each glyph atlas |
 | `raster.min_antialiasing_size_h` | `0` | Font horizontal antialiasing threshold |
 | `raster.min_antialiasing_size_v` | `0` | Font vertical antialiasing threshold |
-| `max_font_num` | `64` | Maximum number of fonts |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 
 <h2>* <code>gm2_new_font(key, name, size, properties = normal, locale = "")</code></h2>
@@ -85,7 +84,7 @@ If `locale` is empty, the user’s default locale applies.
 
 **New**: Dynamic creation and more options.
 
-**Dropped**: Loading from sprites.
+**Dropped**: Loading from sprites and effects.
 
 <h2><code>gm2_delete_font(key)</code></h2>
 

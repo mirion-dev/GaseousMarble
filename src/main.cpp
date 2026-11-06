@@ -52,11 +52,6 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_size, Real raw_prope
         throw std::invalid_argument{ "Font key must not be empty" };
     }
 
-    auto iter{ id_map.find(key) };
-    if (iter == id_map.end() && id_map.size() >= env::config().max_font_num) {
-        throw std::runtime_error{ "Too many fonts" };
-    }
-
     std::wstring name{ to_wstring(from_real(raw_name)) };
     u16 properties{ saturating_cast<u16>(raw_properties, FontDesc{}.properties) };
     f32 size{ saturating_cast<f32>(raw_size) };
@@ -73,6 +68,7 @@ gm2_internal_new_font(Real raw_key, Real raw_name, Real raw_size, Real raw_prope
     }
 
     Font font{ std::move(desc), { env::config().atlas, env::config().raster } };
+    auto iter{ id_map.find(key) };
     if (iter == id_map.end()) {
         iter = id_map.try_emplace(std::move(key), font_manager.insert(std::move(font))).first;
     } else {

@@ -72,11 +72,10 @@ namespace gm::env {
     export struct Config {
         AtlasOption atlas;
         RasterOption raster;
-        usize max_font_num{ 64 };
         usize layout_cache_size{ 1024 };
 
         bool is_valid() const noexcept {
-            return atlas.is_valid() && raster.is_valid() && max_font_num > 0 && layout_cache_size > 0;
+            return atlas.is_valid() && raster.is_valid() && layout_cache_size > 0;
         }
     };
 
