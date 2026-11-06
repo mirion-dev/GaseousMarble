@@ -9,13 +9,6 @@ gm2_set_font("default")
 gm2_save_options("")
 
 page = 0
-#define KeyPress_32
-/*"/*'/**//* YYD ACTION
-lib_id=1
-action_id=603
-applies_to=self
-*/
-page = (page + 1) mod 5
 #define Draw_0
 /*"/*'/**//* YYD ACTION
 lib_id=1
@@ -627,3 +620,10 @@ if (page == 0) {
 
     gm2_load_options("")
 }
+#define KeyPress_32
+/*"/*'/**//* YYD ACTION
+lib_id=1
+action_id=603
+applies_to=self
+*/
+page = (page + 1) mod 5

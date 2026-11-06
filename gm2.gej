@@ -3,7 +3,7 @@
 	"folder": "gm2",
 	"version": "2.0.0-beta.1",
 	"author": "Mirion",
-	"date": "11/5/2026",
+	"date": "11/6/2026",
 	"license": "MIT",
 	"description": "Professional typography in GameMaker 8.2.",
 	"helpfile": "",
@@ -19,7 +19,7 @@
 			"functions": [
 				{
 					"name": "gm2_add_rotation",
-					"extname": "gm2_add_rotation",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_rotation(theta)",
 					"hidden": false,
@@ -30,7 +30,7 @@
 				},
 				{
 					"name": "gm2_add_scale",
-					"extname": "gm2_add_scale",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_scale(x,y)",
 					"hidden": false,
@@ -42,7 +42,7 @@
 				},
 				{
 					"name": "gm2_add_scale_x",
-					"extname": "gm2_add_scale_x",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_scale_x(x)",
 					"hidden": false,
@@ -53,7 +53,7 @@
 				},
 				{
 					"name": "gm2_add_scale_y",
-					"extname": "gm2_add_scale_y",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_scale_y(y)",
 					"hidden": false,
@@ -64,7 +64,7 @@
 				},
 				{
 					"name": "gm2_add_skew",
-					"extname": "gm2_add_skew",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_skew(x,y)",
 					"hidden": false,
@@ -76,7 +76,7 @@
 				},
 				{
 					"name": "gm2_add_skew_x",
-					"extname": "gm2_add_skew_x",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_skew_x(x)",
 					"hidden": false,
@@ -87,7 +87,7 @@
 				},
 				{
 					"name": "gm2_add_skew_y",
-					"extname": "gm2_add_skew_y",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_skew_y(y)",
 					"hidden": false,
@@ -98,7 +98,7 @@
 				},
 				{
 					"name": "gm2_add_translation",
-					"extname": "gm2_add_translation",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_translation(x,y)",
 					"hidden": false,
@@ -110,7 +110,7 @@
 				},
 				{
 					"name": "gm2_add_translation_x",
-					"extname": "gm2_add_translation_x",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_translation_x(x)",
 					"hidden": false,
@@ -121,7 +121,7 @@
 				},
 				{
 					"name": "gm2_add_translation_y",
-					"extname": "gm2_add_translation_y",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_add_translation_y(y)",
 					"hidden": false,
@@ -132,7 +132,7 @@
 				},
 				{
 					"name": "gm2_delete_font",
-					"extname": "gm2_delete_font",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_delete_font(key)",
 					"hidden": false,
@@ -143,7 +143,7 @@
 				},
 				{
 					"name": "gm2_draw_text",
-					"extname": "gm2_draw_text",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_draw_text(x,y,text)",
 					"hidden": false,
@@ -156,7 +156,7 @@
 				},
 				{
 					"name": "gm2_get_aabb_height",
-					"extname": "gm2_get_aabb_height",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_aabb_height(text)",
 					"hidden": false,
@@ -167,7 +167,7 @@
 				},
 				{
 					"name": "gm2_get_aabb_width",
-					"extname": "gm2_get_aabb_width",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_aabb_width(text)",
 					"hidden": false,
@@ -178,7 +178,7 @@
 				},
 				{
 					"name": "gm2_get_aabb_x",
-					"extname": "gm2_get_aabb_x",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_aabb_x(text)",
 					"hidden": false,
@@ -189,7 +189,7 @@
 				},
 				{
 					"name": "gm2_get_aabb_y",
-					"extname": "gm2_get_aabb_y",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_aabb_y(text)",
 					"hidden": false,
@@ -200,7 +200,7 @@
 				},
 				{
 					"name": "gm2_get_baseline",
-					"extname": "gm2_get_baseline",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_baseline()",
 					"hidden": false,
@@ -209,7 +209,7 @@
 				},
 				{
 					"name": "gm2_get_color_bl",
-					"extname": "gm2_get_color_bl",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_color_bl()",
 					"hidden": false,
@@ -218,7 +218,7 @@
 				},
 				{
 					"name": "gm2_get_color_br",
-					"extname": "gm2_get_color_br",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_color_br()",
 					"hidden": false,
@@ -227,7 +227,7 @@
 				},
 				{
 					"name": "gm2_get_color_tl",
-					"extname": "gm2_get_color_tl",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_color_tl()",
 					"hidden": false,
@@ -236,7 +236,7 @@
 				},
 				{
 					"name": "gm2_get_color_tr",
-					"extname": "gm2_get_color_tr",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_color_tr()",
 					"hidden": false,
@@ -245,7 +245,7 @@
 				},
 				{
 					"name": "gm2_get_font",
-					"extname": "gm2_get_font",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_font()",
 					"hidden": false,
@@ -254,7 +254,7 @@
 				},
 				{
 					"name": "gm2_get_font_locale",
-					"extname": "gm2_get_font_locale",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_font_locale()",
 					"hidden": false,
@@ -263,7 +263,7 @@
 				},
 				{
 					"name": "gm2_get_font_name",
-					"extname": "gm2_get_font_name",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_font_name()",
 					"hidden": false,
@@ -272,7 +272,7 @@
 				},
 				{
 					"name": "gm2_get_font_size",
-					"extname": "gm2_get_font_size",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_font_size()",
 					"hidden": false,
@@ -281,7 +281,7 @@
 				},
 				{
 					"name": "gm2_get_font_stretch",
-					"extname": "gm2_get_font_stretch",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_font_stretch()",
 					"hidden": false,
@@ -290,7 +290,7 @@
 				},
 				{
 					"name": "gm2_get_font_style",
-					"extname": "gm2_get_font_style",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_font_style()",
 					"hidden": false,
@@ -299,7 +299,7 @@
 				},
 				{
 					"name": "gm2_get_font_weight",
-					"extname": "gm2_get_font_weight",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_font_weight()",
 					"hidden": false,
@@ -308,7 +308,7 @@
 				},
 				{
 					"name": "gm2_get_letter_spacing",
-					"extname": "gm2_get_letter_spacing",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_letter_spacing()",
 					"hidden": false,
@@ -317,7 +317,7 @@
 				},
 				{
 					"name": "gm2_get_line_height",
-					"extname": "gm2_get_line_height",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_line_height()",
 					"hidden": false,
@@ -326,7 +326,7 @@
 				},
 				{
 					"name": "gm2_get_line_spacing_type",
-					"extname": "gm2_get_line_spacing_type",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_line_spacing_type()",
 					"hidden": false,
@@ -335,7 +335,7 @@
 				},
 				{
 					"name": "gm2_get_max_height",
-					"extname": "gm2_get_max_height",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_max_height()",
 					"hidden": false,
@@ -344,7 +344,7 @@
 				},
 				{
 					"name": "gm2_get_max_width",
-					"extname": "gm2_get_max_width",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_max_width()",
 					"hidden": false,
@@ -353,7 +353,7 @@
 				},
 				{
 					"name": "gm2_get_opacity",
-					"extname": "gm2_get_opacity",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_opacity()",
 					"hidden": false,
@@ -362,7 +362,7 @@
 				},
 				{
 					"name": "gm2_get_origin_x",
-					"extname": "gm2_get_origin_x",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_origin_x()",
 					"hidden": false,
@@ -371,7 +371,7 @@
 				},
 				{
 					"name": "gm2_get_origin_y",
-					"extname": "gm2_get_origin_y",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_origin_y()",
 					"hidden": false,
@@ -380,7 +380,7 @@
 				},
 				{
 					"name": "gm2_get_par_alignment",
-					"extname": "gm2_get_par_alignment",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_par_alignment()",
 					"hidden": false,
@@ -389,7 +389,7 @@
 				},
 				{
 					"name": "gm2_get_par_direction",
-					"extname": "gm2_get_par_direction",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_par_direction()",
 					"hidden": false,
@@ -398,7 +398,7 @@
 				},
 				{
 					"name": "gm2_get_tab_spacing",
-					"extname": "gm2_get_tab_spacing",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_tab_spacing()",
 					"hidden": false,
@@ -407,7 +407,7 @@
 				},
 				{
 					"name": "gm2_get_text_alignment",
-					"extname": "gm2_get_text_alignment",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_text_alignment()",
 					"hidden": false,
@@ -416,7 +416,7 @@
 				},
 				{
 					"name": "gm2_get_text_direction",
-					"extname": "gm2_get_text_direction",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_text_direction()",
 					"hidden": false,
@@ -425,7 +425,7 @@
 				},
 				{
 					"name": "gm2_get_transform_a00",
-					"extname": "gm2_get_transform_a00",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_transform_a00()",
 					"hidden": false,
@@ -434,7 +434,7 @@
 				},
 				{
 					"name": "gm2_get_transform_a01",
-					"extname": "gm2_get_transform_a01",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_transform_a01()",
 					"hidden": false,
@@ -443,7 +443,7 @@
 				},
 				{
 					"name": "gm2_get_transform_a10",
-					"extname": "gm2_get_transform_a10",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_transform_a10()",
 					"hidden": false,
@@ -452,7 +452,7 @@
 				},
 				{
 					"name": "gm2_get_transform_a11",
-					"extname": "gm2_get_transform_a11",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_transform_a11()",
 					"hidden": false,
@@ -461,7 +461,7 @@
 				},
 				{
 					"name": "gm2_get_transform_dx",
-					"extname": "gm2_get_transform_dx",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_transform_dx()",
 					"hidden": false,
@@ -470,7 +470,7 @@
 				},
 				{
 					"name": "gm2_get_transform_dy",
-					"extname": "gm2_get_transform_dy",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_transform_dy()",
 					"hidden": false,
@@ -479,7 +479,7 @@
 				},
 				{
 					"name": "gm2_get_trimming",
-					"extname": "gm2_get_trimming",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_trimming()",
 					"hidden": false,
@@ -488,7 +488,7 @@
 				},
 				{
 					"name": "gm2_get_word_wrapping",
-					"extname": "gm2_get_word_wrapping",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_get_word_wrapping()",
 					"hidden": false,
@@ -497,7 +497,7 @@
 				},
 				{
 					"name": "gm2_internal_add_transform",
-					"extname": "gm2_internal_add_transform",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -513,7 +513,7 @@
 				},
 				{
 					"name": "gm2_internal_init",
-					"extname": "gm2_internal_init",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -522,7 +522,7 @@
 				},
 				{
 					"name": "gm2_internal_make_hsv",
-					"extname": "gm2_internal_make_hsv",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -536,7 +536,7 @@
 				},
 				{
 					"name": "gm2_internal_make_rgb",
-					"extname": "gm2_internal_make_rgb",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -550,7 +550,7 @@
 				},
 				{
 					"name": "gm2_internal_new_font",
-					"extname": "gm2_internal_new_font",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -565,7 +565,7 @@
 				},
 				{
 					"name": "gm2_internal_set_color",
-					"extname": "gm2_internal_set_color",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -579,7 +579,7 @@
 				},
 				{
 					"name": "gm2_internal_set_transform",
-					"extname": "gm2_internal_set_transform",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -595,7 +595,7 @@
 				},
 				{
 					"name": "gm2_internal_to_real",
-					"extname": "gm2_internal_to_real",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "",
 					"hidden": true,
@@ -606,7 +606,7 @@
 				},
 				{
 					"name": "gm2_load_options",
-					"extname": "gm2_load_options",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_load_options(key)",
 					"hidden": false,
@@ -617,7 +617,7 @@
 				},
 				{
 					"name": "gm2_save_options",
-					"extname": "gm2_save_options",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_save_options(key)",
 					"hidden": false,
@@ -628,7 +628,7 @@
 				},
 				{
 					"name": "gm2_set_alignment",
-					"extname": "gm2_set_alignment",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_alignment(alignment)",
 					"hidden": false,
@@ -639,7 +639,7 @@
 				},
 				{
 					"name": "gm2_set_baseline",
-					"extname": "gm2_set_baseline",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_baseline(baseline)",
 					"hidden": false,
@@ -650,7 +650,7 @@
 				},
 				{
 					"name": "gm2_set_direction",
-					"extname": "gm2_set_direction",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_direction(direction)",
 					"hidden": false,
@@ -661,7 +661,7 @@
 				},
 				{
 					"name": "gm2_set_font",
-					"extname": "gm2_set_font",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_font(key)",
 					"hidden": false,
@@ -672,7 +672,7 @@
 				},
 				{
 					"name": "gm2_set_letter_spacing",
-					"extname": "gm2_set_letter_spacing",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_letter_spacing(letter_spacing)",
 					"hidden": false,
@@ -683,7 +683,7 @@
 				},
 				{
 					"name": "gm2_set_line_height",
-					"extname": "gm2_set_line_height",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_line_height(line_height)",
 					"hidden": false,
@@ -694,7 +694,7 @@
 				},
 				{
 					"name": "gm2_set_line_spacing",
-					"extname": "gm2_set_line_spacing",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_line_spacing(line_height,baseline)",
 					"hidden": false,
@@ -706,7 +706,7 @@
 				},
 				{
 					"name": "gm2_set_max_height",
-					"extname": "gm2_set_max_height",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_max_height(max_height)",
 					"hidden": false,
@@ -717,7 +717,7 @@
 				},
 				{
 					"name": "gm2_set_max_size",
-					"extname": "gm2_set_max_size",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_max_size(max_width,max_height)",
 					"hidden": false,
@@ -729,7 +729,7 @@
 				},
 				{
 					"name": "gm2_set_max_width",
-					"extname": "gm2_set_max_width",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_max_width(max_width)",
 					"hidden": false,
@@ -740,7 +740,7 @@
 				},
 				{
 					"name": "gm2_set_opacity",
-					"extname": "gm2_set_opacity",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_opacity(opacity)",
 					"hidden": false,
@@ -751,7 +751,7 @@
 				},
 				{
 					"name": "gm2_set_origin",
-					"extname": "gm2_set_origin",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_origin(x,y)",
 					"hidden": false,
@@ -763,7 +763,7 @@
 				},
 				{
 					"name": "gm2_set_par_alignment",
-					"extname": "gm2_set_par_alignment",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_par_alignment(par_alignment)",
 					"hidden": false,
@@ -774,7 +774,7 @@
 				},
 				{
 					"name": "gm2_set_par_direction",
-					"extname": "gm2_set_par_direction",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_par_direction(par_direction)",
 					"hidden": false,
@@ -785,7 +785,7 @@
 				},
 				{
 					"name": "gm2_set_tab_spacing",
-					"extname": "gm2_set_tab_spacing",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_tab_spacing(tab_spacing)",
 					"hidden": false,
@@ -796,7 +796,7 @@
 				},
 				{
 					"name": "gm2_set_text_alignment",
-					"extname": "gm2_set_text_alignment",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_text_alignment(text_alignment)",
 					"hidden": false,
@@ -807,7 +807,7 @@
 				},
 				{
 					"name": "gm2_set_text_direction",
-					"extname": "gm2_set_text_direction",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_text_direction(text_direction)",
 					"hidden": false,
@@ -818,7 +818,7 @@
 				},
 				{
 					"name": "gm2_set_trimming",
-					"extname": "gm2_set_trimming",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_trimming(trimming)",
 					"hidden": false,
@@ -829,7 +829,7 @@
 				},
 				{
 					"name": "gm2_set_uniform_line_spacing",
-					"extname": "gm2_set_uniform_line_spacing",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_uniform_line_spacing(line_height,baseline)",
 					"hidden": false,
@@ -841,7 +841,7 @@
 				},
 				{
 					"name": "gm2_set_word_wrapping",
-					"extname": "gm2_set_word_wrapping",
+					"extname": "",
 					"calltype": 12,
 					"helpline": "gm2_set_word_wrapping(word_wrapping)",
 					"hidden": false,
@@ -1070,15 +1070,6 @@
 			]
 		},
 		{
-			"filename": "fmt.dll",
-			"origname": "build/release/fmt.dll",
-			"kind": 1,
-			"init": "",
-			"final": "",
-			"functions": [],
-			"constants": []
-		},
-		{
 			"filename": "main.gml",
 			"origname": "src/main.gml",
 			"kind": 2,
@@ -1087,7 +1078,7 @@
 			"functions": [
 				{
 					"name": "gm2_new_font",
-					"extname": "gm2_new_font",
+					"extname": "",
 					"calltype": 2,
 					"helpline": "gm2_new_font(key,name,size,properties=normal,locale=\"\")",
 					"hidden": false,
@@ -1096,7 +1087,7 @@
 				},
 				{
 					"name": "gm2_make_rgb",
-					"extname": "gm2_make_rgb",
+					"extname": "",
 					"calltype": 2,
 					"helpline": "gm2_make_rgb(...)",
 					"hidden": false,
@@ -1105,7 +1096,7 @@
 				},
 				{
 					"name": "gm2_make_hsv",
-					"extname": "gm2_make_hsv",
+					"extname": "",
 					"calltype": 2,
 					"helpline": "gm2_make_hsv(hue,saturation,value,alpha=1)",
 					"hidden": false,
@@ -1114,7 +1105,7 @@
 				},
 				{
 					"name": "gm2_set_transform",
-					"extname": "gm2_set_transform",
+					"extname": "",
 					"calltype": 2,
 					"helpline": "gm2_set_transform(...)",
 					"hidden": false,
@@ -1123,7 +1114,7 @@
 				},
 				{
 					"name": "gm2_add_transform",
-					"extname": "gm2_add_transform",
+					"extname": "",
 					"calltype": 2,
 					"helpline": "gm2_add_transform(...)",
 					"hidden": false,
@@ -1132,7 +1123,7 @@
 				},
 				{
 					"name": "gm2_set_color",
-					"extname": "gm2_set_color",
+					"extname": "",
 					"calltype": 2,
 					"helpline": "gm2_set_color(...)",
 					"hidden": false,
