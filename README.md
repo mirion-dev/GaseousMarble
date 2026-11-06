@@ -1,6 +1,6 @@
 <h1>GaseousMarble</h1>
 
-Professional, high-performance text rendering for [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with 80 functions covering layout control, arbitrary transformations, and multi-directional gradients.
+Professional, high-performance text rendering for [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with 80+ functions covering layout control, arbitrary transformations, and multi-directional gradients.
 
 > \[!warning\]
 > 
@@ -28,11 +28,7 @@ Professional, high-performance text rendering for [GameMaker 8.2](https://gm82.c
 
 <h1>Reference</h1>
 
-- `+` New
-- `-` Removed
-- `*` Changed
-
-<h2>+ <code>gm2.toml</code></h2>
+<h2><code>gm2.toml</code></h2>
 
 | **Option** | **Default Value** | **Description** |
 | --- | --- | --- |
@@ -43,7 +39,7 @@ Professional, high-performance text rendering for [GameMaker 8.2](https://gm82.c
 | `raster.min_antialiasing_size_v` | `0` | Font vertical antialiasing threshold |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 
-<h2>* <code>gm2_new_font(key, name, size, properties = normal, locale = "")</code></h2>
+<h2><code>gm2_new_font(key, name, size, properties = normal, locale = "")</code></h2>
 
 Add a font from system fonts or font files. `key` should be **non-empty**.
 
@@ -82,74 +78,45 @@ If `locale` is empty, the user’s default locale applies.
 | `gm2_font_stretch_extra_expanded` |
 | `gm2_font_stretch_ultra_expanded` |
 
-| **v1** |
-| --- |
-| `generate_font()` |
-| `gm_font()` |
-
-**New**: Dynamic creation and more options.
-
-**Dropped**: Loading from sprites and effects.
-
 <h2><code>gm2_delete_font(key)</code></h2>
 
 Remove a font.
 
-| **v1** |
-| --- |
-| `gm_free()` |
-| `gm_clear()` |
-
-**Dropped**: Removing all fonts.
-
-<h2>* <code>gm2_draw_text(x, y, text)</code><br />
-+ <code>gm2_get_aabb_x(text)</code><br />
-+ <code>gm2_get_aabb_y(text)</code><br />
+<h2><code>gm2_draw_text(x, y, text)</code><br />
+<code>gm2_get_aabb_x(text)</code><br />
+<code>gm2_get_aabb_y(text)</code><br />
 <code>gm2_get_aabb_width(text)</code><br />
 <code>gm2_get_aabb_height(text)</code></h2>
 
 Draw a UTF-8 text or get its **layout** AABB.
 
-| **v1** |
-| --- |
-| `gm_draw()` |
-| `gm_width()` |
-| `gm_height()` |
-
-**New**: Professional typography based on DirectWrite.
-
-<h2>+ <code>gm2_save_options(key)</code><br />
-+ <code>gm2_load_options(key)</code></h2>
+<h2><code>gm2_save_options(key)</code><br />
+<code>gm2_load_options(key)</code></h2>
 
 Save or load the current draw options.
 
-<h2>+ <code>gm2_make_rgb(rgb, alpha = 1)</code><br />
-+ <code>gm2_make_rgb(red, green, blue, alpha = 1)</code><br />
-+ <code>gm2_make_hsv(hue, saturation, value, alpha = 1)</code></h2>
+<h2><code>gm2_make_rgb(rgb, alpha = 1)</code><br />
+<code>gm2_make_rgb(red, green, blue, alpha = 1)</code><br />
+<code>gm2_make_hsv(hue, saturation, value, alpha = 1)</code></h2>
 
 Create a color. The range of `red`, `green` and `blue` is **0 to 255**. The range of `hue` is **0 to 360**. The range of `saturation`, `value` and `alpha` is **0 to 1**.
 
 <h2><code>gm2_set_font(key)</code><br />
 <code>gm2_get_font()</code><br />
-+ <code>gm2_get_font_name()</code><br />
-+ <code>gm2_get_font_weight()</code><br />
-+ <code>gm2_get_font_style()</code><br />
-+ <code>gm2_get_font_stretch()</code><br />
-+ <code>gm2_get_font_size()</code><br />
-+ <code>gm2_get_font_locale()</code></h2>
+<code>gm2_get_font_name()</code><br />
+<code>gm2_get_font_weight()</code><br />
+<code>gm2_get_font_style()</code><br />
+<code>gm2_get_font_stretch()</code><br />
+<code>gm2_get_font_size()</code><br />
+<code>gm2_get_font_locale()</code></h2>
 
 Set or get the current font.
 
-| **v1** |
-| --- |
-| `gm_set_font()` |
-| `gm_get_font()` |
-
-<h2>+ <code>gm2_set_direction(direction)</code><br />
-+ <code>gm2_set_text_direction(text_direction)</code><br />
-+ <code>gm2_set_par_direction(par_direction)</code><br />
-+ <code>gm2_get_text_direction()</code><br />
-+ <code>gm2_get_par_direction()</code></h2>
+<h2><code>gm2_set_direction(direction)</code><br />
+<code>gm2_set_text_direction(text_direction)</code><br />
+<code>gm2_set_par_direction(par_direction)</code><br />
+<code>gm2_get_text_direction()</code><br />
+<code>gm2_get_par_direction()</code></h2>
 
 Set or get the text direction and the paragraph direction.
 
@@ -163,10 +130,10 @@ Set or get the text direction and the paragraph direction.
 | `gm2_par_direction_ttb` |
 | `gm2_par_direction_btt` |
 
-<h2>* <code>gm2_set_alignment(alignment)</code><br />
-* <code>gm2_set_text_alignment(text_alignment)</code><br />
+<h2><code>gm2_set_alignment(alignment)</code><br />
+<code>gm2_set_text_alignment(text_alignment)</code><br />
 <code>gm2_set_par_alignment(par_alignment)</code><br />
-* <code>gm2_get_text_alignment()</code><br />
+<code>gm2_get_text_alignment()</code><br />
 <code>gm2_get_par_alignment()</code></h2>
 
 Set or get the text alignment and the paragraph alignment.
@@ -184,24 +151,11 @@ Set or get the text alignment and the paragraph alignment.
 | `gm2_par_alignment_center` |
 | `gm2_par_alignment_far` |
 
-| **v1** |
-| --- |
-| `gm_set_align3()` |
-| `gm_set_align()` |
-| `gm_set_halign()` |
-| `gm_set_valign()` |
-| `gm_set_justified()` |
-| `gm_get_halign()` |
-| `gm_get_valign()` |
-| `gm_is_justified()` |
-
-**Dropped**: `justified` is no longer independent of `left`/`center`/`right`.
-
-<h2>+ <code>gm2_set_max_size(max_width, max_height)</code><br />
+<h2><code>gm2_set_max_size(max_width, max_height)</code><br />
 <code>gm2_set_max_width(max_width)</code><br />
-+ <code>gm2_set_max_height(max_height)</code><br />
+<code>gm2_set_max_height(max_height)</code><br />
 <code>gm2_get_max_width()</code><br />
-+ <code>gm2_get_max_height()</code></h2>
+<code>gm2_get_max_height()</code></h2>
 
 Set or get the maximum size of the text.
 
@@ -211,13 +165,8 @@ When the maximum size is 0, the text model is point-based and aligns to the draw
 | --- | --- |
 | `gm2_infinity` | `1e5` |
 
-| **v1** |
-| --- |
-| `gm_set_max_line_length()` |
-| `gm_get_max_line_length()` |
-
-<h2>+ <code>gm2_set_word_wrapping(word_wrapping)</code><br />
-+ <code>gm2_get_word_wrapping()</code></h2>
+<h2><code>gm2_set_word_wrapping(word_wrapping)</code><br />
+<code>gm2_get_word_wrapping()</code></h2>
 
 Set or get the word wrapping of the text.
 
@@ -228,8 +177,8 @@ Set or get the word wrapping of the text.
 | `gm2_word_wrapping_word` |
 | `gm2_word_wrapping_whole_word` |
 
-<h2>+ <code>gm2_set_trimming(trimming)</code><br />
-+ <code>gm2_get_trimming()</code></h2>
+<h2><code>gm2_set_trimming(trimming)</code><br />
+<code>gm2_get_trimming()</code></h2>
 
 Set or get the text trimming.
 
@@ -239,13 +188,13 @@ Set or get the text trimming.
 | `gm2_trimming_char` |
 | `gm2_trimming_word` |
 
-<h2>+ <code>gm2_set_line_spacing(line_height, baseline)</code><br />
-* <code>gm2_set_uniform_line_spacing(line_height, baseline)</code><br />
-* <code>gm2_set_line_height(line_height)</code><br />
-* <code>gm2_set_baseline(baseline)</code><br />
-+ <code>gm2_get_line_spacing_type()</code><br />
-* <code>gm2_get_line_height()</code><br />
-* <code>gm2_get_baseline()</code></h2>
+<h2><code>gm2_set_line_spacing(line_height, baseline)</code><br />
+<code>gm2_set_uniform_line_spacing(line_height, baseline)</code><br />
+<code>gm2_set_line_height(line_height)</code><br />
+<code>gm2_set_baseline(baseline)</code><br />
+<code>gm2_get_line_spacing_type()</code><br />
+<code>gm2_get_line_height()</code><br />
+<code>gm2_get_baseline()</code></h2>
 
 Set or get the line spacing of the text.
 
@@ -254,17 +203,8 @@ Set or get the line spacing of the text.
 | `gm2_line_spacing_type_proportional` |
 | `gm2_line_spacing_type_uniform` |
 
-| **v1** |
-| --- |
-| `gm_set_line_height()` |
-| `gm_set_paragraph_spacing()` |
-| `gm_get_line_height()` |
-| `gm_get_paragraph_spacing()` |
-
-**New**: Proportional line height.
-
-<h2>+ <code>gm2_set_tab_spacing(tab_spacing)</code><br />
-+ <code>gm2_get_tab_spacing()</code></h2>
+<h2><code>gm2_set_tab_spacing(tab_spacing)</code><br />
+<code>gm2_get_tab_spacing()</code></h2>
 
 Set or get the tab spacing of the text.
 
@@ -273,84 +213,47 @@ Set or get the tab spacing of the text.
 
 Set or get the letter spacing of the text.
 
-| **v1** |
-| --- |
-| `gm_set_letter_spacing()` |
-| `gm_get_letter_spacing()` |
-
-<h2>- <code>gm_set_word_spacing()</code><br />
-- <code>gm_get_word_spacing()</code></h2>
-
-Set or get the word spacing of the text.
-
-**Removed**: Unsupported by DirectWrite.
-
-<h2>+ <code>gm2_set_origin(x, y)</code><br />
-+ <code>gm2_get_origin_x()</code><br />
-+ <code>gm2_get_origin_y()</code></h2>
+<h2><code>gm2_set_origin(x, y)</code><br />
+<code>gm2_get_origin_x()</code><br />
+<code>gm2_get_origin_y()</code></h2>
 
 Set or get the **normalized** origin of the text. Only applies to the **box** model.
 
-<h2>+ <code>gm2_set_transform()</code><br />
-+ <code>gm2_set_transform(a00, a01, a10, a11)</code><br />
-+ <code>gm2_set_transform(a00, a01, a10, a11, dx, dy)</code><br />
-+ <code>gm2_add_transform(a00, a01, a10, a11)</code><br />
-+ <code>gm2_add_transform(a00, a01, a10, a11, dx, dy)</code><br />
-* <code>gm2_add_translation(x, y)</code><br />
-+ <code>gm2_add_translation_x(x)</code><br />
-+ <code>gm2_add_translation_y(y)</code><br />
-* <code>gm2_add_scale(x, y)</code><br />
-+ <code>gm2_add_scale_x(x)</code><br />
-+ <code>gm2_add_scale_y(y)</code><br />
-* <code>gm2_add_rotation(theta)</code><br />
-+ <code>gm2_add_skew(x, y)</code><br />
-+ <code>gm2_add_skew_x(x)</code><br />
-+ <code>gm2_add_skew_y(y)</code><br />
-+ <code>gm2_get_transform_a00()</code><br />
-+ <code>gm2_get_transform_a01()</code><br />
-+ <code>gm2_get_transform_a10()</code><br />
-+ <code>gm2_get_transform_a11()</code><br />
-+ <code>gm2_get_transform_dx()</code><br />
-+ <code>gm2_get_transform_dy()</code></h2>
+<h2><code>gm2_set_transform()</code><br />
+<code>gm2_set_transform(a00, a01, a10, a11)</code><br />
+<code>gm2_set_transform(a00, a01, a10, a11, dx, dy)</code><br />
+<code>gm2_add_transform(a00, a01, a10, a11)</code><br />
+<code>gm2_add_transform(a00, a01, a10, a11, dx, dy)</code><br />
+<code>gm2_add_translation(x, y)</code><br />
+<code>gm2_add_translation_x(x)</code><br />
+<code>gm2_add_translation_y(y)</code><br />
+<code>gm2_add_scale(x, y)</code><br />
+<code>gm2_add_scale_x(x)</code><br />
+<code>gm2_add_scale_y(y)</code><br />
+<code>gm2_add_rotation(theta)</code><br />
+<code>gm2_add_skew(x, y)</code><br />
+<code>gm2_add_skew_x(x)</code><br />
+<code>gm2_add_skew_y(y)</code><br />
+<code>gm2_get_transform_a00()</code><br />
+<code>gm2_get_transform_a01()</code><br />
+<code>gm2_get_transform_a10()</code><br />
+<code>gm2_get_transform_a11()</code><br />
+<code>gm2_get_transform_dx()</code><br />
+<code>gm2_get_transform_dy()</code></h2>
 
 Set or get the text transformation. Angles are in **radians**.
 
-| **v1** |
-| --- |
-| `gm_set_offset()` |
-| `gm_set_scale()` |
-| `gm_set_rotation()` |
-| `gm_get_offset()` |
-| `gm_get_scale()` |
-| `gm_get_rotation()` |
-
-**New**: Arbitrary affine transformations.
-
 <h2><code>gm2_set_color(color)</code><br />
 <code>gm2_set_color(top, bottom)</code><br />
-+ <code>gm2_set_color(tl, tr, bl, br)</code><br />
-* <code>gm2_get_color_tl()</code><br />
-+ <code>gm2_get_color_tr()</code><br />
-* <code>gm2_get_color_bl()</code><br />
-+ <code>gm2_get_color_br()</code></h2>
+<code>gm2_set_color(tl, tr, bl, br)</code><br />
+<code>gm2_get_color_tl()</code><br />
+<code>gm2_get_color_tr()</code><br />
+<code>gm2_get_color_bl()</code><br />
+<code>gm2_get_color_br()</code></h2>
 
 Set or get the text color. The alpha channel is **respected**. See `gm2_make_rgb()` and `gm2_make_hsv()`.
-
-| **v1** |
-| --- |
-| `gm_set_color()` |
-| `gm_set_color2()` |
-| `gm_get_color_top()` |
-| `gm_get_color_bottom()` |
-
-**New**: 4-way gradients.
 
 <h2><code>gm2_set_opacity(opacity)</code><br />
 <code>gm2_get_opacity()</code></h2>
 
 Set or get the text opacity.
-
-| **v1** |
-| --- |
-| `gm_set_alpha()` |
-| `gm_get_alpha()` |
