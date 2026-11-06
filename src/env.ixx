@@ -135,31 +135,18 @@ namespace gm::env {
         return value;
     }
 
-    export enum class Status {
-        // A positive number indicates the room to jump to
-        running     = -1,
-        exiting     = -100,
-        restarting  = -200,
-        loading     = -300,
-        terminating = -400
-    };
-
-    export Status status() noexcept {
-        return *reinterpret_cast<Status*>(0x00845300);
-    }
-
     export struct D3dResource {
         IDirect3D8* interface;
         IDirect3DDevice8* device;
     };
 
     export const D3dResource& d3d() noexcept {
-        if (status() != Status::running) {
-            // No logging here because the engine releases resources before detaching DLLs
-            std::exit(0);
-        }
-
         return *reinterpret_cast<D3dResource*>(0x006886a4);
+    }
+
+    // The engine releases resources before detaching DLLs
+    export bool is_d3d_active() noexcept {
+        return d3d().interface != nullptr;
     }
 
     export {

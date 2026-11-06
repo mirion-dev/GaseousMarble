@@ -38,7 +38,9 @@ namespace gm {
 
     export class Draw {
         static void _delete_state_block(DWORD state_block) noexcept {
-            GM_WARN_IF_FAILED(env::d3d().device->DeleteStateBlock(state_block));
+            if (env::is_d3d_active()) {
+                GM_WARN_IF_FAILED(env::d3d().device->DeleteStateBlock(state_block));
+            }
         }
 
         using StateBlock = Handle<DWORD, _delete_state_block, -1>;
