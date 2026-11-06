@@ -5,6 +5,8 @@
 
 Professional, high-performance text rendering for #link("https://gm82.cherry-treehouse.com/#News")[GameMaker 8.2], with 80+ functions covering layout control, arbitrary transformations, and multi-directional gradients.
 
+The example project is located at `projects/example.gm82`. You may need to place a #link("https://github.com/adobe-fonts/source-han-serif/releases")[suitable font] named `default.ttf` alongside the built game to display CJK characters correctly.
+
 #quote[
     [!warning]
 

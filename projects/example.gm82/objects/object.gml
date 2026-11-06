@@ -4,7 +4,7 @@ lib_id=1
 action_id=603
 applies_to=self
 */
-gm2_new_font("default", "Source Han Serif SC", 18)
+gm2_new_font("default", "default.ttf", 18)
 gm2_set_font("default")
 gm2_save_options("")
 

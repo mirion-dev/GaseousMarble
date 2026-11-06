@@ -2,6 +2,8 @@
 
 Professional, high-performance text rendering for [GameMaker 8.2](https://gm82.cherry-treehouse.com/#News), with 80+ functions covering layout control, arbitrary transformations, and multi-directional gradients.
 
+The example project is located at `projects/example.gm82`. You may need to place a [suitable font](https://github.com/adobe-fonts/source-han-serif/releases) named `default.ttf` alongside the built game to display CJK characters correctly.
+
 > \[!warning\]
 > 
 > Minimum system requirement: Windows 10, Version 1709.
