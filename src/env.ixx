@@ -5,6 +5,7 @@ module;
 #include <d3d8.h>
 #include <dwrite_3.h>
 #include <eigen3/Eigen/Core>
+#include <glaze/glaze_exceptions.hpp>
 #include <glaze/toml.hpp>
 #include <spdlog/spdlog.h>
 #include <wil/com.h>
@@ -69,20 +70,17 @@ namespace gm::env {
                 return {};
             }
 
-            std::string raw;
+            Config result;
             try {
                 std::ifstream file{ CONFIG_PATH };
-                raw = { std::istreambuf_iterator{ file }, {} };
-            } catch (const std::exception&) {
+                std::string raw{ std::istreambuf_iterator{ file }, {} };
+                glz::ex::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw);
+            } catch (const std::exception& error) {
+                GM_ERROR("{}.", error.what());
                 GM_WARN("Failed to read the config, falling back to the default config.");
                 return {};
             }
 
-            Config result;
-            if (glz::read<glz::toml::toml_opts{ .error_on_unknown_keys = false }>(result, raw)) {
-                GM_WARN("Failed to parse the config, falling back to the default config.");
-                return {};
-            }
             if (!result.is_valid()) {
                 GM_WARN("Invalid config, falling back to the default config.");
                 return {};
