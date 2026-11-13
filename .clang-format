@@ -42,3 +42,4 @@ QualifierAlignment: Left
 
 # Others
 FixNamespaceComments: false
+SortIncludes: CaseInsensitive

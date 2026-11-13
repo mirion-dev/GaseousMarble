@@ -34,11 +34,9 @@ The example project is located at `projects/example.gm82`. You may need to place
 
 | **Option** | **Default Value** | **Description** |
 | --- | --- | --- |
-| `atlas.texture_width` | `1024` | Texture width of glyph atlases |
-| `atlas.texture_height` | `1024` | Texture height of glyph atlases |
+| `atlas.texture_size` | `[1024, 1024]` | Texture size of glyph atlases |
 | `atlas.max_texture_num` | `16` | Maximum number of textures for each glyph atlas |
-| `raster.min_antialiasing_size_h` | `0` | Font horizontal antialiasing threshold |
-| `raster.min_antialiasing_size_v` | `0` | Font vertical antialiasing threshold |
+| `raster.min_antialiasing_size` | `[0, 0]` | Font antialiasing threshold |
 | `layout_cache_size` | `1024` | Maximum number of cached layouts |
 
 <h2><code>gm2_new_font(key, name, size, properties = normal, locale = "")</code></h2>

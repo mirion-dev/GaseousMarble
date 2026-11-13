@@ -18,6 +18,14 @@ import gm.log;
 import gm.types;
 import gm.utils;
 
+template <class T>
+struct glz::meta<Eigen::Vector2<T>> {
+    static constexpr auto value{ custom<
+        [](Eigen::Vector2<T>& value, std::array<T, 2> raw) noexcept { value = { raw[0], raw[1] }; },
+        [](const Eigen::Vector2<T>& value) noexcept { return std::array{ value[0], value[1] }; }
+    > };
+};
+
 namespace gm {
 
     export struct AtlasOption {
@@ -38,32 +46,6 @@ namespace gm {
     };
 
 }
-
-template <>
-struct glz::meta<gm::AtlasOption> {
-    using T = gm::AtlasOption;
-
-    static constexpr auto value{ object(
-        "texture_width",
-        [](T& self) noexcept -> auto& { return self.texture_size.x(); },
-        "texture_height",
-        [](T& self) noexcept -> auto& { return self.texture_size.y(); },
-        "max_texture_num",
-        &T::max_texture_num
-    ) };
-};
-
-template <>
-struct glz::meta<gm::RasterOption> {
-    using T = gm::RasterOption;
-
-    static constexpr auto value{ object(
-        "min_antialiasing_size_h",
-        [](T& self) noexcept -> auto& { return self.min_antialiasing_size.x(); },
-        "min_antialiasing_size_v",
-        [](T& self) noexcept -> auto& { return self.min_antialiasing_size.y(); }
-    ) };
-};
 
 namespace gm::env {
 
